@@ -182,6 +182,51 @@ export type ComputedChart = {
   lots: LotReport | null;
 };
 
+/** The moment a profection year begins (the specification only says "birthday"). */
+export type YearStart = "birthClockTime" | "midnight" | "solarReturn";
+
+/** The birthday of a 29 February birth in years without that date. */
+export type LeapDayBirthday = "february28" | "march1";
+
+export type ProfectionOptions = { yearStart: YearStart; leapDay: LeapDayBirthday };
+
+/** An instant with the clock reading at the birthplace. */
+export type Moment = {
+  utc: string;
+  /** `YYYY-MM-DDTHH:MM:SS`, possibly with a fraction, in the birthplace's time zone. */
+  local: string;
+  offsetSeconds: number;
+};
+
+export type ProfectionMonth = {
+  /** 1–12 within the profection year. */
+  number: number;
+  start: Moment;
+  end: Moment;
+  house: number;
+  sign: Sign;
+  ruler: Body;
+};
+
+export type ProfectionYear = {
+  age: number;
+  start: Moment;
+  end: Moment;
+  house: number;
+  sign: Sign;
+  timeLord: Body;
+  months: ProfectionMonth[];
+};
+
+export type ProfectionReport = {
+  year: ProfectionYear;
+  /** Age now; null when now is before the birth. */
+  currentAge: number | null;
+  /** Month (1–12) of this year that holds now, when now is in this year. */
+  currentMonth: number | null;
+  timeAssumed: boolean;
+};
+
 export type Orbs = Record<AspectKind, number>;
 
 export type BirthInput = {
@@ -429,6 +474,25 @@ export function countryName(code: string | null): string {
 }
 
 const dateFormat = new Intl.DateTimeFormat("da-DK", { dateStyle: "long", timeZone: "UTC" });
+
+const shortDateFormat = new Intl.DateTimeFormat("da-DK", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+/**
+ * A moment's clock reading at the birthplace as "4. feb. 2002", or with
+ * `withTime` "4. feb. 2002 kl. 14:20". The time is cut to whole minutes,
+ * never rounded up, so a period is not shown as started before it has.
+ */
+export function formatMoment(moment: { local: string }, withTime: boolean): string {
+  const date = new Date(`${moment.local.slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return moment.local;
+  const day = shortDateFormat.format(date);
+  return withTime ? `${day} kl. ${moment.local.slice(11, 16)}` : day;
+}
 
 /** "15. juni 1950" from "1950-06-15". */
 export function formatBirthDate(isoDate: string): string {

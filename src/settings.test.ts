@@ -27,6 +27,25 @@ describe("mergeOver", () => {
   });
 });
 
+describe("profection settings", () => {
+  it("default to the birth clock time, 28 February and clock times shown", () => {
+    expect(settingsFromStored({ orbs: { square: 5 } }).profections).toEqual({
+      yearStart: "birthClockTime",
+      leapDay: "february28",
+      showTimes: true,
+    });
+  });
+
+  it("keep a stored choice and drop one this version does not know", () => {
+    const kept = settingsFromStored({ profections: { yearStart: "solarReturn", leapDay: "march1" } });
+    expect(kept.profections.yearStart).toBe("solarReturn");
+    expect(kept.profections.leapDay).toBe("march1");
+    const unknown = settingsFromStored({ profections: { yearStart: "sunrise", leapDay: "never" } });
+    expect(unknown.profections.yearStart).toBe("birthClockTime");
+    expect(unknown.profections.leapDay).toBe("february28");
+  });
+});
+
 describe("settingsFromStored", () => {
   it("moves aspect colours still at their old default to the new default", () => {
     const stored = {

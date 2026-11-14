@@ -9,6 +9,8 @@ import type {
   LotOptions,
   Orbs,
   Place,
+  ProfectionOptions,
+  ProfectionReport,
   ResolvedTime,
 } from "./astro";
 
@@ -35,6 +37,9 @@ export const api = {
   birthResolve: (birth: BirthInput) => call<ResolvedTime>("birth_resolve", { birth }),
   chartCompute: (birth: BirthInput, orbs: Orbs, lots: LotOptions) =>
     call<ComputedChart>("chart_compute", { birth, orbs, lots }),
+  /** The profection year for an age; without an age, the year that holds now. */
+  profectionYear: (birth: BirthInput, options: ProfectionOptions, age: number | null) =>
+    call<ProfectionReport>("profection_year", { birth, options, age }),
 
   placesSearch: (query: string) => call<Place[]>("places_search", { query }),
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatLot, formatOffset, formatOrb, lotReading, parseOffset } from "./astro";
+import { formatLot, formatMoment, formatOffset, formatOrb, lotReading, parseOffset } from "./astro";
 
 describe("formatOrb", () => {
   it("truncates to whole minutes", () => {
@@ -7,6 +7,20 @@ describe("formatOrb", () => {
     expect(formatOrb(0)).toBe("0°00′");
     expect(formatOrb(6.999)).toBe("6°59′");
     expect(formatOrb(7)).toBe("7°00′");
+  });
+});
+
+describe("formatMoment", () => {
+  it("shows the birthplace's date, with the clock time when asked", () => {
+    const moment = { local: "2001-03-07T00:20:00" };
+    expect(formatMoment(moment, false)).toBe("7. mar. 2001");
+    expect(formatMoment(moment, true)).toBe("7. mar. 2001 kl. 00:20");
+  });
+
+  it("cuts seconds and fractions off instead of rounding up", () => {
+    expect(formatMoment({ local: "2026-12-31T23:59:59.999999999" }, true)).toBe(
+      "31. dec. 2026 kl. 23:59",
+    );
   });
 });
 

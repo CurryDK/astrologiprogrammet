@@ -28,8 +28,8 @@ Rules that follow from the specification:
 | 1 | Calculation core: positions, angles, whole-sign houses, sect, time zones | Done (v0.0.2) |
 | 2 | Natal chart: birth form, place search, archive, wheel, aspects, settings, start screen | Done (v0.1.0) |
 | 3 | Seven Hermetic lots: overview, lot aspects, wheel, manual sect per chart | Done (v0.2.0). Proposed defaults awaiting feedback: "e" = orb under 1° (setting), lot aspects to planets only (angles and other lots are switches), placeholder symbols (two letters in a circle) |
-| 4 | Profections | **Next** |
-| 5 | Transits, Live Chart, life events | Not started |
+| 4 | Profections: annual and monthly, Time Lord, overview, timeline, year navigation | Done (v0.3.0). Proposed defaults awaiting feedback (all settings): year starts on the calendar birthday at the birth clock time in the birthplace's time zone (alternatives: 00:00, or the Sun's exact return); 29 February births use 28 February in other years (alternative: 1 March); month dates shown with clock times, dates only when the birth time is unknown |
+| 5 | Transits, Live Chart, life events | **Next**. `profection_year` already takes a reference moment (`at`) for "follows the shown date" |
 | 6 | Planetary Condition | Category rules supplied for dignities, Sun conditions, houses, co-presence, domicile lord, reception, overcoming, engagement, adherence, chariot, maltreatment by striking with a ray; sect never changes a colour; counteraction rejected. Still blocked: enclosure intervention algorithm, bonification/maltreatment sub-forms not spelled out, Mercury and joy geometry, modern planets (full list in `docs/plan.md`, Phase 6) |
 | 7 | Secondary progressions, rectification | Unblocked: progressed angles by Naibod in right ascension (default), ecliptic longitude selectable |
 | 8 | Solar Return | Unblocked: exact return of the Sun to its natal longitude; default place is the birthplace, changeable |
@@ -43,13 +43,14 @@ crates/astro-core/   Pure Rust: all astronomy and astrological rules. No Tauri, 
   src/chart.rs       compute_chart: positions, angles, houses, sect
   src/aspects.rs     find_aspects: orb, applying/separating, out-of-sign
   src/lots.rs        the seven Hermetic lots, lot overview facts, lot aspects (lot_report)
+  src/profections.rs annual and monthly profections, year start rules, age_at / month_at
   src/time.rs        local birth time → UTC (tzdb, includes pre-1970 "backzone" history)
   src/places.rs      offline place search over resources/places.tsv
   src/zodiac.rs      Sign, Body, ZodiacPoint, whole_sign_house
 src-tauri/           App shell: commands (src/lib.rs), SQLite storage (src/db.rs), updater
 src/                 React + TypeScript interface. Draws only; no astrological logic here.
   api.ts             Every backend call. astro.ts: types and Danish names. settings.tsx: remembered settings.
-  components/        ChartWheel (SVG), AspectTable, PositionsTable, LotsTable, LotAspectTable
+  components/        ChartWheel (SVG), AspectTable, PositionsTable, LotsTable, LotAspectTable, ProfectionPanel
   views/             StartView, ArchiveView, ChartView, ChartForm, SettingsView, ChangelogView
   changelog.ts       What each version added and changed; shown when the version number is pressed
   dev/               Stand-in backend + fixture for working on screens in a plain browser

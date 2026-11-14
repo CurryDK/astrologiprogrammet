@@ -2,7 +2,19 @@
 // opened in a plain browser. Calculations are NOT real here — every chart
 // is the same fixture. It is never included in the built app.
 
-import type { ChartRecord, Folder, LotOptions, LotReport, Place } from "../astro";
+import type {
+  BirthInput,
+  ChartRecord,
+  Folder,
+  LotOptions,
+  LotReport,
+  Moment,
+  Place,
+  ProfectionOptions,
+  ProfectionReport,
+  Sign,
+  Body,
+} from "../astro";
 import fixture from "./fixture.json";
 
 let nextId = 3;
@@ -77,6 +89,70 @@ function lotsFor(options: LotOptions): LotReport {
   };
 }
 
+/**
+ * A rough stand-in for the real profection calculation: the birthplace is
+ * taken to be at UTC+1 all year, the solar return rule is treated as the
+ * birth clock time, and the houses are the fixture's.
+ */
+function profectionsFor(
+  birth: BirthInput,
+  options: ProfectionOptions,
+  askedAge: number | null,
+): ProfectionReport {
+  const offsetSeconds = 3600;
+  const [y, m, d] = birth.date.split("-").map(Number);
+  const [hour, minute] =
+    options.yearStart === "midnight" ? [0, 0] : (birth.time ?? "12:00").split(":").map(Number);
+  const yearStart = (age: number) => {
+    const leapDayMissing = m === 2 && d === 29 && new Date(Date.UTC(y + age, 1, 29)).getUTCMonth() !== 1;
+    const [month, day] = leapDayMissing ? (options.leapDay === "march1" ? [3, 1] : [2, 28]) : [m, d];
+    return Date.UTC(y + age, month - 1, day, hour, minute) - offsetSeconds * 1000;
+  };
+  const moment = (ms: number): Moment => ({
+    utc: new Date(ms).toISOString(),
+    local: new Date(ms + offsetSeconds * 1000).toISOString().slice(0, 19),
+    offsetSeconds,
+  });
+
+  const now = Date.now();
+  let currentAge: number | null = null;
+  if (now >= yearStart(0)) {
+    currentAge = 0;
+    while (currentAge < 150 && now >= yearStart(currentAge + 1)) currentAge++;
+  }
+  const age = askedAge ?? currentAge ?? 0;
+  const start = yearStart(age);
+  const end = yearStart(age + 1);
+  const houses = computed.chart.houses as { number: number; sign: Sign; ruler: Body }[];
+  const yearHouse = houses[age % 12];
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const house = houses[(age + i) % 12];
+    return {
+      number: i + 1,
+      start: moment(start + ((end - start) * i) / 12),
+      end: moment(start + ((end - start) * (i + 1)) / 12),
+      house: house.number,
+      sign: house.sign,
+      ruler: house.ruler,
+    };
+  });
+  const current = months.find((month) => Date.parse(month.start.utc) <= now && now < Date.parse(month.end.utc));
+  return {
+    year: {
+      age,
+      start: moment(start),
+      end: moment(end),
+      house: yearHouse.number,
+      sign: yearHouse.sign,
+      timeLord: yearHouse.ruler,
+      months,
+    },
+    currentAge,
+    currentMonth: current?.number ?? null,
+    timeAssumed: birth.time === null,
+  };
+}
+
 export async function mockInvoke(command: string, args: Record<string, any>): Promise<unknown> {
   switch (command) {
     case "app_info":
@@ -85,6 +161,12 @@ export async function mockInvoke(command: string, args: Record<string, any>): Pr
       return { ...computed, time: null, lots: null };
     case "chart_compute":
       return { ...computed, lots: lotsFor(args.lots as LotOptions) };
+    case "profection_year":
+      return profectionsFor(
+        args.birth as BirthInput,
+        args.options as ProfectionOptions,
+        (args.age as number | null) ?? null,
+      );
     case "birth_resolve":
       return fixture.time;
     case "places_search":

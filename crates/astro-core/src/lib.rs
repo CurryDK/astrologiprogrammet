@@ -9,6 +9,7 @@ pub mod ephemeris;
 mod ffi;
 pub mod lots;
 pub mod places;
+pub mod profections;
 pub mod time;
 pub mod zodiac;
 

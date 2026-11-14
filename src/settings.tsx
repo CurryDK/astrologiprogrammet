@@ -10,8 +10,10 @@ import {
   LOTS,
   type AspectKind,
   type Body,
+  type LeapDayBirthday,
   type Lot,
   type Orbs,
+  type YearStart,
 } from "./astro";
 
 export type Settings = {
@@ -41,6 +43,15 @@ export type Settings = {
     showInWheel: Record<Lot, boolean>;
     /** What the lot aspect overview compares the lots with. */
     aspectsTo: { planets: boolean; angles: boolean; lots: boolean };
+  };
+  /** Profections (specification §7). */
+  profections: {
+    /** The moment a profection year begins. */
+    yearStart: YearStart;
+    /** Birthday of a 29 February birth in years without that date. */
+    leapDay: LeapDayBirthday;
+    /** Show clock times with the dates of the profection months. */
+    showTimes: boolean;
   };
 };
 
@@ -96,7 +107,20 @@ export const DEFAULT_SETTINGS: Settings = {
     // default: the planets only; angles and other lots can be switched on.
     aspectsTo: { planets: true, angles: false, lots: false },
   },
+  profections: {
+    // The specification says "birthday" without defining the moment.
+    // Proposed default: the calendar birthday at the clock time of birth,
+    // in the birthplace's time zone.
+    yearStart: "birthClockTime",
+    // Not stated in the specification. Proposed default: 28 February.
+    leapDay: "february28",
+    // The 12 equal months change at odd clock times, so they are shown.
+    showTimes: true,
+  },
 };
+
+const YEAR_STARTS: YearStart[] = ["birthClockTime", "midnight", "solarReturn"];
+const LEAP_DAYS: LeapDayBirthday[] = ["february28", "march1"];
 
 const STORAGE_KEY = "settings";
 
@@ -140,7 +164,15 @@ export function settingsFromStored(stored: unknown): Settings {
       aspects[kind] = DEFAULT_SETTINGS.colors.aspects[kind];
     }
   }
-  return { ...settings, colors: { ...settings.colors, aspects } };
+  // A stored choice this version does not know falls back to the default.
+  const profections = { ...settings.profections };
+  if (!YEAR_STARTS.includes(profections.yearStart)) {
+    profections.yearStart = DEFAULT_SETTINGS.profections.yearStart;
+  }
+  if (!LEAP_DAYS.includes(profections.leapDay)) {
+    profections.leapDay = DEFAULT_SETTINGS.profections.leapDay;
+  }
+  return { ...settings, colors: { ...settings.colors, aspects }, profections };
 }
 
 type SettingsContextValue = {

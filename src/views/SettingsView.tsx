@@ -5,6 +5,8 @@ import {
   BODIES,
   POINT_GLYPHS,
   POINT_NAMES,
+  type LeapDayBirthday,
+  type YearStart,
 } from "../astro";
 import { useSettings } from "../settings";
 
@@ -135,6 +137,71 @@ export function SettingsView() {
           Standard er 3° orb. Et lot-aspekt markeres med “e”, når orben er mindre end grænsen
           (standard 1°). Hvilke lots der vises i hjulet, og hvad lot-aspekter beregnes til, vælges
           under “Visning” ved horoskopet.
+        </p>
+      </section>
+
+      <section className="panel">
+        <h2>Profektioner</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td>Profektionsåret begynder</td>
+              <td>
+                <select
+                  aria-label="Profektionsåret begynder"
+                  value={settings.profections.yearStart}
+                  onChange={(e) =>
+                    update((s) => ({
+                      ...s,
+                      profections: { ...s.profections, yearStart: e.target.value as YearStart },
+                    }))
+                  }
+                >
+                  <option value="birthClockTime">På fødselsdagen ved fødselsklokkeslættet</option>
+                  <option value="midnight">På fødselsdagen kl. 00:00</option>
+                  <option value="solarReturn">Når Solen vender tilbage til sin fødselsposition</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Fødselsdag for fødte 29. februar i år uden skuddag</td>
+              <td>
+                <select
+                  aria-label="Fødselsdag for fødte 29. februar"
+                  value={settings.profections.leapDay}
+                  disabled={settings.profections.yearStart === "solarReturn"}
+                  onChange={(e) =>
+                    update((s) => ({
+                      ...s,
+                      profections: { ...s.profections, leapDay: e.target.value as LeapDayBirthday },
+                    }))
+                  }
+                >
+                  <option value="february28">28. februar</option>
+                  <option value="march1">1. marts</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={settings.profections.showTimes}
+            onChange={(e) =>
+              update((s) => ({
+                ...s,
+                profections: { ...s.profections, showTimes: e.target.checked },
+              }))
+            }
+          />
+          Vis klokkeslæt ved profektionsmånedernes datoer
+        </label>
+        <p className="muted">
+          Standard er fødselsdagen ved fødselsklokkeslættet, 28. februar for fødte 29. februar, og
+          datoer med klokkeslæt. Datoer og klokkeslæt gælder fødestedets tidszone. Tiden mellem to
+          fødselsdage deles i 12 præcist lige lange måneder. For horoskoper uden kendt fødselstid
+          vises kun datoer.
         </p>
       </section>
 

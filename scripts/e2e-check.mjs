@@ -159,6 +159,89 @@ check(
     wide.lots.aspects.every((a) => a.exact === a.orb < 2),
 );
 
+// Profections: born 1 June 1947 at 12:00 in Copenhagen (summer time, UTC+2).
+const profectionOptions = { yearStart: "birthClockTime", leapDay: "february28" };
+const rising = computed.chart.houses[0];
+const at = "2001-01-01T00:00:00Z";
+const year53 = await invoke("profection_year", { birth, options: profectionOptions, age: null, at });
+check(
+  "profection_year finds the year holding a moment",
+  year53.currentAge === 53 && year53.year.age === 53 && year53.currentMonth === 8,
+  `age ${year53.currentAge}, month ${year53.currentMonth}`,
+);
+check(
+  "profection year runs from birthday to birthday at the birth clock time",
+  year53.year.start.utc === "2000-06-01T10:00:00Z" &&
+    year53.year.end.utc === "2001-06-01T10:00:00Z" &&
+    year53.year.start.local === "2000-06-01T12:00:00",
+  `${year53.year.start.utc} – ${year53.year.end.utc}`,
+);
+const year48 = await invoke("profection_year", { birth, options: profectionOptions, age: 48, at });
+check(
+  "age 0, 12, 24 … return to house 1 with the rising sign's ruler as Time Lord",
+  year48.year.house === 1 && year48.year.sign === rising.sign && year48.year.timeLord === rising.ruler,
+  `${year48.year.sign}, ${year48.year.timeLord}`,
+);
+check(
+  "age 53 is house 6, and its months run through houses 6…12, 1…5",
+  year53.year.house === 6 &&
+    year53.year.sign === computed.chart.houses[5].sign &&
+    year53.year.timeLord === computed.chart.houses[5].ruler &&
+    year53.year.months.map((m) => m.house).join() === "6,7,8,9,10,11,12,1,2,3,4,5" &&
+    year53.year.months.every((m) => m.sign === computed.chart.houses[m.house - 1].sign),
+);
+const monthMs = year53.year.months.map((m) => Date.parse(m.end.utc) - Date.parse(m.start.utc));
+check(
+  "12 equal months tile the year with no gap or overlap",
+  monthMs.every((ms) => ms === monthMs[0]) &&
+    monthMs[0] * 12 === Date.parse(year53.year.end.utc) - Date.parse(year53.year.start.utc) &&
+    year53.year.months[0].start.utc === year53.year.start.utc &&
+    year53.year.months[11].end.utc === year53.year.end.utc &&
+    year53.year.months.every((m, i, all) => i === 0 || all[i - 1].end.utc === m.start.utc),
+  `${monthMs[0] / 3_600_000} hours each`,
+);
+check("a year the moment is not in has no current month", year48.currentMonth === null && year48.currentAge === 53);
+const midnight = await invoke("profection_year", {
+  birth,
+  options: { ...profectionOptions, yearStart: "midnight" },
+  age: 53,
+  at,
+});
+check("midnight rule starts at 00:00 local time", midnight.year.start.local === "2000-06-01T00:00:00");
+const solar = await invoke("profection_year", {
+  birth,
+  options: { ...profectionOptions, yearStart: "solarReturn" },
+  age: 53,
+  at,
+});
+const returnChart = await invoke("chart_compute", {
+  birth: { ...birth, zone: null, offsetSeconds: 0, date: solar.year.start.utc.slice(0, 10), time: solar.year.start.utc.slice(11, 16) },
+  orbs,
+  lots: lotOptions,
+});
+const returnSun = returnChart.chart.positions.find((p) => p.body === "sun").longitude;
+check(
+  "solar return rule starts when the Sun is back at its natal longitude",
+  // The check chart is computed for the whole minute before the return.
+  Math.abs(mod360(returnSun - sun.longitude + 180) - 180) < 0.001 &&
+    Math.abs(Date.parse(solar.year.start.utc) - Date.parse("2000-06-01T10:00:00Z")) < 2 * 86_400_000,
+  solar.year.start.utc,
+);
+const leap = await invoke("profection_year", {
+  birth: { ...birth, date: "1960-02-29", time: "08:00" },
+  options: { ...profectionOptions, leapDay: "march1" },
+  age: 1,
+  at,
+});
+check("29 February birth with the 1 March rule", leap.year.start.local === "1961-03-01T08:00:00", leap.year.start.local);
+const noTime = await invoke("profection_year", { birth: { ...birth, time: null }, options: profectionOptions, age: 1, at });
+check("unknown birth time is flagged and noon is used", noTime.timeAssumed === true && noTime.year.start.local === "1948-06-01T12:00:00");
+const tooOld = await invoke("profection_year", { birth, options: profectionOptions, age: 151, at }).then(
+  () => null,
+  (error) => String(error),
+);
+check("an age beyond the limit is rejected", tooOld !== null, tooOld ?? "no error");
+
 const manual = await invoke("birth_resolve", { birth: { ...birth, zone: null, offsetSeconds: 3600 } });
 check("manual offset overrides zone", manual.utc === "1947-06-01T11:00:00Z", manual.utc);
 

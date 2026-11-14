@@ -122,9 +122,62 @@ pub fn resolve(
     })
 }
 
+/// The offset from UTC, in seconds east, in force in a zone at a UTC instant.
+pub fn utc_offset_at(zone: &ZoneChoice, utc: DateTime<Utc>) -> Result<i32, TimeError> {
+    match zone {
+        ZoneChoice::FixedOffset(seconds) => {
+            if seconds.abs() > MAX_OFFSET_SECONDS {
+                return Err(TimeError::InvalidOffset(*seconds));
+            }
+            Ok(*seconds)
+        }
+        ZoneChoice::Named(name) => {
+            let unknown = || TimeError::UnknownZone(name.clone());
+            let tz = tzdb::tz_by_name(name).ok_or_else(unknown)?;
+            tz.find_local_time_type(utc.timestamp())
+                .map(|local_type| local_type.ut_offset())
+                .map_err(|_| unknown())
+        }
+    }
+}
+
+/// Like [`resolve`], but a clock time that was skipped when clocks were set
+/// forward is not an error: the offset in force before the change is used,
+/// which gives the instant that long after the change. Used for recurring
+/// dates such as birthdays, which must always resolve to some instant.
+pub fn resolve_recurring(
+    date: NaiveDate,
+    time: Option<NaiveTime>,
+    zone: &ZoneChoice,
+) -> Result<ResolvedTime, TimeError> {
+    match resolve(date, time, zone) {
+        Err(TimeError::NonexistentLocalTime(local)) => {
+            let local_as_utc = local.and_utc();
+            let offset_seconds =
+                utc_offset_at(zone, local_as_utc - chrono::Duration::seconds(DAY_SECONDS))?;
+            Ok(ResolvedTime {
+                utc: local_as_utc - chrono::Duration::seconds(offset_seconds as i64),
+                offset_seconds,
+                time_assumed: time.is_none(),
+                ambiguous: false,
+            })
+        }
+        other => other,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_skipped_clock_time_on_a_recurring_date_lands_after_the_change() {
+        // 29 March 2020, 02:30 never happened in Copenhagen; with the offset
+        // before the change (+1) it is 01:30 UTC, i.e. 03:30 summer time.
+        let r = resolve_recurring(date(2020, 3, 29), time(2, 30), &copenhagen()).unwrap();
+        assert_eq!(r.utc.to_rfc3339(), "2020-03-29T01:30:00+00:00");
+        assert_eq!(utc_offset_at(&copenhagen(), r.utc).unwrap(), 7200);
+    }
 
     fn date(y: i32, m: u32, d: u32) -> NaiveDate {
         NaiveDate::from_ymd_opt(y, m, d).unwrap()

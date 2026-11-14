@@ -7,6 +7,9 @@ use astro_core::chart::{Chart, Sect, compute_chart};
 use astro_core::ephemeris;
 use astro_core::lots::{LotReport, lot_report};
 use astro_core::places::{Place, PlaceIndex};
+use astro_core::profections::{
+    Birth, ProfectionOptions, ProfectionYear, age_at, month_at, profection_year as compute_profection_year,
+};
 use astro_core::time::{ResolvedTime, ZoneChoice, resolve};
 use chrono::{DateTime, NaiveDate, NaiveTime, Utc};
 use rusqlite::Connection;
@@ -74,7 +77,20 @@ struct LotOptions {
     exact_orb: f64,
 }
 
-fn resolve_input(birth: &BirthInput) -> Result<ResolvedTime, String> {
+/// A profection year with where "now" (or a chosen moment) falls in it.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ProfectionReport {
+    year: ProfectionYear,
+    /// Age at the reference moment; `None` when it lies before the birth.
+    current_age: Option<u32>,
+    /// Month (1–12) of this year holding the reference moment, if it is in this year.
+    current_month: Option<u8>,
+    /// True when the birth time is unknown and 12:00 was used.
+    time_assumed: bool,
+}
+
+fn parse_birth(birth: &BirthInput) -> Result<Birth, String> {
     let date = NaiveDate::parse_from_str(&birth.date, "%Y-%m-%d")
         .map_err(|_| format!("ugyldig dato: {}", birth.date))?;
     let time = match birth.time.as_deref() {
@@ -89,7 +105,12 @@ fn resolve_input(birth: &BirthInput) -> Result<ResolvedTime, String> {
         (None, Some(name)) => ZoneChoice::Named(name.clone()),
         (None, None) => return Err("tidszone mangler".to_string()),
     };
-    resolve(date, time, &zone).map_err(|e| e.to_string())
+    Ok(Birth { date, time, zone })
+}
+
+fn resolve_input(birth: &BirthInput) -> Result<ResolvedTime, String> {
+    let birth = parse_birth(birth)?;
+    resolve(birth.date, birth.time, &birth.zone).map_err(|e| e.to_string())
 }
 
 fn compute(
@@ -147,6 +168,35 @@ fn birth_resolve(birth: BirthInput) -> Result<ResolvedTime, String> {
 fn chart_compute(birth: BirthInput, orbs: Orbs, lots: LotOptions) -> Result<ComputedChart, String> {
     let time = resolve_input(&birth)?;
     compute(time.utc, birth.latitude, birth.longitude, &orbs, Some(time), Some(&lots))
+}
+
+/// The profection year for an age, or, without an age, the year that holds
+/// the reference moment `at` (now when absent). Year 0 is used for a
+/// reference moment before the birth.
+#[tauri::command]
+fn profection_year(
+    birth: BirthInput,
+    options: ProfectionOptions,
+    age: Option<u32>,
+    at: Option<DateTime<Utc>>,
+) -> Result<ProfectionReport, String> {
+    let time = resolve_input(&birth)?;
+    let chart = compute_chart(time.utc, birth.latitude, birth.longitude).map_err(|e| e.to_string())?;
+    let rising_sign = chart.houses[0].sign;
+    let born = parse_birth(&birth)?;
+    let at = at.unwrap_or_else(Utc::now);
+
+    let current_age = age_at(&born, &options, at).map_err(|e| e.to_string())?;
+    let age = age.or(current_age).unwrap_or(0);
+    let year =
+        compute_profection_year(&born, rising_sign, &options, age).map_err(|e| e.to_string())?;
+    let current_month = month_at(&year, at);
+    Ok(ProfectionReport {
+        year,
+        current_age,
+        current_month,
+        time_assumed: time.time_assumed,
+    })
 }
 
 #[tauri::command]
@@ -255,6 +305,7 @@ pub fn run() {
             sky_now,
             birth_resolve,
             chart_compute,
+            profection_year,
             places_search,
             charts_list,
             chart_save,

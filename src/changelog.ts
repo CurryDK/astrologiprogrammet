@@ -13,6 +13,19 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.3.0",
+    date: "2026-11-14",
+    added: [
+      "Profektioner for natalhoroskoper: årlig profektion med 1. hus ved alder 0 og ét hus/tegn frem ved hver fødselsdag i en 12-årig cyklus.",
+      "Årets Time Lord (tegnets traditionelle hersker) vises tydeligt øverst i profektionsoversigten.",
+      "Månedlige profektioner: tiden mellem to fødselsdage deles i 12 præcist lige lange måneder, ikke 30-dages måneder.",
+      "Profektionsoversigt med hver måneds start, slut, hus, tegn og hersker samt en tidslinje over alle 12 måneder, hvor den aktuelle måned er markeret.",
+      "Navigation til forrige og næste profektionsår og tilbage til i dag.",
+      "Indstillinger for profektioner: hvornår profektionsåret begynder (standard: fødselsdagen ved fødselsklokkeslættet), fødselsdag for fødte 29. februar (standard: 28. februar), og om klokkeslæt vises (standard: ja).",
+    ],
+    changed: ["Profektionerne står under hjulet i horoskopvisningen."],
+  },
+  {
     version: "0.2.2",
     date: "2026-11-14",
     added: ["Lots kan vises med sekunder; slås til under Indstillinger → Lots."],

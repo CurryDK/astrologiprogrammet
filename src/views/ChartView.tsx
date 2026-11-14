@@ -21,6 +21,7 @@ import { ChartWheel } from "../components/ChartWheel";
 import { LotAspectTable } from "../components/LotAspectTable";
 import { LotSymbol, LotsTable } from "../components/LotsTable";
 import { PositionsTable } from "../components/PositionsTable";
+import { ProfectionPanel } from "../components/ProfectionPanel";
 import { useSettings } from "../settings";
 
 type Props = {
@@ -31,7 +32,7 @@ type Props = {
   onChanged: () => void;
 };
 
-/** A natal chart: wheel, positions, aspect overview and the seven lots. */
+/** A natal chart: wheel, profections, positions, aspect overview and the seven lots. */
 export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
   const { settings, update } = useSettings();
   const [computed, setComputed] = useState<ComputedChart | null>(null);
@@ -122,13 +123,16 @@ export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
 
       {computed && (
         <div className="chart-body">
-          <div className="wheel-column">
-            <ChartWheel
-              chart={computed.chart}
-              aspects={aspectsForView(computed.aspects, settings, "wheel")}
-              settings={settings}
-              lots={computed.lots?.positions}
-            />
+          <div className="main-column">
+            <div className="wheel-column">
+              <ChartWheel
+                chart={computed.chart}
+                aspects={aspectsForView(computed.aspects, settings, "wheel")}
+                settings={settings}
+                lots={computed.lots?.positions}
+              />
+            </div>
+            <ProfectionPanel record={record} />
           </div>
           <div className="side-column">
             <section className="panel">
