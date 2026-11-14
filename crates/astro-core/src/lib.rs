@@ -3,9 +3,11 @@
 //! Everything astronomical and astrological lives here so it can be tested
 //! without the app shell. The frontend only draws what this crate computes.
 
+pub mod aspects;
 pub mod chart;
 pub mod ephemeris;
 mod ffi;
+pub mod places;
 pub mod time;
 pub mod zodiac;
 

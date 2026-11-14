@@ -28,7 +28,8 @@
     "targets": ["nsis"],
     "createUpdaterArtifacts": true,
     "resources": {
-      "../resources/ephe": "ephe"
+      "../resources/ephe": "ephe",
+      "../resources/places.tsv": "places.tsv"
     },
     "icon": [
       "icons/32x32.png",

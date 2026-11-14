@@ -29,7 +29,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: cargo test -p astro-core
+      - run: pnpm test
+
+      # The app crate embeds the built interface, so it must exist before cargo compiles it.
+      - run: pnpm build
+
+      - run: cargo test --workspace
 
       - uses: tauri-apps/tauri-action@v0
         env:
