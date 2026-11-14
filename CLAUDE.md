@@ -10,6 +10,7 @@ The requirements are in `docs/` (private, git-ignored, only on the development P
 - `docs/kravspecifikation_v0.1.txt` — the specification (Danish). Plain-text copy of the `.docx` beside it.
 - `docs/lots_formler_kildetillaeg.txt` — exact formulas for the seven Hermetic lots.
 - `docs/planetary_condition_kvalitetssikring.txt` — Planetary Condition decisions of 14 November 2026 (Danish). Supplements the specification and overrides it where they differ (notably: overcoming is a right-hand whole-sign sextile, square or trine, not only the square). Its section 6 lists what is still undecided and must not be guessed.
+- `docs/planetary_condition_beslutningstillaeg.txt` — final decision supplement of the same date. Overrides the document above where they differ; its section 3 lists what is still not to be guessed.
 - `docs/plan.md` — the approved build plan with phases and the open questions tied to each.
 
 Rules that follow from the specification:
@@ -28,7 +29,7 @@ Rules that follow from the specification:
 | 3 | Seven Hermetic lots: overview, lot aspects, wheel, manual sect per chart | Done (v0.2.0). Proposed defaults awaiting feedback: "e" = orb under 1° (setting), lot aspects to planets only (angles and other lots are switches), placeholder symbols (two letters in a circle) |
 | 4 | Profections | **Next** |
 | 5 | Transits, Live Chart, life events | Not started |
-| 6 | Planetary Condition | Category rules supplied for dignities, Sun conditions, houses, co-presence, domicile lord, reception, overcoming. Still blocked: the seven bonification/maltreatment algorithms, enclosure intervention, how sect changes the colours |
+| 6 | Planetary Condition | Category rules supplied for dignities, Sun conditions, houses, co-presence, domicile lord, reception, overcoming, engagement, adherence, chariot, maltreatment by striking with a ray; sect never changes a colour; counteraction rejected. Still blocked: enclosure intervention algorithm, bonification/maltreatment sub-forms not spelled out, Mercury and joy geometry, modern planets (full list in `docs/plan.md`, Phase 6) |
 | 7 | Secondary progressions, rectification | Blocked: Naibod in longitude or right ascension |
 | 8 | Solar Return | Blocked: algorithm and default location |
 | 9 | Synodic cycles, event search, reports | Reports need a description first |
