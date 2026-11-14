@@ -4,6 +4,7 @@ import type { ChartRecord, Folder } from "./astro";
 import { SettingsProvider } from "./settings";
 import { UpdateBanner } from "./UpdateBanner";
 import { ArchiveView, type FolderFilter } from "./views/ArchiveView";
+import { ChangelogView } from "./views/ChangelogView";
 import { ChartForm } from "./views/ChartForm";
 import { ChartView } from "./views/ChartView";
 import { SettingsView } from "./views/SettingsView";
@@ -11,7 +12,7 @@ import { StartView } from "./views/StartView";
 import "./App.css";
 
 type View =
-  | { name: "start" | "archive" | "settings" }
+  | { name: "start" | "archive" | "settings" | "changelog" }
   | { name: "chart"; id: number }
   /** `id` null means a new chart. */
   | { name: "form"; id: number | null };
@@ -62,7 +63,13 @@ function App() {
         {tab("start", "Start")}
         {tab("archive", "Arkiv")}
         {tab("settings", "Indstillinger")}
-        <span className="version">{info ? `Version ${info.version}` : ""}</span>
+        <button
+          className={`version${view.name === "changelog" ? " selected" : ""}`}
+          title="Se ændringsloggen"
+          onClick={() => setView({ name: "changelog" })}
+        >
+          {info ? `Version ${info.version}` : "Ændringslog"}
+        </button>
       </nav>
 
       <main>
@@ -117,6 +124,8 @@ function App() {
         )}
 
         {view.name === "settings" && <SettingsView />}
+
+        {view.name === "changelog" && <ChangelogView currentVersion={info?.version ?? null} />}
       </main>
     </SettingsProvider>
   );

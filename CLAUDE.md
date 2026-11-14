@@ -49,7 +49,8 @@ src-tauri/           App shell: commands (src/lib.rs), SQLite storage (src/db.rs
 src/                 React + TypeScript interface. Draws only; no astrological logic here.
   api.ts             Every backend call. astro.ts: types and Danish names. settings.tsx: remembered settings.
   components/        ChartWheel (SVG), AspectTable, PositionsTable, LotsTable, LotAspectTable
-  views/             StartView, ArchiveView, ChartView, ChartForm, SettingsView
+  views/             StartView, ArchiveView, ChartView, ChartForm, SettingsView, ChangelogView
+  changelog.ts       What each version added and changed; shown when the version number is pressed
   dev/               Stand-in backend + fixture for working on screens in a plain browser
 resources/           ephe/*.se1 (1800–2399), places.tsv (GeoNames, built by scripts/build-places.mjs)
 scripts/e2e-check.mjs  Drives the running app end to end
@@ -85,6 +86,7 @@ Checking the interface:
 
 Only release when asked. Installed copies pick up the newest release on next start.
 
+0. Add an entry at the top of `src/changelog.ts` (Danish, split into added and changed); `pnpm test` fails if the newest entry is not the version in `package.json`.
 1. Set the same version in `package.json` (`"version"`) and the root `Cargo.toml` (`[workspace.package]`), then `cargo update --workspace --offline` to refresh `Cargo.lock`.
 2. Commit, `git tag vX.Y.Z`, `git push origin main vX.Y.Z`.
 3. The `Release` workflow runs all tests, builds the NSIS installer, signs the update and publishes it. Watch it with `gh run watch <id> --exit-status` in the background.
