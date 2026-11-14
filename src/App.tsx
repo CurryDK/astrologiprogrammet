@@ -7,13 +7,17 @@ import { ArchiveView, type FolderFilter } from "./views/ArchiveView";
 import { ChangelogView } from "./views/ChangelogView";
 import { ChartForm } from "./views/ChartForm";
 import { ChartView } from "./views/ChartView";
+import { LiveChartView } from "./views/LiveChartView";
+import { TransitView } from "./views/TransitView";
 import { SettingsView } from "./views/SettingsView";
 import { StartView } from "./views/StartView";
 import "./App.css";
 
 type View =
-  | { name: "start" | "archive" | "settings" | "changelog" }
+  | { name: "start" | "archive" | "transit" | "settings" | "changelog" }
   | { name: "chart"; id: number }
+  /** Live Chart of a natal chart; `at` is the UTC instant to open at (null: now). */
+  | { name: "live"; id: number; at: string | null }
   /** `id` null means a new chart. */
   | { name: "form"; id: number | null };
 
@@ -42,13 +46,13 @@ function App() {
   }, [reload]);
 
   const openChart = (id: number) => setView({ name: "chart", id });
-  const current = view.name === "chart" || view.name === "form"
+  const current = view.name === "chart" || view.name === "form" || view.name === "live"
     ? charts.find((chart) => chart.id === view.id) ?? null
     : null;
 
-  const tab = (name: "start" | "archive" | "settings", label: string) => (
+  const tab = (name: "start" | "archive" | "transit" | "settings", label: string) => (
     <button
-      className={view.name === name || (name === "archive" && (view.name === "chart" || view.name === "form")) ? "selected" : ""}
+      className={view.name === name || (name === "archive" && (view.name === "chart" || view.name === "form" || view.name === "live")) ? "selected" : ""}
       onClick={() => setView({ name })}
     >
       {label}
@@ -62,6 +66,7 @@ function App() {
         <span className="title">Astrologiprogrammet</span>
         {tab("start", "Start")}
         {tab("archive", "Arkiv")}
+        {tab("transit", "Transitter")}
         {tab("settings", "Indstillinger")}
         <button
           className={`version${view.name === "changelog" ? " selected" : ""}`}
@@ -99,6 +104,7 @@ function App() {
           <ChartView
             record={current}
             onEdit={() => setView({ name: "form", id: view.id })}
+            onLive={(at) => setView({ name: "live", id: view.id, at })}
             onChanged={reload}
             onDeleted={async () => {
               await reload();
@@ -122,6 +128,18 @@ function App() {
             }
           />
         )}
+
+        {view.name === "live" && current && (
+          <LiveChartView
+            // A new moment asked for from outside starts the view afresh.
+            key={`${view.id}-${view.at ?? "now"}`}
+            record={current}
+            initialAt={view.at}
+            onBack={() => setView({ name: "chart", id: view.id })}
+          />
+        )}
+
+        {view.name === "transit" && <TransitView />}
 
         {view.name === "settings" && <SettingsView />}
 

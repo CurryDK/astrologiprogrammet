@@ -103,6 +103,18 @@ pub struct Moment {
     pub offset_seconds: i32,
 }
 
+impl Moment {
+    /// An instant with its clock reading in a zone.
+    pub fn in_zone(utc: DateTime<Utc>, zone: &ZoneChoice) -> Result<Moment, TimeError> {
+        let offset_seconds = utc_offset_at(zone, utc)?;
+        Ok(Moment {
+            utc,
+            local: (utc + Duration::seconds(offset_seconds as i64)).naive_utc(),
+            offset_seconds,
+        })
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProfectionMonth {
@@ -273,12 +285,7 @@ pub fn profection_year(
     let boundaries = month_boundaries(start, end);
     let mut moments = Vec::with_capacity(13);
     for utc in boundaries {
-        let offset_seconds = utc_offset_at(&birth.zone, utc)?;
-        moments.push(Moment {
-            utc,
-            local: (utc + Duration::seconds(offset_seconds as i64)).naive_utc(),
-            offset_seconds,
-        });
+        moments.push(Moment::in_zone(utc, &birth.zone)?);
     }
 
     let house = annual_house(age);

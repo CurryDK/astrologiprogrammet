@@ -14,7 +14,16 @@ import type {
   ProfectionReport,
   Sign,
   Body,
+  Aspect,
+  AspectKind,
+  BodyPosition,
+  LifeEvent,
+  LiveChart,
+  PointId,
+  TimeStep,
+  TransitAspect,
 } from "../astro";
+import { SIGNS } from "../astro";
 import fixture from "./fixture.json";
 
 let nextId = 3;
@@ -153,6 +162,159 @@ function profectionsFor(
   };
 }
 
+// --- Transits, Live Chart and life events (stand-ins) -----------------------
+
+const OFFSET_SECONDS = 3600;
+
+const moment = (ms: number): Moment => ({
+  utc: new Date(ms).toISOString(),
+  local: new Date(ms + OFFSET_SECONDS * 1000).toISOString().slice(0, 19),
+  offsetSeconds: OFFSET_SECONDS,
+});
+
+/** Rough mean daily motions; the stand-in sky moves evenly and never turns retrograde. */
+const MEAN_SPEED: Record<Body, number> = {
+  sun: 0.9856,
+  moon: 13.1764,
+  mercury: 1.3833,
+  venus: 1.2,
+  mars: 0.524,
+  jupiter: 0.0831,
+  saturn: 0.0335,
+  uranus: 0.0117,
+  neptune: 0.006,
+  pluto: 0.004,
+  northNode: -0.053,
+  southNode: -0.053,
+};
+
+const mod360 = (x: number) => ((x % 360) + 360) % 360;
+const fixturePositions = computed.chart.positions as BodyPosition[];
+const fixtureHouses = computed.chart.houses as { number: number; sign: Sign; ruler: Body }[];
+
+function positionsAt(ms: number): BodyPosition[] {
+  const days = (ms - Date.parse(computed.chart.utc)) / 86_400_000;
+  return fixturePositions.map((p) => {
+    const longitude = mod360(p.longitude + MEAN_SPEED[p.body] * days);
+    const sign = SIGNS[Math.floor(longitude / 30)];
+    const minutes = Math.floor((longitude % 30) * 60);
+    return {
+      ...p,
+      longitude,
+      sign,
+      degree: Math.floor(minutes / 60),
+      minute: minutes % 60,
+      speed: MEAN_SPEED[p.body],
+      retrograde: MEAN_SPEED[p.body] < 0,
+      house: fixtureHouses.find((h) => h.sign === sign)!.number,
+    };
+  });
+}
+
+const ASPECT_ANGLES: [AspectKind, number][] = [
+  ["conjunction", 0],
+  ["sextile", 60],
+  ["square", 90],
+  ["trine", 120],
+  ["opposition", 180],
+];
+
+function aspectOf(a: number, b: number, speedA: number, speedB: number, orb: number) {
+  let arc = mod360(b - a);
+  if (arc > 180) arc -= 360;
+  const separation = Math.abs(arc);
+  for (const [kind, angle] of ASPECT_ANGLES) {
+    const deviation = separation - angle;
+    if (Math.abs(deviation) > orb) continue;
+    const separationRate = arc >= 0 ? speedB - speedA : speedA - speedB;
+    const signsApart = Math.abs(Math.floor(a / 30) - Math.floor(b / 30));
+    return {
+      kind,
+      orb: Math.abs(deviation),
+      applying: (deviation >= 0 ? separationRate : -separationRate) < 0,
+      outOfSign: Math.min(signsApart, 12 - signsApart) !== angle / 30,
+    };
+  }
+  return null;
+}
+
+function stepped(at: string | null, step: TimeStep | null): number {
+  const date = new Date(at ?? Date.now());
+  if (step) {
+    const { unit, count } = step;
+    if (unit === "minute") date.setUTCMinutes(date.getUTCMinutes() + count);
+    else if (unit === "hour") date.setUTCHours(date.getUTCHours() + count);
+    else if (unit === "day") date.setUTCDate(date.getUTCDate() + count);
+    else if (unit === "week") date.setUTCDate(date.getUTCDate() + 7 * count);
+    else date.setUTCMonth(date.getUTCMonth() + count);
+  }
+  return date.getTime();
+}
+
+function natalLongitude(point: PointId): number {
+  if (point === "ascendant" || point === "midheaven") return computed.chart.angles[point].longitude;
+  return fixturePositions.find((p) => p.body === point)!.longitude;
+}
+
+function liveChartFor(args: Record<string, any>): LiveChart {
+  const ms = stepped(args.at, args.step);
+  const positions = positionsAt(ms);
+  const natalPoints: PointId[] = [...fixturePositions.map((p) => p.body), "ascendant", "midheaven"];
+  const toNatal: TransitAspect[] = [];
+  const toTransit: Aspect[] = [];
+  positions.forEach((t, i) => {
+    for (const natal of natalPoints) {
+      const found = aspectOf(t.longitude, natalLongitude(natal), t.speed, 0, args.orb);
+      if (found) toNatal.push({ transit: t.body, natal, ...found });
+    }
+    for (const other of positions.slice(i + 1)) {
+      if (t.body.endsWith("Node") && other.body.endsWith("Node")) continue;
+      const found = aspectOf(t.longitude, other.longitude, t.speed, other.speed, args.orb);
+      if (found) toTransit.push({ a: t.body, b: other.body, ...found });
+    }
+  });
+
+  const birth = args.birth as BirthInput;
+  const options = args.profections as ProfectionOptions;
+  const born = profectionsFor(birth, options, 0);
+  let age: number | null = null;
+  let profection: LiveChart["profection"] = null;
+  let profectionMonth: number | null = null;
+  if (ms >= Date.parse(born.year.start.utc)) {
+    age = Math.max(0, new Date(ms).getUTCFullYear() - Number(birth.date.slice(0, 4)));
+    if (ms < Date.parse(profectionsFor(birth, options, age).year.start.utc)) age -= 1;
+    profection = profectionsFor(birth, options, age).year;
+    profectionMonth =
+      profection.months.find((m) => Date.parse(m.start.utc) <= ms && ms < Date.parse(m.end.utc))
+        ?.number ?? null;
+  }
+  return { at: moment(ms), positions, toNatal, toTransit, age, profection, profectionMonth };
+}
+
+/** Exact moments with the evenly moving stand-in sky; Mercury pretends to pass three times. */
+function passesFor(args: Record<string, any>): Moment[] {
+  const ms = Date.parse(args.at);
+  const now = positionsAt(ms);
+  const transit = now.find((p) => p.body === args.transit)!;
+  const other = "natal" in args.other ? null : now.find((p) => p.body === args.other.transit)!;
+  const target = other ? other.longitude : natalLongitude(args.other.natal);
+  const angle = ASPECT_ANGLES.find(([kind]) => kind === args.kind)![1];
+  let arc = mod360(transit.longitude - target);
+  if (arc > 180) arc -= 360;
+  let distance = mod360(transit.longitude - target - (arc >= 0 ? angle : -angle));
+  if (distance > 180) distance -= 360;
+  const rate = transit.speed - (other ? other.speed : 0);
+  const exact = ms - (distance / rate) * 86_400_000;
+  const days = args.transit === "mercury" ? [0, 12, 27] : [0];
+  return days.map((d) => moment(exact + d * 86_400_000));
+}
+
+let nextEventId = 3;
+const events: LifeEvent[] = [
+  { id: 1, chartId: 1, title: "Bryllup", year: 1988, month: 6, day: 18, time: "14:00", zone: "Europe/Copenhagen", note: "" },
+  { id: 2, chartId: 1, title: "Flyttede til Aarhus", year: 1995, month: null, day: null, time: null, zone: "Europe/Copenhagen", note: "" },
+];
+
 export async function mockInvoke(command: string, args: Record<string, any>): Promise<unknown> {
   switch (command) {
     case "app_info":
@@ -167,6 +329,52 @@ export async function mockInvoke(command: string, args: Record<string, any>): Pr
         args.options as ProfectionOptions,
         (args.age as number | null) ?? null,
       );
+    case "sky_at": {
+      const ms = stepped(args.at, args.step);
+      return {
+        at: moment(ms),
+        computed: {
+          ...computed,
+          chart: { ...computed.chart, utc: new Date(ms).toISOString(), positions: positionsAt(ms) },
+          time: null,
+          lots: null,
+        },
+      };
+    }
+    case "live_chart":
+      return liveChartFor(args);
+    case "transit_passes":
+      return passesFor(args);
+    case "local_resolve": {
+      const ms = Date.parse(`${args.date}T${args.time ?? "12:00"}:00Z`) - OFFSET_SECONDS * 1000;
+      if (Number.isNaN(ms)) throw new Error("ugyldig dato");
+      return {
+        utc: new Date(ms).toISOString(),
+        offsetSeconds: OFFSET_SECONDS,
+        timeAssumed: args.time == null,
+        ambiguous: false,
+      };
+    }
+    case "events_list":
+      return events
+        .filter((e) => e.chartId === args.chartId)
+        .sort(
+          (a, b) =>
+            a.year - b.year || (a.month ?? 0) - (b.month ?? 0) || (a.day ?? 0) - (b.day ?? 0),
+        );
+    case "event_save": {
+      const event = { ...(args.event as LifeEvent) };
+      if (event.id === null) {
+        event.id = nextEventId++;
+        events.push(event);
+      } else {
+        events[events.findIndex((e) => e.id === event.id)] = event;
+      }
+      return event;
+    }
+    case "event_delete":
+      events.splice(events.findIndex((e) => e.id === args.id), 1);
+      return null;
     case "birth_resolve":
       return fixture.time;
     case "places_search":

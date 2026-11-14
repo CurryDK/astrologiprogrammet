@@ -8,7 +8,7 @@ import { useSettings } from "../settings";
 // Until a home place can be chosen, the sky is shown as seen from
 // Copenhagen. Planet positions barely depend on the place; the angles and
 // houses in the wheel do.
-const HOME = { name: "København", latitude: 55.6761, longitude: 12.5683 };
+export const HOME = { name: "København", latitude: 55.6761, longitude: 12.5683 };
 const REFRESH_MS = 60_000;
 
 const timeFormat = new Intl.DateTimeFormat("da-DK", { dateStyle: "long", timeStyle: "short" });

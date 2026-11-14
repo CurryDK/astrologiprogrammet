@@ -295,6 +295,158 @@ label.check {
   min-width: 0;
 }
 
+/* Live Chart, transits and life events */
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-head h2 {
+  margin: 0;
+}
+
+button.small {
+  padding: 2px 8px;
+  font-size: 0.8rem;
+}
+
+button.small.selected {
+  border-color: var(--accent);
+  background: #e6edf6;
+}
+
+.time-panel {
+  margin-bottom: 14px;
+}
+
+.time-navigator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  flex-wrap: wrap;
+}
+
+.time-now {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.1rem;
+}
+
+.time-now .muted {
+  font-size: 0.8rem;
+}
+
+.time-controls,
+.time-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.time-entry {
+  margin-left: 12px;
+}
+
+.time-navigator .error {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+button.step-arrow {
+  min-width: 44px;
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 4px 10px;
+  touch-action: none;
+}
+
+.live-profection {
+  display: flex;
+  gap: 6px 28px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.wheel-legend {
+  margin: 4px 8px;
+  text-align: center;
+}
+
+.transit-table thead th {
+  padding-top: 0;
+}
+
+.transit-table tr.passes td {
+  padding: 4px 6px 8px;
+}
+
+.transit-table tr.passes button {
+  margin: 2px 0 2px 6px;
+}
+
+.event-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px 14px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+}
+
+.event-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.85rem;
+}
+
+.event-form p,
+.event-form .actions {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.event-list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.event-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.event-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.event-text .muted {
+  font-size: 0.85rem;
+}
+
+.event-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 /* Profections */
 
 .profection-head {

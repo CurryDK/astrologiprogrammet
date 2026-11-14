@@ -227,6 +227,114 @@ export type ProfectionReport = {
   timeAssumed: boolean;
 };
 
+/** The steps of manual time navigation (specification §8). */
+export type StepUnit = "minute" | "hour" | "day" | "week" | "month";
+
+export const STEP_UNITS: StepUnit[] = ["minute", "hour", "day", "week", "month"];
+
+export const STEP_NAMES: Record<StepUnit, string> = {
+  minute: "1 minut",
+  hour: "1 time",
+  day: "1 dag",
+  week: "1 uge",
+  month: "1 måned",
+};
+
+export type TimeStep = { unit: StepUnit; count: number };
+
+/** An aspect from a transiting body to a natal body or angle. */
+export type TransitAspect = {
+  transit: Body;
+  natal: PointId;
+  kind: AspectKind;
+  orb: number;
+  applying: boolean;
+  outOfSign: boolean;
+};
+
+/** The transit layer of a Live Chart at one moment. */
+export type LiveChart = {
+  at: Moment;
+  /** Transiting bodies; `house` is the natal whole-sign house. */
+  positions: BodyPosition[];
+  toNatal: TransitAspect[];
+  toTransit: Aspect[];
+  age: number | null;
+  profection: ProfectionYear | null;
+  profectionMonth: number | null;
+};
+
+export type SkyAt = { at: Moment; computed: ComputedChart };
+
+/** What a transit aspect is made to: a natal point or another transiting body. */
+export type PassOther = { natal: PointId } | { transit: Body };
+
+/**
+ * A life event of a natal chart. Only what is known is stored: a missing
+ * month, day or clock time is null, never a made-up value.
+ */
+export type LifeEvent = {
+  id: number | null;
+  chartId: number;
+  title: string;
+  year: number;
+  month: number | null;
+  day: number | null;
+  /** `HH:MM`, or null when unknown. */
+  time: string | null;
+  /** IANA time zone the date and time are given in. */
+  zone: string | null;
+  note: string;
+};
+
+export type EventPrecision = "datetime" | "date" | "month" | "year";
+
+export function eventPrecision(event: Pick<LifeEvent, "month" | "day" | "time">): EventPrecision {
+  if (event.month === null) return "year";
+  if (event.day === null) return "month";
+  return event.time === null ? "date" : "datetime";
+}
+
+/** `YYYY-MM-DD` when the event has a full date, otherwise null. */
+export function eventDate(event: Pick<LifeEvent, "year" | "month" | "day">): string | null {
+  if (event.month === null || event.day === null) return null;
+  const pad = (n: number, width: number) => String(n).padStart(width, "0");
+  return `${pad(event.year, 4)}-${pad(event.month, 2)}-${pad(event.day, 2)}`;
+}
+
+const monthYearFormat = new Intl.DateTimeFormat("da-DK", {
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+/**
+ * When an event happened, as precisely as it is known, with the missing
+ * part spelled out so it is never mistaken for a known value.
+ */
+export function formatEventWhen(event: Pick<LifeEvent, "year" | "month" | "day" | "time">): string {
+  const date = eventDate(event);
+  if (date !== null) {
+    return event.time !== null
+      ? `${formatBirthDate(date)} kl. ${event.time}`
+      : `${formatBirthDate(date)} · klokkeslæt ukendt`;
+  }
+  if (event.month !== null) {
+    const month = monthYearFormat.format(new Date(Date.UTC(event.year, event.month - 1, 1)));
+    return `${month} · kun måned og år kendt`;
+  }
+  return `${event.year} · kun årstal kendt`;
+}
+
+/** The computer's time zone, e.g. "Europe/Copenhagen". */
+export function localZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
 export type Orbs = Record<AspectKind, number>;
 
 export type BirthInput = {
@@ -474,6 +582,16 @@ export function countryName(code: string | null): string {
 }
 
 const dateFormat = new Intl.DateTimeFormat("da-DK", { dateStyle: "long", timeZone: "UTC" });
+
+const weekdayFormat = new Intl.DateTimeFormat("da-DK", { weekday: "long", timeZone: "UTC" });
+
+/** "lørdag 14. november 2026 kl. 21:05" from a moment's local clock reading. */
+export function formatMomentLong(moment: { local: string }): string {
+  const day = moment.local.slice(0, 10);
+  const date = new Date(`${day}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return moment.local;
+  return `${weekdayFormat.format(date)} ${dateFormat.format(date)} kl. ${moment.local.slice(11, 16)}`;
+}
 
 const shortDateFormat = new Intl.DateTimeFormat("da-DK", {
   day: "numeric",

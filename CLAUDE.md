@@ -29,9 +29,9 @@ Rules that follow from the specification:
 | 2 | Natal chart: birth form, place search, archive, wheel, aspects, settings, start screen | Done (v0.1.0) |
 | 3 | Seven Hermetic lots: overview, lot aspects, wheel, manual sect per chart | Done (v0.2.0). Proposed defaults awaiting feedback: "e" = orb under 1° (setting), lot aspects to planets only (angles and other lots are switches), placeholder symbols (two letters in a circle) |
 | 4 | Profections: annual and monthly, Time Lord, overview, timeline, year navigation | Done (v0.3.0). Proposed defaults awaiting feedback (all settings): year starts on the calendar birthday at the birth clock time in the birthplace's time zone (alternatives: 00:00, or the Sun's exact return); 29 February births use 28 February in other years (alternative: 1 March); month dates shown with clock times, dates only when the birth time is unknown |
-| 5 | Transits, Live Chart, life events | **Next**. `profection_year` already takes a reference moment (`at`) for "follows the shown date" |
+| 5 | Transits, Live Chart (natal + transit layers), life events, standalone transit chart | Done (v0.4.0). Proposed defaults awaiting feedback: transit orb 7° (setting); Time Lord filters add up and match a planet as transiting or natal, "planets in the profection sign" = natal planets in it plus transiting planets passing through it; times shown and entered in the computer's time zone, each life event stores that zone; a month step is a calendar month, day/week steps keep the clock time; no transiting ASC/MC; exact-pass search ends when the bodies are 25° apart and returns at most 9 passes; standalone transit chart seen from Copenhagen; transits drawn as a simple outer ring (biwheel design still deferred) |
 | 6 | Planetary Condition | Category rules supplied for dignities, Sun conditions, houses, co-presence, domicile lord, reception, overcoming, engagement, adherence, chariot, maltreatment by striking with a ray; sect never changes a colour; counteraction rejected. Still blocked: enclosure intervention algorithm, bonification/maltreatment sub-forms not spelled out, Mercury and joy geometry, modern planets (full list in `docs/plan.md`, Phase 6) |
-| 7 | Secondary progressions, rectification | Unblocked: progressed angles by Naibod in right ascension (default), ecliptic longitude selectable |
+| 7 | Secondary progressions, rectification | **Next** by number, but Phase 6 is partly blocked. Adds the progression layer to Live Chart. Unblocked: progressed angles by Naibod in right ascension (default), ecliptic longitude selectable |
 | 8 | Solar Return | Unblocked: exact return of the Sun to its natal longitude; default place is the birthplace, changeable |
 | 9 | Synodic cycles, event search, reports | Reports need a description first |
 
@@ -44,14 +44,17 @@ crates/astro-core/   Pure Rust: all astronomy and astrological rules. No Tauri, 
   src/aspects.rs     find_aspects: orb, applying/separating, out-of-sign
   src/lots.rs        the seven Hermetic lots, lot overview facts, lot aspects (lot_report)
   src/profections.rs annual and monthly profections, year start rules, age_at / month_at
-  src/time.rs        local birth time → UTC (tzdb, includes pre-1970 "backzone" history)
+  src/transits.rs    transit → natal aspects, exact passes of a transit aspect (retrograde series)
+  src/time.rs        local time ↔ UTC (tzdb, includes pre-1970 "backzone" history), time navigation steps
   src/places.rs      offline place search over resources/places.tsv
   src/zodiac.rs      Sign, Body, ZodiacPoint, whole_sign_house
 src-tauri/           App shell: commands (src/lib.rs), SQLite storage (src/db.rs), updater
 src/                 React + TypeScript interface. Draws only; no astrological logic here.
   api.ts             Every backend call. astro.ts: types and Danish names. settings.tsx: remembered settings.
-  components/        ChartWheel (SVG), AspectTable, PositionsTable, LotsTable, LotAspectTable, ProfectionPanel
-  views/             StartView, ArchiveView, ChartView, ChartForm, SettingsView, ChangelogView
+  liveFilter.ts      Which transit aspects a Live Chart shows: body choices per layer, Time Lord filters
+  components/        ChartWheel (SVG, optional transit ring), AspectTable, PositionsTable, LotsTable, LotAspectTable,
+                     ProfectionPanel, TimeNavigator, TransitAspectTable, LifeEventsPanel
+  views/             StartView, ArchiveView, ChartView, LiveChartView, TransitView, ChartForm, SettingsView, ChangelogView
   changelog.ts       What each version added and changed; shown when the version number is pressed
   dev/               Stand-in backend + fixture for working on screens in a plain browser
 resources/           ephe/*.se1 (1800–2399), places.tsv (GeoNames, built by scripts/build-places.mjs)

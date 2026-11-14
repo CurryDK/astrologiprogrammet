@@ -8,11 +8,13 @@ import {
   ASPECT_KINDS,
   BODIES,
   LOTS,
+  STEP_UNITS,
   type AspectKind,
   type Body,
   type LeapDayBirthday,
   type Lot,
   type Orbs,
+  type StepUnit,
   type YearStart,
 } from "./astro";
 
@@ -52,6 +54,21 @@ export type Settings = {
     leapDay: LeapDayBirthday;
     /** Show clock times with the dates of the profection months. */
     showTimes: boolean;
+  };
+  /** Transits and Live Chart (specification §8, §9). */
+  transits: {
+    /** Maximum orb of transit aspects, in degrees. */
+    orb: number;
+    /** Which transiting bodies are drawn in the wheel; separate from the natal choice. */
+    showInWheel: Record<Body, boolean>;
+    /** Which transiting bodies take part in transit aspects. */
+    inAspects: Record<Body, boolean>;
+    /** The aspect groups shown in Live Chart, each switched on its own. */
+    groups: { natal: boolean; toNatal: boolean; toTransit: boolean };
+    /** Combinable filters: with any on, only aspects involving their planets are shown. */
+    filters: { yearLord: boolean; monthLord: boolean; profectionSign: boolean };
+    /** The step of the time navigation arrows. */
+    stepUnit: StepUnit;
   };
 };
 
@@ -117,6 +134,16 @@ export const DEFAULT_SETTINGS: Settings = {
     // The 12 equal months change at odd clock times, so they are shown.
     showTimes: true,
   },
+  transits: {
+    // The specification gives no orb for transits. Proposed default: the
+    // 7° it gives for aspects in general. Adjustable in the settings.
+    orb: 7,
+    showInWheel: everyBody((body) => body !== "southNode"),
+    inAspects: everyBody((body) => body !== "southNode"),
+    groups: { natal: false, toNatal: true, toTransit: false },
+    filters: { yearLord: false, monthLord: false, profectionSign: false },
+    stepUnit: "day",
+  },
 };
 
 const YEAR_STARTS: YearStart[] = ["birthClockTime", "midnight", "solarReturn"];
@@ -172,7 +199,11 @@ export function settingsFromStored(stored: unknown): Settings {
   if (!LEAP_DAYS.includes(profections.leapDay)) {
     profections.leapDay = DEFAULT_SETTINGS.profections.leapDay;
   }
-  return { ...settings, colors: { ...settings.colors, aspects }, profections };
+  const transits = { ...settings.transits };
+  if (!STEP_UNITS.includes(transits.stepUnit)) {
+    transits.stepUnit = DEFAULT_SETTINGS.transits.stepUnit;
+  }
+  return { ...settings, colors: { ...settings.colors, aspects }, profections, transits };
 }
 
 type SettingsContextValue = {

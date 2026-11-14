@@ -13,6 +13,24 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.4.0",
+    date: "2026-11-14",
+    added: [
+      "Live Chart: natalhoroskopet med transitterne for et valgt tidspunkt i en ydre ring. Åbnes med knappen “Live Chart” ved horoskopet.",
+      "Tidsnavigation frem og tilbage i trin på 1 minut, 1 time, 1 dag, 1 uge eller 1 måned. Ét klik er ét trin, en holdt pil gentager, og en præcis dato og tid kan indtastes.",
+      "Transit → natal og transit → transit som to aspektgrupper, der kan slås til og fra hver for sig og vises samtidig.",
+      "Særskilt valg af, hvilke transitplaneter der vises i hjulet og indgår i aspekter, uafhængigt af valgene for natalplaneterne.",
+      "Filtre for årets Time Lord, månedens Time Lord og planeter i årets profektionstegn. Filtrene kan kombineres.",
+      "“Eksakt” ved et transitaspekt springer til det tidspunkt, hvor aspektet er eksakt. Ved flere passager på grund af retrograd bevægelse kan passagen vælges.",
+      "Alder, årets Time Lord og månedens profektion vises i Live Chart og følger det viste tidspunkt.",
+      "Livsbegivenheder for hvert horoskop med dato og eventuelt klokkeslæt, også når kun måned og år eller kun årstal kendes. Der gemmes kun det, der er kendt.",
+      "Spring til en gemt livsbegivenhed i Live Chart. Er klokkeslættet ukendt, bruges kl. 12:00; mangler datoen, vælger du først en dato.",
+      "Transithoroskop for nu eller et valgfrit tidspunkt under den nye fane “Transitter”.",
+      "Indstilling for orb for transitaspekter (standard 7°).",
+    ],
+    changed: ["Horoskopvisningen har fået knappen “Live Chart” og et panel med livsbegivenheder."],
+  },
+  {
     version: "0.3.0",
     date: "2026-11-14",
     added: [

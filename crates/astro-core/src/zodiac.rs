@@ -1,6 +1,6 @@
 //! Signs, bodies and positions on the tropical zodiac.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::normalize_degrees;
 
@@ -61,7 +61,7 @@ impl Sign {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Body {
     Sun,

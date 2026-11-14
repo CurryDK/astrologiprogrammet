@@ -2,8 +2,8 @@
 
 use std::fmt;
 
-use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-use serde::Serialize;
+use chrono::{DateTime, Months, NaiveDate, NaiveDateTime, NaiveTime, Utc};
+use serde::{Deserialize, Serialize};
 
 /// Largest offset from UTC we accept, in seconds (no zone has exceeded 16 h).
 const MAX_OFFSET_SECONDS: i32 = 16 * 3600;
@@ -166,9 +166,93 @@ pub fn resolve_recurring(
     }
 }
 
+/// The clock reading in a zone at a UTC instant.
+pub fn local_time_at(zone: &ZoneChoice, utc: DateTime<Utc>) -> Result<NaiveDateTime, TimeError> {
+    let offset = utc_offset_at(zone, utc)?;
+    Ok((utc + chrono::Duration::seconds(offset as i64)).naive_utc())
+}
+
+/// The steps of manual time navigation (specification §8).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum StepUnit {
+    Minute,
+    Hour,
+    Day,
+    Week,
+    Month,
+}
+
+/// Move an instant `count` steps forward (or back, when negative).
+///
+/// Minutes and hours are exact durations. Days, weeks and months are
+/// calendar steps in the given zone: the clock reading stays the same, also
+/// across a change to or from summer time, and a month step lands on the
+/// same day of the month, or on the month's last day when it is shorter.
+/// `None` when the result is outside the calendar.
+pub fn step(
+    utc: DateTime<Utc>,
+    zone: &ZoneChoice,
+    unit: StepUnit,
+    count: i32,
+) -> Result<Option<DateTime<Utc>>, TimeError> {
+    let exact = |seconds: i64| utc.checked_add_signed(chrono::Duration::seconds(seconds * count as i64));
+    let local = local_time_at(zone, utc)?;
+    let moved = match unit {
+        StepUnit::Minute => return Ok(exact(60)),
+        StepUnit::Hour => return Ok(exact(3600)),
+        StepUnit::Day => local.checked_add_signed(chrono::Duration::days(count as i64)),
+        StepUnit::Week => local.checked_add_signed(chrono::Duration::days(7 * count as i64)),
+        StepUnit::Month if count >= 0 => local.checked_add_months(Months::new(count as u32)),
+        StepUnit::Month => local.checked_sub_months(Months::new(count.unsigned_abs())),
+    };
+    match moved {
+        None => Ok(None),
+        Some(moved) => Ok(Some(resolve_recurring(moved.date(), Some(moved.time()), zone)?.utc)),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn at(text: &str) -> DateTime<Utc> {
+        text.parse().unwrap()
+    }
+
+    #[test]
+    fn minute_and_hour_steps_are_exact_durations() {
+        let t = at("2020-03-29T00:30:00Z");
+        assert_eq!(step(t, &copenhagen(), StepUnit::Minute, 1).unwrap(), Some(at("2020-03-29T00:31:00Z")));
+        // Across the change to summer time an hour is still an hour.
+        assert_eq!(step(t, &copenhagen(), StepUnit::Hour, 1).unwrap(), Some(at("2020-03-29T01:30:00Z")));
+        assert_eq!(step(t, &copenhagen(), StepUnit::Hour, -3).unwrap(), Some(at("2020-03-28T21:30:00Z")));
+    }
+
+    #[test]
+    fn day_and_week_steps_keep_the_clock_reading_across_summer_time() {
+        // 28 March 2020 12:00 in Copenhagen (UTC+1); the next day is UTC+2.
+        let t = at("2020-03-28T11:00:00Z");
+        assert_eq!(step(t, &copenhagen(), StepUnit::Day, 1).unwrap(), Some(at("2020-03-29T10:00:00Z")));
+        assert_eq!(step(t, &copenhagen(), StepUnit::Week, 1).unwrap(), Some(at("2020-04-04T10:00:00Z")));
+        assert_eq!(step(t, &copenhagen(), StepUnit::Day, -1).unwrap(), Some(at("2020-03-27T11:00:00Z")));
+    }
+
+    #[test]
+    fn month_steps_keep_the_day_or_stop_at_the_months_end() {
+        let zone = ZoneChoice::FixedOffset(0);
+        let t = at("2023-01-31T08:15:00Z");
+        assert_eq!(step(t, &zone, StepUnit::Month, 1).unwrap(), Some(at("2023-02-28T08:15:00Z")));
+        assert_eq!(step(t, &zone, StepUnit::Month, 13).unwrap(), Some(at("2024-02-29T08:15:00Z")));
+        assert_eq!(step(t, &zone, StepUnit::Month, -2).unwrap(), Some(at("2022-11-30T08:15:00Z")));
+        assert_eq!(step(t, &zone, StepUnit::Month, 2).unwrap(), Some(at("2023-03-31T08:15:00Z")));
+    }
+
+    #[test]
+    fn local_time_follows_the_zone() {
+        let local = local_time_at(&copenhagen(), at("2020-07-01T10:00:00Z")).unwrap();
+        assert_eq!(local.to_string(), "2020-07-01 12:00:00");
+    }
 
     #[test]
     fn a_skipped_clock_time_on_a_recurring_date_lands_after_the_change() {

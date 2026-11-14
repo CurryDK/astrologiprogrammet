@@ -18,6 +18,7 @@ import {
 } from "../astro";
 import { AspectTable } from "../components/AspectTable";
 import { ChartWheel } from "../components/ChartWheel";
+import { LifeEventsPanel } from "../components/LifeEventsPanel";
 import { LotAspectTable } from "../components/LotAspectTable";
 import { LotSymbol, LotsTable } from "../components/LotsTable";
 import { PositionsTable } from "../components/PositionsTable";
@@ -27,13 +28,15 @@ import { useSettings } from "../settings";
 type Props = {
   record: ChartRecord;
   onEdit: () => void;
+  /** Open the Live Chart at a UTC instant, or now when null. */
+  onLive: (at: string | null) => void;
   onDeleted: () => void;
   /** Called after the record itself was changed (e.g. start-screen selection). */
   onChanged: () => void;
 };
 
 /** A natal chart: wheel, profections, positions, aspect overview and the seven lots. */
-export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
+export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Props) {
   const { settings, update } = useSettings();
   const [computed, setComputed] = useState<ComputedChart | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -105,6 +108,9 @@ export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
             <input type="checkbox" checked={record.featured} onChange={toggleFeatured} />
             Vis på startskærmen
           </label>
+          <button className="primary" onClick={() => onLive(null)}>
+            Live Chart
+          </button>
           <button onClick={onEdit}>Rediger</button>
           {confirmingDelete ? (
             <>
@@ -133,6 +139,7 @@ export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
               />
             </div>
             <ProfectionPanel record={record} />
+            <LifeEventsPanel record={record} onJump={onLive} jumpLabel="Vis i Live Chart" />
           </div>
           <div className="side-column">
             <section className="panel">

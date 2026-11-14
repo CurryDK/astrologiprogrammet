@@ -6,6 +6,14 @@ import type {
   ChartRecord,
   ComputedChart,
   Folder,
+  LifeEvent,
+  LiveChart,
+  AspectKind,
+  Body,
+  Moment,
+  PassOther,
+  SkyAt,
+  TimeStep,
   LotOptions,
   Orbs,
   Place,
@@ -40,6 +48,41 @@ export const api = {
   /** The profection year for an age; without an age, the year that holds now. */
   profectionYear: (birth: BirthInput, options: ProfectionOptions, age: number | null) =>
     call<ProfectionReport>("profection_year", { birth, options, age }),
+
+  /** The sky at a moment (now when null), optionally moved one navigation step. */
+  skyAt: (args: {
+    at: string | null;
+    step: TimeStep | null;
+    zone: string;
+    latitude: number;
+    longitude: number;
+    orbs: Orbs;
+  }) => call<SkyAt>("sky_at", args),
+  /** A local date and clock time (12:00 when null) in a zone, as UTC. */
+  localResolve: (date: string, time: string | null, zone: string) =>
+    call<ResolvedTime>("local_resolve", { date, time, zone }),
+  /** Transits to a natal chart at a moment (now when null), optionally moved one step. */
+  liveChart: (args: {
+    birth: BirthInput;
+    at: string | null;
+    step: TimeStep | null;
+    zone: string;
+    orb: number;
+    profections: ProfectionOptions;
+  }) => call<LiveChart>("live_chart", args),
+  /** The exact moments of a transit aspect around `at`; several with retrograde passes. */
+  transitPasses: (args: {
+    birth: BirthInput;
+    transit: Body;
+    other: PassOther;
+    kind: AspectKind;
+    at: string;
+    zone: string;
+  }) => call<Moment[]>("transit_passes", args),
+
+  eventsList: (chartId: number) => call<LifeEvent[]>("events_list", { chartId }),
+  eventSave: (event: LifeEvent) => call<LifeEvent>("event_save", { event }),
+  eventDelete: (id: number) => call<void>("event_delete", { id }),
 
   placesSearch: (query: string) => call<Place[]>("places_search", { query }),
 

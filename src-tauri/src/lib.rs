@@ -10,13 +10,18 @@ use astro_core::places::{Place, PlaceIndex};
 use astro_core::profections::{
     Birth, ProfectionOptions, ProfectionYear, age_at, month_at, profection_year as compute_profection_year,
 };
-use astro_core::time::{ResolvedTime, ZoneChoice, resolve};
+use astro_core::aspects::{AspectKind, ChartPoint, AngleId};
+use astro_core::chart::BodyPosition;
+use astro_core::profections::Moment;
+use astro_core::time::{ResolvedTime, StepUnit, ZoneChoice, resolve, step};
+use astro_core::transits::{PassTarget, TransitAspect, exact_passes, transit_aspects};
+use astro_core::zodiac::{Body, whole_sign_house};
 use chrono::{DateTime, NaiveDate, NaiveTime, Utc};
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use tauri::{Manager, State};
 
-use db::{ChartRecord, Folder};
+use db::{ChartRecord, Folder, LifeEvent};
 
 struct Database(Mutex<Connection>);
 
@@ -88,6 +93,71 @@ struct ProfectionReport {
     current_month: Option<u8>,
     /// True when the birth time is unknown and 12:00 was used.
     time_assumed: bool,
+}
+
+/// One click on a time navigation arrow.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct StepInput {
+    unit: StepUnit,
+    /// Negative to go back.
+    count: i32,
+}
+
+/// The sky at a chosen moment, with the moment's clock reading.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SkyAt {
+    at: Moment,
+    computed: ComputedChart,
+}
+
+/// The transit layer of a Live Chart at one moment.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LiveChart {
+    at: Moment,
+    /// Transiting bodies; `house` is the natal whole-sign house they are in.
+    positions: Vec<BodyPosition>,
+    /// Aspects from transiting bodies to natal bodies and angles.
+    to_natal: Vec<TransitAspect>,
+    /// Aspects among the transiting bodies.
+    to_transit: Vec<Aspect>,
+    /// Age at the moment; `None` before the birth.
+    age: Option<u32>,
+    /// The profection year holding the moment.
+    profection: Option<ProfectionYear>,
+    /// The month (1–12) of that year holding the moment.
+    profection_month: Option<u8>,
+}
+
+/// What a transit aspect is made to.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum PassOther {
+    /// A point of the natal chart.
+    Natal(ChartPoint),
+    /// Another transiting body.
+    Transit(Body),
+}
+
+fn named_zone(zone: &str) -> ZoneChoice {
+    ZoneChoice::Named(zone.to_string())
+}
+
+/// The moment asked for (now when absent), moved by a navigation step.
+fn moment_for(
+    at: Option<DateTime<Utc>>,
+    step_input: Option<StepInput>,
+    zone: &ZoneChoice,
+) -> Result<Moment, String> {
+    let mut utc = at.unwrap_or_else(Utc::now);
+    if let Some(input) = step_input {
+        utc = step(utc, zone, input.unit, input.count)
+            .map_err(|e| e.to_string())?
+            .ok_or("tidspunktet er uden for kalenderen")?;
+    }
+    Moment::in_zone(utc, zone).map_err(|e| e.to_string())
 }
 
 fn parse_birth(birth: &BirthInput) -> Result<Birth, String> {
@@ -168,6 +238,141 @@ fn birth_resolve(birth: BirthInput) -> Result<ResolvedTime, String> {
 fn chart_compute(birth: BirthInput, orbs: Orbs, lots: LotOptions) -> Result<ComputedChart, String> {
     let time = resolve_input(&birth)?;
     compute(time.utc, birth.latitude, birth.longitude, &orbs, Some(time), Some(&lots))
+}
+
+/// The sky at a chosen moment (now when absent), optionally moved one
+/// navigation step, seen from a place. `zone` is the time zone the moment
+/// is shown and stepped in.
+#[tauri::command]
+fn sky_at(
+    at: Option<DateTime<Utc>>,
+    step: Option<StepInput>,
+    zone: String,
+    latitude: f64,
+    longitude: f64,
+    orbs: Orbs,
+) -> Result<SkyAt, String> {
+    let at = moment_for(at, step, &named_zone(&zone))?;
+    let computed = compute(at.utc, latitude, longitude, &orbs, None, None)?;
+    Ok(SkyAt { at, computed })
+}
+
+/// A local date and clock time (12:00 when absent) in a zone, as UTC.
+#[tauri::command]
+fn local_resolve(date: String, time: Option<String>, zone: String) -> Result<ResolvedTime, String> {
+    resolve_input(&BirthInput {
+        date,
+        time,
+        latitude: 0.0,
+        longitude: 0.0,
+        zone: Some(zone),
+        offset_seconds: None,
+    })
+}
+
+/// The transits to a natal chart at a moment (now when absent), optionally
+/// moved one navigation step. `orb` is the maximum orb of transit aspects.
+#[tauri::command]
+fn live_chart(
+    birth: BirthInput,
+    at: Option<DateTime<Utc>>,
+    step: Option<StepInput>,
+    zone: String,
+    orb: f64,
+    profections: ProfectionOptions,
+) -> Result<LiveChart, String> {
+    if !orb.is_finite() || orb < 0.0 {
+        return Err("ugyldig orb for transitter".to_string());
+    }
+    let at = moment_for(at, step, &named_zone(&zone))?;
+    let born = resolve_input(&birth)?;
+    let natal = compute_chart(born.utc, birth.latitude, birth.longitude).map_err(|e| e.to_string())?;
+    let transit = compute_chart(at.utc, birth.latitude, birth.longitude).map_err(|e| e.to_string())?;
+    let orbs = Orbs::uniform(orb);
+    let rising_sign = natal.houses[0].sign;
+
+    let to_natal = transit_aspects(&transit, &natal, &orbs);
+    // The transit chart's own angles belong to a place, not to the sky.
+    let bodies: Vec<_> = transit
+        .aspect_points()
+        .into_iter()
+        .filter(|point| matches!(point.id, ChartPoint::Body(_)))
+        .collect();
+    let to_transit = find_aspects(&bodies, &orbs);
+    let positions = transit
+        .positions
+        .iter()
+        .map(|p| BodyPosition { house: whole_sign_house(p.point.sign, rising_sign), ..*p })
+        .collect();
+
+    // Profections are extra information here; a moment they cannot be
+    // calculated for still has its transits.
+    let birth_data = parse_birth(&birth)?;
+    let age = age_at(&birth_data, &profections, at.utc).ok().flatten();
+    let profection = age
+        .and_then(|age| compute_profection_year(&birth_data, rising_sign, &profections, age).ok());
+    let profection_month = profection.as_ref().and_then(|year| month_at(year, at.utc));
+
+    Ok(LiveChart {
+        at,
+        positions,
+        to_natal,
+        to_transit,
+        age,
+        profection,
+        profection_month,
+    })
+}
+
+/// The moments a transit aspect is exact around `at`: several when
+/// retrograde motion makes the transiting body pass more than once.
+#[tauri::command]
+fn transit_passes(
+    birth: BirthInput,
+    transit: Body,
+    other: PassOther,
+    kind: AspectKind,
+    at: DateTime<Utc>,
+    zone: String,
+) -> Result<Vec<Moment>, String> {
+    let target = match other {
+        PassOther::Transit(body) => PassTarget::Body(body),
+        PassOther::Natal(point) => {
+            let born = resolve_input(&birth)?;
+            let natal =
+                compute_chart(born.utc, birth.latitude, birth.longitude).map_err(|e| e.to_string())?;
+            PassTarget::Fixed(match point {
+                ChartPoint::Body(body) => natal.position(body).point.longitude,
+                ChartPoint::Angle(AngleId::Ascendant) => natal.angles.ascendant.point.longitude,
+                ChartPoint::Angle(AngleId::Midheaven) => natal.angles.midheaven.point.longitude,
+            })
+        }
+    };
+    let zone = named_zone(&zone);
+    exact_passes(transit, target, kind, at)
+        .map_err(|e| e.to_string())?
+        .into_iter()
+        .map(|utc| Moment::in_zone(utc, &zone).map_err(|e| e.to_string()))
+        .collect()
+}
+
+#[tauri::command]
+fn events_list(db: State<'_, Database>, chart_id: i64) -> Result<Vec<LifeEvent>, String> {
+    db.with(|c| db::list_events(c, chart_id))
+}
+
+#[tauri::command]
+fn event_save(db: State<'_, Database>, event: LifeEvent) -> Result<LifeEvent, String> {
+    event.validate()?;
+    db.with(|c| {
+        let id = db::save_event(c, &event)?;
+        db::get_event(c, id)?.ok_or(rusqlite::Error::QueryReturnedNoRows)
+    })
+}
+
+#[tauri::command]
+fn event_delete(db: State<'_, Database>, id: i64) -> Result<(), String> {
+    db.with(|c| db::delete_event(c, id))
 }
 
 /// The profection year for an age, or, without an age, the year that holds
@@ -306,6 +511,13 @@ pub fn run() {
             birth_resolve,
             chart_compute,
             profection_year,
+            sky_at,
+            local_resolve,
+            live_chart,
+            transit_passes,
+            events_list,
+            event_save,
+            event_delete,
             places_search,
             charts_list,
             chart_save,

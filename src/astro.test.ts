@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { formatLot, formatMoment, formatOffset, formatOrb, lotReading, parseOffset } from "./astro";
+import {
+  eventDate,
+  eventPrecision,
+  formatEventWhen,
+  formatLot,
+  formatMoment,
+  formatMomentLong,
+  formatOffset,
+  formatOrb,
+  lotReading,
+  parseOffset,
+} from "./astro";
 
 describe("formatOrb", () => {
   it("truncates to whole minutes", () => {
@@ -20,6 +31,43 @@ describe("formatMoment", () => {
   it("cuts seconds and fractions off instead of rounding up", () => {
     expect(formatMoment({ local: "2026-12-31T23:59:59.999999999" }, true)).toBe(
       "31. dec. 2026 kl. 23:59",
+    );
+  });
+});
+
+describe("life events", () => {
+  const event = (month: number | null, day: number | null, time: string | null) => ({
+    year: 1975,
+    month,
+    day,
+    time,
+  });
+
+  it("know how precisely their date is given", () => {
+    expect(eventPrecision(event(6, 14, "14:00"))).toBe("datetime");
+    expect(eventPrecision(event(6, 14, null))).toBe("date");
+    expect(eventPrecision(event(6, null, null))).toBe("month");
+    expect(eventPrecision(event(null, null, null))).toBe("year");
+  });
+
+  it("have a calendar date only when the day is known", () => {
+    expect(eventDate(event(6, 14, null))).toBe("1975-06-14");
+    expect(eventDate(event(6, null, null))).toBeNull();
+    expect(eventDate(event(null, null, null))).toBeNull();
+  });
+
+  it("say what is missing instead of showing a made-up value", () => {
+    expect(formatEventWhen(event(6, 14, "14:00"))).toBe("14. juni 1975 kl. 14:00");
+    expect(formatEventWhen(event(6, 14, null))).toBe("14. juni 1975 · klokkeslæt ukendt");
+    expect(formatEventWhen(event(6, null, null))).toBe("juni 1975 · kun måned og år kendt");
+    expect(formatEventWhen(event(null, null, null))).toBe("1975 · kun årstal kendt");
+  });
+});
+
+describe("formatMomentLong", () => {
+  it("gives weekday, date and clock time", () => {
+    expect(formatMomentLong({ local: "2026-11-14T21:05:59" })).toBe(
+      "lørdag 14. november 2026 kl. 21:05",
     );
   });
 });

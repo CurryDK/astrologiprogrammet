@@ -96,16 +96,7 @@ pub fn compute_chart(
 
     let mut positions = Vec::with_capacity(Body::ALL.len());
     for body in Body::ALL {
-        let (longitude, latitude, speed) = match body {
-            Body::SouthNode => {
-                let node = ephemeris::body_position(jd, ffi::SE_TRUE_NODE)?;
-                (node.longitude + 180.0, -node.latitude, node.speed)
-            }
-            _ => {
-                let raw = ephemeris::body_position(jd, library_number(body))?;
-                (raw.longitude, raw.latitude, raw.speed)
-            }
-        };
+        let (longitude, latitude, speed) = raw_position(jd, body)?;
         let point = ZodiacPoint::new(longitude);
         positions.push(BodyPosition {
             body,
@@ -153,6 +144,27 @@ pub fn compute_chart(
         houses,
         sect,
     })
+}
+
+/// Longitude, latitude and longitude speed of a body; the south node is the
+/// point opposite the true north node.
+fn raw_position(jd: f64, body: Body) -> Result<(f64, f64, f64), EphemerisError> {
+    match body {
+        Body::SouthNode => {
+            let node = ephemeris::body_position(jd, ffi::SE_TRUE_NODE)?;
+            Ok((node.longitude + 180.0, -node.latitude, node.speed))
+        }
+        _ => {
+            let raw = ephemeris::body_position(jd, library_number(body))?;
+            Ok((raw.longitude, raw.latitude, raw.speed))
+        }
+    }
+}
+
+/// Ecliptic longitude in [0, 360) and its speed in degrees per day, at a Julian day (UT).
+pub(crate) fn body_longitude_and_speed(jd: f64, body: Body) -> Result<(f64, f64), EphemerisError> {
+    let (longitude, _, speed) = raw_position(jd, body)?;
+    Ok((normalize_degrees(longitude), speed))
 }
 
 /// Day when the Sun is above the Ascendant–Descendant axis.

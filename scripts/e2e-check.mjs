@@ -242,6 +242,148 @@ const tooOld = await invoke("profection_year", { birth, options: profectionOptio
 );
 check("an age beyond the limit is rejected", tooOld !== null, tooOld ?? "no error");
 
+// Transits and Live Chart. Times are shown and stepped in a named zone.
+const zone = "Europe/Copenhagen";
+const liveArgs = { birth, zone, orb: 3, profections: profectionOptions, step: null };
+const atBirth = await invoke("live_chart", { ...liveArgs, at: "1947-06-01T10:00:00Z" });
+check(
+  "live_chart at the birth moment: every body is conjunct itself",
+  computed.chart.positions.every((p) =>
+    atBirth.toNatal.some(
+      (a) => a.transit === p.body && a.natal === p.body && a.kind === "conjunction" && a.orb < 1e-6,
+    ),
+  ) && atBirth.toNatal.every((a) => a.orb <= 3),
+  `${atBirth.toNatal.length} aspects`,
+);
+check(
+  "live_chart shows the moment in the asked zone",
+  atBirth.at.local === "1947-06-01T12:00:00" && atBirth.at.offsetSeconds === 7200,
+  atBirth.at.local,
+);
+const live = await invoke("live_chart", { ...liveArgs, at });
+check(
+  "live_chart: age and profection follow the shown moment",
+  live.age === 53 &&
+    live.profection.timeLord === year53.year.timeLord &&
+    live.profectionMonth === 8 &&
+    live.positions.length === 12,
+  `age ${live.age}, month ${live.profectionMonth}`,
+);
+const liveSun = live.positions.find((p) => p.body === "sun");
+check(
+  "transit positions carry the natal whole-sign house",
+  live.positions.every((p) => computed.chart.houses[p.house - 1].sign === p.sign) &&
+    liveSun.sign === "capricorn",
+  `Sun in ${liveSun.sign}, natal house ${liveSun.house}`,
+);
+check(
+  "transit → transit holds bodies only, each pair once",
+  live.toTransit.every((a) => a.a !== "ascendant" && a.b !== "midheaven" && a.orb <= 3) &&
+    new Set(live.toTransit.map((a) => `${a.a}-${a.b}`)).size === live.toTransit.length,
+  `${live.toTransit.length} aspects`,
+);
+const stepTo = async (from, unit, count) =>
+  (await invoke("live_chart", { ...liveArgs, at: from, step: { unit, count } })).at;
+const dayOn = await stepTo("2020-03-28T11:00:00Z", "day", 1);
+const monthOn = await stepTo("2023-01-31T11:00:00Z", "month", 1);
+const minuteBack = await stepTo("2020-03-28T11:00:00Z", "minute", -1);
+check(
+  "a day step keeps the clock time across the change to summer time",
+  dayOn.utc === "2020-03-29T10:00:00Z" && dayOn.local === "2020-03-29T12:00:00",
+  dayOn.utc,
+);
+check("a month step stops at the month's last day", monthOn.local === "2023-02-28T12:00:00", monthOn.local);
+check("a minute step back", minuteBack.utc === "2020-03-28T10:59:00Z", minuteBack.utc);
+
+const sunReturn = await invoke("transit_passes", {
+  birth,
+  transit: "sun",
+  other: { natal: "sun" },
+  kind: "conjunction",
+  at: "2000-06-02T00:00:00Z",
+  zone,
+});
+check(
+  "exact pass of the Sun over the natal Sun is the solar return found by the profections",
+  sunReturn.length === 1 &&
+    Math.abs(Date.parse(sunReturn[0].utc) - Date.parse(solar.year.start.utc)) < 2000,
+  sunReturn.map((m) => m.utc).join(", "),
+);
+const newMoon = await invoke("transit_passes", {
+  birth,
+  transit: "moon",
+  other: { transit: "sun" },
+  kind: "conjunction",
+  at: "2024-04-08T06:00:00Z",
+  zone,
+});
+check(
+  "exact pass between two transiting bodies: new moon of 8 April 2024, 18:21 UTC",
+  newMoon.length === 1 && Math.abs(Date.parse(newMoon[0].utc) - Date.parse("2024-04-08T18:21:00Z")) < 120_000,
+  newMoon.map((m) => m.utc).join(", "),
+);
+// Mercury was retrograde 23 Aug – 15 Sep 2023 between about 22° and 8° Virgo.
+// Find a natal point it crossed three times, if this chart has one in range.
+const mercuryNatal = [...computed.chart.positions.map((p) => [p.body, p.longitude]),
+  ["ascendant", computed.chart.angles.ascendant.longitude]];
+const retroPasses = [];
+for (const [point, lon] of mercuryNatal) {
+  for (const [kind, angle] of [["conjunction", 0], ["sextile", 60], ["square", 90], ["trine", 120], ["opposition", 180]]) {
+    for (const side of [1, -1]) {
+      const target = mod360(lon + side * angle);
+      if (target > 159 && target < 171) retroPasses.push({ point, kind });
+    }
+  }
+}
+if (retroPasses.length > 0) {
+  const { point, kind } = retroPasses[0];
+  const passes = await invoke("transit_passes", {
+    birth,
+    transit: "mercury",
+    other: { natal: point },
+    kind,
+    at: "2023-09-01T00:00:00Z",
+    zone,
+  });
+  check(
+    `retrograde Mercury makes three passes (${kind} to natal ${point})`,
+    passes.length === 3 && passes[0].utc < "2023-08-23" && passes[2].utc > "2023-09-15",
+    passes.map((m) => m.local.slice(0, 16)).join(", "),
+  );
+} else {
+  console.log("skip retrograde passes: no natal point in Mercury's 2023 retrograde zone");
+}
+
+const skyAt = await invoke("sky_at", {
+  at: "2000-01-01T12:00:00Z",
+  step: null,
+  zone,
+  latitude: 55.6761,
+  longitude: 12.5683,
+  orbs,
+});
+const skySun = skyAt.computed.chart.positions.find((p) => p.body === "sun");
+check(
+  "sky_at a chosen moment: Sun at 10° Capricorn on 1 January 2000",
+  skySun.sign === "capricorn" && skySun.degree === 10 && skyAt.at.local === "2000-01-01T13:00:00",
+  `${skySun.degree}°${skySun.minute}′, ${skyAt.at.local}`,
+);
+const skyStepped = await invoke("sky_at", {
+  at: "2000-01-01T12:00:00Z",
+  step: { unit: "week", count: -1 },
+  zone,
+  latitude: 55.6761,
+  longitude: 12.5683,
+  orbs,
+});
+check("sky_at steps a week back", skyStepped.at.utc === "1999-12-25T12:00:00Z", skyStepped.at.utc);
+const localNoon = await invoke("local_resolve", { date: "1975-06-14", time: null, zone });
+check(
+  "local_resolve: a date without a clock time is taken at 12:00 and flagged",
+  localNoon.utc === "1975-06-14T11:00:00Z" && localNoon.timeAssumed === true,
+  localNoon.utc,
+);
+
 const manual = await invoke("birth_resolve", { birth: { ...birth, zone: null, offsetSeconds: 3600 } });
 check("manual offset overrides zone", manual.utc === "1947-06-01T11:00:00Z", manual.utc);
 
@@ -283,11 +425,48 @@ const cleared = await invoke("chart_save", { chart: { ...saved, sectOverride: nu
 check("sect override can be cleared", cleared.sectOverride === null);
 check("charts_list grows by one", (await invoke("charts_list")).length === before + 1);
 
+// Life events: only what is known is stored.
+const blankEvent = { id: null, chartId: saved.id, title: "", year: 1975, month: null, day: null, time: null, zone, note: "" };
+const wedding = await invoke("event_save", {
+  event: { ...blankEvent, title: "e2e bryllup", month: 6, day: 14, time: "14:00" },
+});
+const yearOnly = await invoke("event_save", { event: { ...blankEvent, title: "e2e flytning" } });
+const monthOnly = await invoke("event_save", { event: { ...blankEvent, title: "e2e job", month: 6 } });
+const listed = await invoke("events_list", { chartId: saved.id });
+check(
+  "life events are stored with exactly the precision given",
+  listed.map((e) => e.title).join() === "e2e flytning,e2e job,e2e bryllup" &&
+    listed[0].month === null && listed[0].day === null && listed[0].time === null &&
+    listed[1].month === 6 && listed[1].day === null &&
+    listed[2].day === 14 && listed[2].time === "14:00",
+  listed.map((e) => `${e.year}-${e.month}-${e.day} ${e.time}`).join(" | "),
+);
+const edited = await invoke("event_save", { event: { ...wedding, time: null, note: "ukendt tid" } });
+check("a life event can be edited", edited.id === wedding.id && edited.time === null && edited.note === "ukendt tid");
+const rejects = async (event) =>
+  invoke("event_save", { event }).then(
+    () => false,
+    () => true,
+  );
+check(
+  "impossible life events are rejected",
+  (await rejects({ ...blankEvent, title: "x", day: 3 })) &&
+    (await rejects({ ...blankEvent, title: "x", month: 2, day: 30 })) &&
+    (await rejects({ ...blankEvent, title: "x", month: 6, time: "10:00" })) &&
+    (await rejects({ ...blankEvent, title: " " })),
+);
+await invoke("event_delete", { id: yearOnly.id });
+check("event_delete removes one event", (await invoke("events_list", { chartId: saved.id })).length === 2);
+
 await invoke("folder_delete", { id: folder.id });
 const afterFolderDelete = (await invoke("charts_list")).find((c) => c.id === saved.id);
 check("deleting the folder keeps the chart", afterFolderDelete?.folderId === null);
 
 await invoke("chart_delete", { id: saved.id });
+check(
+  "deleting the chart deletes its life events",
+  (await invoke("events_list", { chartId: saved.id })).length === 0 && monthOnly.id > 0,
+);
 check("chart_delete restores the list", (await invoke("charts_list")).length === before);
 
 await invoke("setting_set", { key: "e2e-test", value: "1" });

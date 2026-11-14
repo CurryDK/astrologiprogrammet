@@ -11,6 +11,7 @@ pub mod lots;
 pub mod places;
 pub mod profections;
 pub mod time;
+pub mod transits;
 pub mod zodiac;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

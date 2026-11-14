@@ -82,7 +82,7 @@ impl Default for Orbs {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum AngleId {
     Ascendant,
@@ -90,7 +90,7 @@ pub enum AngleId {
 }
 
 /// A body or an angle; serialized as a plain name such as `"sun"` or `"ascendant"`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ChartPoint {
     Body(Body),
@@ -220,7 +220,7 @@ pub(crate) fn aspect_geometry(a: f64, b: f64, orbs: &Orbs) -> Option<AspectGeome
     })
 }
 
-fn aspect_between(a: &AspectPoint, b: &AspectPoint, orbs: &Orbs) -> Option<Aspect> {
+pub(crate) fn aspect_between(a: &AspectPoint, b: &AspectPoint, orbs: &Orbs) -> Option<Aspect> {
     let AspectGeometry {
         kind,
         arc,

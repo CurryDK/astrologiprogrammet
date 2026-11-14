@@ -7,9 +7,11 @@ import {
   lotReading,
   isBody,
   type Aspect,
+  type BodyPosition,
   type Chart,
   type LotPosition,
   type PointId,
+  type TransitAspect,
 } from "../astro";
 import type { Settings } from "../settings";
 import { aspectLineWidth, normalize, spreadAngles } from "../wheelLayout";
@@ -32,6 +34,17 @@ const R = {
   aspect: 182,
 };
 
+/** Radii of the transit layer, outside the zodiac ring. */
+const RT = {
+  lineEnd: 428,
+  glyph: 452,
+  reading: 492,
+  angleLabel: 528,
+};
+
+/** Closest two transit symbols may sit; the outer ring has more room per degree. */
+const MIN_TRANSIT_SEPARATION = 7;
+
 /** Closest two symbols may sit, in degrees along the wheel. */
 const MIN_GLYPH_SEPARATION = 8.5;
 const SYMBOL_FONT = '"Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", sans-serif';
@@ -45,13 +58,25 @@ type Props = {
   settings: Settings;
   /** The chart's lots; those switched on in the settings are drawn. */
   lots?: LotPosition[];
+  /**
+   * Live Chart: transiting bodies drawn outside the zodiac ring, with their
+   * aspect lines. Everything is already filtered by the caller. This is the
+   * simple layered display; the dedicated biwheel design is deferred.
+   */
+  transit?: {
+    positions: BodyPosition[];
+    toNatal: TransitAspect[];
+    toTransit: Aspect[];
+    /** Maximum orb of transit aspects, for the line thickness. */
+    orb: number;
+  };
 };
 
 /**
  * The horoscope wheel (specification §4): whole-sign houses, the Ascendant
  * degree at the left, zodiac running counter-clockwise.
  */
-export function ChartWheel({ chart, aspects, settings, lots = [] }: Props) {
+export function ChartWheel({ chart, aspects, settings, lots = [], transit }: Props) {
   const ascendant = chart.angles.ascendant.longitude;
 
   /** Point on the wheel for a zodiac longitude at a given radius. */
@@ -80,6 +105,15 @@ export function ChartWheel({ chart, aspects, settings, lots = [] }: Props) {
       ? chart.positions.find((p) => p.body === point)!.longitude
       : chart.angles[point].longitude;
 
+  const transitAngles = transit
+    ? spreadAngles(
+        transit.positions.map((p) => p.longitude),
+        MIN_TRANSIT_SEPARATION,
+      )
+    : [];
+  const transitLongitude = (body: PointId) =>
+    transit!.positions.find((p) => p.body === body)?.longitude;
+
   const angles = [
     { label: "ASC", angle: chart.angles.ascendant },
     { label: "DSC", angle: chart.angles.descendant },
@@ -104,7 +138,7 @@ export function ChartWheel({ chart, aspects, settings, lots = [] }: Props) {
   return (
     <svg
       className="chart-wheel"
-      viewBox={`-70 -20 ${SIZE + 140} ${SIZE + 40}`}
+      viewBox={transit ? `-175 -95 ${SIZE + 350} ${SIZE + 190}` : `-70 -20 ${SIZE + 140} ${SIZE + 40}`}
       role="img"
       aria-label="Horoskophjul"
     >
@@ -172,9 +206,53 @@ export function ChartWheel({ chart, aspects, settings, lots = [] }: Props) {
               // The width is in screen pixels, whatever size the wheel is shown at.
               vectorEffect="non-scaling-stroke"
               strokeLinecap="round"
+              // In a Live Chart the natal aspects step back behind the transits.
+              opacity={transit ? 0.3 : 1}
             />
           );
         })}
+
+      {/* Transit aspect lines: solid to natal points, dashed among transits */}
+      {transit &&
+        [
+          ...transit.toNatal.map((aspect) => ({
+            key: `tn-${aspect.transit}-${aspect.natal}`,
+            from: transitLongitude(aspect.transit),
+            to: longitudeOf(aspect.natal),
+            aspect,
+            dashed: false,
+          })),
+          ...transit.toTransit.map((aspect) => ({
+            key: `tt-${aspect.a}-${aspect.b}`,
+            from: transitLongitude(aspect.a),
+            to: transitLongitude(aspect.b),
+            aspect,
+            dashed: true,
+          })),
+        ]
+          .filter(
+            (item) =>
+              item.aspect.kind !== "conjunction" && item.from !== undefined && item.to !== undefined,
+          )
+          .map((item) => {
+            const a = at(item.from!, R.aspect);
+            const b = at(item.to!, R.aspect);
+            return (
+              <line
+                key={item.key}
+                className={item.dashed ? "transit-transit-line" : "transit-natal-line"}
+                x1={a.x}
+                y1={a.y}
+                x2={b.x}
+                y2={b.y}
+                stroke={settings.colors.aspects[item.aspect.kind]}
+                strokeWidth={aspectLineWidth(item.aspect.orb, transit.orb)}
+                strokeDasharray={item.dashed ? "7 6" : undefined}
+                vectorEffect="non-scaling-stroke"
+                strokeLinecap="round"
+              />
+            );
+          })}
 
       {/* Bodies: symbol, position line to the exact degree, and reading */}
       {shown.map((position, index) => {
@@ -254,10 +332,36 @@ export function ChartWheel({ chart, aspects, settings, lots = [] }: Props) {
         );
       })}
 
+      {/* Transiting bodies, outside the zodiac ring */}
+      {transit?.positions.map((position, index) => {
+        const color = settings.colors.bodies[position.body];
+        const display = transitAngles[index];
+        const exact = at(position.longitude, R.outer);
+        const lineEnd = at(display, RT.lineEnd);
+        const glyph = at(display, RT.glyph);
+        const reading = at(display, RT.reading);
+        const marker = at(position.longitude, R.aspect);
+        const text = { fill: color, textAnchor: "middle", dominantBaseline: "central" } as const;
+        return (
+          <g key={position.body} className="wheel-transit">
+            <line x1={exact.x} y1={exact.y} x2={lineEnd.x} y2={lineEnd.y} stroke={color} strokeWidth={1} />
+            <circle cx={exact.x} cy={exact.y} r={2.2} fill={color} />
+            <circle cx={marker.x} cy={marker.y} r={3.5} fill="#fff" stroke={color} strokeWidth={1.4} />
+            <text x={glyph.x} y={glyph.y} fontFamily={SYMBOL_FONT} fontSize={34} {...text}>
+              {POINT_GLYPHS[position.body]}
+            </text>
+            <text x={reading.x} y={reading.y} fontSize={15} {...text}>
+              {formatDegree(position)}
+              {position.retrograde ? " R" : ""}
+            </text>
+          </g>
+        );
+      })}
+
       {/* Angles as points on the circle, not as lines through the wheel */}
       {angles.map(({ label, angle }) => {
         const point = at(angle.longitude, R.outer);
-        const text = at(angle.longitude, R.angleLabel);
+        const text = at(angle.longitude, transit ? RT.angleLabel : R.angleLabel);
         const theta = normalize(180 + angle.longitude - ascendant);
         const horizontal = Math.cos((theta * Math.PI) / 180);
         const vertical = Math.sin((theta * Math.PI) / 180);

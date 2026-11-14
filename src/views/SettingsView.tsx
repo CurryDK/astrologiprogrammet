@@ -141,6 +141,38 @@ export function SettingsView() {
       </section>
 
       <section className="panel">
+        <h2>Transitter og Live Chart</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td>Orb for transitaspekter (grader)</td>
+              <td>
+                <input
+                  type="number"
+                  min={0}
+                  max={15}
+                  step={0.5}
+                  aria-label="Orb for transitaspekter"
+                  value={settings.transits.orb}
+                  onChange={(e) => {
+                    const value = e.target.valueAsNumber;
+                    if (!Number.isFinite(value) || value < 0 || value > 15) return;
+                    update((s) => ({ ...s, transits: { ...s.transits, orb: value } }));
+                  }}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="muted">
+          Standard er 7° for alle transitaspekter, både transit → natal og transit → transit.
+          Hvilke transitplaneter, aspektgrupper og Time Lord-filtre der vises, vælges under
+          “Visning” i Live Chart. Tidspunkter i Live Chart og for livsbegivenheder gælder
+          computerens tidszone.
+        </p>
+      </section>
+
+      <section className="panel">
         <h2>Profektioner</h2>
         <table>
           <tbody>
