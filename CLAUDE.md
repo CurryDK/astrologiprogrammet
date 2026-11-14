@@ -9,6 +9,7 @@ The requirements are in `docs/` (private, git-ignored, only on the development P
 
 - `docs/kravspecifikation_v0.1.txt` — the specification (Danish). Plain-text copy of the `.docx` beside it.
 - `docs/lots_formler_kildetillaeg.txt` — exact formulas for the seven Hermetic lots.
+- `docs/planetary_condition_kvalitetssikring.txt` — Planetary Condition decisions of 14 November 2026 (Danish). Supplements the specification and overrides it where they differ (notably: overcoming is a right-hand whole-sign sextile, square or trine, not only the square). Its section 6 lists what is still undecided and must not be guessed.
 - `docs/plan.md` — the approved build plan with phases and the open questions tied to each.
 
 Rules that follow from the specification:
@@ -27,7 +28,7 @@ Rules that follow from the specification:
 | 3 | Seven Hermetic lots | **Next** |
 | 4 | Profections | Not started |
 | 5 | Transits, Live Chart, life events | Not started |
-| 6 | Planetary Condition | 6b blocked: four-category rules not supplied |
+| 6 | Planetary Condition | Category rules supplied for dignities, Sun conditions, houses, co-presence, domicile lord, reception, overcoming. Still blocked: the seven bonification/maltreatment algorithms, enclosure intervention, how sect changes the colours |
 | 7 | Secondary progressions, rectification | Blocked: Naibod in longitude or right ascension |
 | 8 | Solar Return | Blocked: algorithm and default location |
 | 9 | Synodic cycles, event search, reports | Reports need a description first |
