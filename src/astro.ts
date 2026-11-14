@@ -62,6 +62,21 @@ export const BODIES: Body[] = [
 export type AngleId = "ascendant" | "midheaven";
 export type PointId = Body | AngleId;
 
+/** The seven Hermetic lots (specification §10), in calculation order. */
+export type Lot = "fortune" | "spirit" | "eros" | "necessity" | "courage" | "victory" | "nemesis";
+
+export const LOTS: Lot[] = [
+  "fortune",
+  "spirit",
+  "eros",
+  "necessity",
+  "courage",
+  "victory",
+  "nemesis",
+];
+
+export type Sect = "day" | "night";
+
 export type AspectKind = "conjunction" | "sextile" | "square" | "trine" | "opposition";
 
 export const ASPECT_KINDS: AspectKind[] = [
@@ -102,7 +117,8 @@ export type Chart = {
     imumCoeli: Angle;
   };
   houses: { number: number; sign: Sign; ruler: Body }[];
-  sect: "day" | "night";
+  /** Derived from the Sun; a manual choice is in `LotReport.sect`. */
+  sect: Sect;
 };
 
 export type Aspect = {
@@ -122,10 +138,48 @@ export type ResolvedTime = {
   ambiguous: boolean;
 };
 
+export type LotPosition = ZodiacPoint & {
+  lot: Lot;
+  house: number;
+  /** The lot's traditional planet. */
+  planet: Body;
+  /** Traditional ruler of the lot's sign, with that ruler's sign and house. */
+  ruler: Body;
+  rulerSign: Sign;
+  rulerHouse: number;
+};
+
+export type LotAspect = {
+  lot: Lot;
+  other: PointId | Lot;
+  kind: AspectKind;
+  orb: number;
+  /** Orb below the exactness limit ("e"). */
+  exact: boolean;
+  outOfSign: boolean;
+};
+
+export type LotReport = {
+  /** The sect whose formulas were used. */
+  sect: Sect;
+  /** True when the user chose the sect instead of the Sun deciding it. */
+  overridden: boolean;
+  positions: LotPosition[];
+  aspects: LotAspect[];
+};
+
+export type LotOptions = {
+  sectOverride: Sect | null;
+  orb: number;
+  exactOrb: number;
+};
+
 export type ComputedChart = {
   chart: Chart;
   aspects: Aspect[];
   time: ResolvedTime | null;
+  /** Natal charts only; null for "the sky now". */
+  lots: LotReport | null;
 };
 
 export type Orbs = Record<AspectKind, number>;
@@ -152,6 +206,8 @@ export type ChartRecord = {
   zone: string | null;
   offsetSeconds: number | null;
   featured: boolean;
+  /** Manual day/night sect; null lets the Sun decide. */
+  sectOverride: Sect | null;
 };
 
 export type Folder = { id: number; name: string };
@@ -241,6 +297,37 @@ export const POINT_GLYPHS: Record<PointId, string> = {
   ascendant: "ASC",
   midheaven: "MC",
 };
+
+// The specification keeps the English names of the lots.
+export const LOT_NAMES: Record<Lot, string> = {
+  fortune: "Fortune",
+  spirit: "Spirit",
+  eros: "Eros",
+  necessity: "Necessity",
+  courage: "Courage",
+  victory: "Victory",
+  nemesis: "Nemesis",
+};
+
+/**
+ * PLACEHOLDERS. The specification says the lot symbols are not chosen yet,
+ * so each lot is shown as two letters in a circle until they are.
+ */
+export const LOT_SYMBOLS: Record<Lot, string> = {
+  fortune: "Fo",
+  spirit: "Sp",
+  eros: "Er",
+  necessity: "Nc",
+  courage: "Co",
+  victory: "Vi",
+  nemesis: "Nm",
+};
+
+export const SECT_NAMES: Record<Sect, string> = { day: "Dagkort", night: "Natkort" };
+
+export function isLot(point: PointId | Lot): point is Lot {
+  return (LOTS as string[]).includes(point);
+}
 
 export const ASPECT_NAMES: Record<AspectKind, string> = {
   conjunction: "Konjunktion",

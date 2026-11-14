@@ -1,19 +1,25 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import { aspectsForView } from "../aspectFilter";
+import { aspectsForView, lotAspectsForView } from "../aspectFilter";
 import {
   BODIES,
+  LOTS,
+  LOT_NAMES,
   POINT_GLYPHS,
   POINT_NAMES,
+  SECT_NAMES,
   birthInputOf,
   countryName,
   formatBirthDate,
   formatOffset,
   type ChartRecord,
   type ComputedChart,
+  type Sect,
 } from "../astro";
 import { AspectTable } from "../components/AspectTable";
 import { ChartWheel } from "../components/ChartWheel";
+import { LotAspectTable } from "../components/LotAspectTable";
+import { LotSymbol, LotsTable } from "../components/LotsTable";
 import { PositionsTable } from "../components/PositionsTable";
 import { useSettings } from "../settings";
 
@@ -25,7 +31,7 @@ type Props = {
   onChanged: () => void;
 };
 
-/** A natal chart: wheel, positions and aspect overview. */
+/** A natal chart: wheel, positions, aspect overview and the seven lots. */
 export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
   const { settings, update } = useSettings();
   const [computed, setComputed] = useState<ComputedChart | null>(null);
@@ -35,7 +41,11 @@ export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
   useEffect(() => {
     let cancelled = false;
     api
-      .chartCompute(birthInputOf(record), settings.orbs)
+      .chartCompute(birthInputOf(record), settings.orbs, {
+        sectOverride: record.sectOverride,
+        orb: settings.lots.orb,
+        exactOrb: settings.lots.exactOrb,
+      })
       .then((result) => {
         if (cancelled) return;
         setComputed(result);
@@ -47,7 +57,12 @@ export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [record, settings.orbs]);
+  }, [record, settings.orbs, settings.lots.orb, settings.lots.exactOrb]);
+
+  async function setSectOverride(sectOverride: Sect | null) {
+    await api.chartSave({ ...record, sectOverride });
+    onChanged();
+  }
 
   async function toggleFeatured() {
     await api.chartSave({ ...record, featured: !record.featured });
@@ -71,7 +86,8 @@ export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
             {formatBirthDate(record.birthDate)}
             {record.birthTime ? ` kl. ${record.birthTime}` : ""} · {place}
             {time && ` · UTC${formatOffset(time.offsetSeconds)}`}
-            {computed && ` · ${computed.chart.sect === "day" ? "Dagkort" : "Natkort"}`}
+            {computed && ` · ${SECT_NAMES[computed.lots?.sect ?? computed.chart.sect]}`}
+            {computed?.lots?.overridden && " (valgt manuelt)"}
           </p>
           {time?.timeAssumed && (
             <p className="notice">Fødselstidspunktet er ukendt; kl. 12:00 er anvendt.</p>
@@ -111,6 +127,7 @@ export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
               chart={computed.chart}
               aspects={aspectsForView(computed.aspects, settings, "wheel")}
               settings={settings}
+              lots={computed.lots?.positions}
             />
           </div>
           <div className="side-column">
@@ -126,6 +143,38 @@ export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
                 settings={settings}
               />
             </section>
+
+            {computed.lots && (
+              <section className="panel">
+                <h2>Lots</h2>
+                <label className="sect-choice">
+                  Sect
+                  <select
+                    aria-label="Sect"
+                    value={record.sectOverride ?? ""}
+                    onChange={(e) => setSectOverride((e.target.value || null) as Sect | null)}
+                  >
+                    <option value="">
+                      Automatisk ({SECT_NAMES[computed.chart.sect].toLowerCase()} ud fra Solen)
+                    </option>
+                    <option value="day">Dagkort (valgt manuelt)</option>
+                    <option value="night">Natkort (valgt manuelt)</option>
+                  </select>
+                </label>
+                <LotsTable lots={computed.lots.positions} settings={settings} />
+                <p className="muted legend">Symbolerne er midlertidige, indtil de endelige er valgt.</p>
+              </section>
+            )}
+
+            {computed.lots && (
+              <section className="panel">
+                <h2>Lot-aspekter</h2>
+                <LotAspectTable
+                  aspects={lotAspectsForView(computed.lots.aspects, settings)}
+                  settings={settings}
+                />
+              </section>
+            )}
 
             <details className="panel">
               <summary>Visning</summary>
@@ -172,6 +221,80 @@ export function ChartView({ record, onEdit, onDeleted, onChanged }: Props) {
                           }
                         />
                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <table className="display-table">
+                <thead>
+                  <tr>
+                    <th>Lots</th>
+                    <th>I hjulet</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {LOTS.map((lot) => (
+                    <tr key={lot}>
+                      <td>
+                        <LotSymbol lot={lot} /> {LOT_NAMES[lot]}
+                      </td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          aria-label={`${LOT_NAMES[lot]} i hjulet`}
+                          checked={settings.lots.showInWheel[lot]}
+                          onChange={(e) =>
+                            update((s) => ({
+                              ...s,
+                              lots: {
+                                ...s.lots,
+                                showInWheel: { ...s.lots.showInWheel, [lot]: e.target.checked },
+                              },
+                            }))
+                          }
+                        />
+                      </td>
+                      <td></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <table className="display-table">
+                <thead>
+                  <tr>
+                    <th>Lot-aspekter til</th>
+                    <th>I oversigten</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(
+                    [
+                      ["planets", "Planeter og måneknuder"],
+                      ["angles", "ASC og MC"],
+                      ["lots", "Andre lots"],
+                    ] as const
+                  ).map(([target, label]) => (
+                    <tr key={target}>
+                      <td>{label}</td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          aria-label={`Lot-aspekter til ${label}`}
+                          checked={settings.lots.aspectsTo[target]}
+                          onChange={(e) =>
+                            update((s) => ({
+                              ...s,
+                              lots: {
+                                ...s.lots,
+                                aspectsTo: { ...s.lots.aspectsTo, [target]: e.target.checked },
+                              },
+                            }))
+                          }
+                        />
+                      </td>
+                      <td></td>
                     </tr>
                   ))}
                 </tbody>

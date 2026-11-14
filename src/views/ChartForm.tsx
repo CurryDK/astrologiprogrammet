@@ -152,6 +152,7 @@ export function ChartForm({ initial, folders, defaultFolderId, onSaved, onCancel
         zone: zone.trim() || null,
         offsetSeconds,
         featured: initial?.featured ?? false,
+        sectOverride: initial?.sectOverride ?? null,
       });
       onSaved(saved);
     } catch (reason) {

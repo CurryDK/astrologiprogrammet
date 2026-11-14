@@ -458,6 +458,478 @@
     "sect": "day",
     "utc": "1962-02-04T13:20:00Z"
   },
+  "devLotsNight": {
+    "aspects": [
+      {
+        "exact": false,
+        "kind": "opposition",
+        "lot": "fortune",
+        "orb": 1.5890582589813675,
+        "other": "courage",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "opposition",
+        "lot": "fortune",
+        "orb": 0.14972249113048974,
+        "other": "nemesis",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "trine",
+        "lot": "spirit",
+        "orb": 1.1776768906355244,
+        "other": "neptune",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "trine",
+        "lot": "spirit",
+        "orb": 1.0043429420319399,
+        "other": "midheaven",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "sextile",
+        "lot": "eros",
+        "orb": 0.9408211360755558,
+        "other": "mercury",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "sextile",
+        "lot": "eros",
+        "orb": 1.1920472567795173,
+        "other": "venus",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "sextile",
+        "lot": "eros",
+        "orb": 0.106217127803518,
+        "other": "jupiter",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "trine",
+        "lot": "eros",
+        "orb": 0.37004058991180955,
+        "other": "northNode",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "sextile",
+        "lot": "eros",
+        "orb": 0.37004058991180955,
+        "other": "southNode",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "square",
+        "lot": "eros",
+        "orb": 2.7513533850822114,
+        "other": "midheaven",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "conjunction",
+        "lot": "eros",
+        "orb": 1.2982643845830353,
+        "other": "victory",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "conjunction",
+        "lot": "necessity",
+        "orb": 2.2044736425107203,
+        "other": "moon",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "square",
+        "lot": "necessity",
+        "orb": 2.326793315774694,
+        "other": "neptune",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "conjunction",
+        "lot": "courage",
+        "orb": 1.7387807501118573,
+        "other": "nemesis",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "sextile",
+        "lot": "victory",
+        "orb": 1.8470303940032409,
+        "other": "sun",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "sextile",
+        "lot": "victory",
+        "orb": 0.35744324850747944,
+        "other": "mercury",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "sextile",
+        "lot": "victory",
+        "orb": 0.106217127803518,
+        "other": "venus",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "sextile",
+        "lot": "victory",
+        "orb": 1.4044815123865533,
+        "other": "jupiter",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "trine",
+        "lot": "victory",
+        "orb": 0.9282237946712257,
+        "other": "northNode",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "sextile",
+        "lot": "victory",
+        "orb": 0.9282237946712257,
+        "other": "southNode",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "square",
+        "lot": "victory",
+        "orb": 1.453089000499176,
+        "other": "midheaven",
+        "outOfSign": false
+      }
+    ],
+    "overridden": true,
+    "positions": [
+      {
+        "degree": 27,
+        "house": 1,
+        "longitude": 117.28376455432289,
+        "lot": "fortune",
+        "minute": 17,
+        "planet": "moon",
+        "ruler": "moon",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "cancer"
+      },
+      {
+        "degree": 14,
+        "house": 1,
+        "longitude": 104.64507375942532,
+        "lot": "spirit",
+        "minute": 38,
+        "planet": "sun",
+        "ruler": "moon",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "cancer"
+      },
+      {
+        "degree": 18,
+        "house": 6,
+        "longitude": 258.40077008653947,
+        "lot": "eros",
+        "minute": 24,
+        "planet": "venus",
+        "ruler": "jupiter",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "sagittarius"
+      },
+      {
+        "degree": 11,
+        "house": 8,
+        "longitude": 311.1406035530151,
+        "lot": "necessity",
+        "minute": 8,
+        "planet": "mercury",
+        "ruler": "saturn",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "aquarius"
+      },
+      {
+        "degree": 25,
+        "house": 7,
+        "longitude": 295.6947062953415,
+        "lot": "courage",
+        "minute": 41,
+        "planet": "mars",
+        "ruler": "saturn",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "capricorn"
+      },
+      {
+        "degree": 17,
+        "house": 6,
+        "longitude": 257.10250570195643,
+        "lot": "victory",
+        "minute": 6,
+        "planet": "jupiter",
+        "ruler": "jupiter",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "sagittarius"
+      },
+      {
+        "degree": 27,
+        "house": 7,
+        "longitude": 297.4334870454534,
+        "lot": "nemesis",
+        "minute": 26,
+        "planet": "saturn",
+        "ruler": "saturn",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "capricorn"
+      }
+    ],
+    "sect": "night"
+  },
+  "lots": {
+    "aspects": [
+      {
+        "exact": false,
+        "kind": "trine",
+        "lot": "fortune",
+        "orb": 1.1776768906355244,
+        "other": "neptune",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "trine",
+        "lot": "fortune",
+        "orb": 1.0043429420319399,
+        "other": "midheaven",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "conjunction",
+        "lot": "eros",
+        "orb": 1.9532475218067589,
+        "other": "moon",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "square",
+        "lot": "eros",
+        "orb": 2.5780194364785984,
+        "other": "neptune",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "conjunction",
+        "lot": "eros",
+        "orb": 1.2982643845830353,
+        "other": "victory",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "sextile",
+        "lot": "necessity",
+        "orb": 2.8940686578823147,
+        "other": "sun",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "sextile",
+        "lot": "necessity",
+        "orb": 0.6895950153715944,
+        "other": "mercury",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "sextile",
+        "lot": "necessity",
+        "orb": 0.9408211360755558,
+        "other": "venus",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "sextile",
+        "lot": "necessity",
+        "orb": 0.35744324850747944,
+        "other": "jupiter",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "trine",
+        "lot": "necessity",
+        "orb": 0.1188144692078481,
+        "other": "northNode",
+        "outOfSign": false
+      },
+      {
+        "exact": true,
+        "kind": "sextile",
+        "lot": "necessity",
+        "orb": 0.1188144692078481,
+        "other": "southNode",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "square",
+        "lot": "necessity",
+        "orb": 2.50012726437825,
+        "other": "midheaven",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "conjunction",
+        "lot": "courage",
+        "orb": 1.7387807501118573,
+        "other": "nemesis",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "square",
+        "lot": "victory",
+        "orb": 1.2797550518955632,
+        "other": "neptune",
+        "outOfSign": false
+      },
+      {
+        "exact": false,
+        "kind": "trine",
+        "lot": "nemesis",
+        "orb": 2.790301546518492,
+        "other": "uranus",
+        "outOfSign": true
+      }
+    ],
+    "overridden": false,
+    "positions": [
+      {
+        "degree": 14,
+        "house": 1,
+        "longitude": 104.64507375942532,
+        "lot": "fortune",
+        "minute": 38,
+        "planet": "moon",
+        "ruler": "moon",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "cancer"
+      },
+      {
+        "degree": 27,
+        "house": 1,
+        "longitude": 117.28376455432289,
+        "lot": "spirit",
+        "minute": 17,
+        "planet": "sun",
+        "ruler": "moon",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "cancer"
+      },
+      {
+        "degree": 10,
+        "house": 8,
+        "longitude": 310.88937743231116,
+        "lot": "eros",
+        "minute": 53,
+        "planet": "venus",
+        "ruler": "saturn",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "aquarius"
+      },
+      {
+        "degree": 18,
+        "house": 6,
+        "longitude": 258.1495439658355,
+        "lot": "necessity",
+        "minute": 8,
+        "planet": "mercury",
+        "ruler": "jupiter",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "sagittarius"
+      },
+      {
+        "degree": 3,
+        "house": 7,
+        "longitude": 273.5954412235091,
+        "lot": "courage",
+        "minute": 35,
+        "planet": "mars",
+        "ruler": "saturn",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "capricorn"
+      },
+      {
+        "degree": 12,
+        "house": 8,
+        "longitude": 312.1876418168942,
+        "lot": "victory",
+        "minute": 11,
+        "planet": "jupiter",
+        "ruler": "saturn",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "aquarius"
+      },
+      {
+        "degree": 1,
+        "house": 7,
+        "longitude": 271.85666047339726,
+        "lot": "nemesis",
+        "minute": 51,
+        "planet": "saturn",
+        "ruler": "saturn",
+        "rulerHouse": 8,
+        "rulerSign": "aquarius",
+        "sign": "capricorn"
+      }
+    ],
+    "sect": "day"
+  },
   "time": {
     "ambiguous": false,
     "offsetSeconds": 3600,

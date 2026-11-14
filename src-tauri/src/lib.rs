@@ -3,8 +3,9 @@ mod db;
 use std::sync::Mutex;
 
 use astro_core::aspects::{Aspect, Orbs, find_aspects};
-use astro_core::chart::{Chart, compute_chart};
+use astro_core::chart::{Chart, Sect, compute_chart};
 use astro_core::ephemeris;
+use astro_core::lots::{LotReport, lot_report};
 use astro_core::places::{Place, PlaceIndex};
 use astro_core::time::{ResolvedTime, ZoneChoice, resolve};
 use chrono::{DateTime, NaiveDate, NaiveTime, Utc};
@@ -57,6 +58,20 @@ struct ComputedChart {
     aspects: Vec<Aspect>,
     /// How the local birth time was turned into UTC; absent for "now".
     time: Option<ResolvedTime>,
+    /// The seven Hermetic lots; natal charts only, so absent for "now".
+    lots: Option<LotReport>,
+}
+
+/// How the lots of a chart are to be calculated.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LotOptions {
+    /// Manual day/night sect; `None` uses the sect derived from the Sun.
+    sect_override: Option<Sect>,
+    /// Maximum orb of lot aspects, in degrees.
+    orb: f64,
+    /// A lot aspect is marked exact when its orb is below this, in degrees.
+    exact_orb: f64,
 }
 
 fn resolve_input(birth: &BirthInput) -> Result<ResolvedTime, String> {
@@ -83,16 +98,28 @@ fn compute(
     longitude: f64,
     orbs: &Orbs,
     time: Option<ResolvedTime>,
+    lots: Option<&LotOptions>,
 ) -> Result<ComputedChart, String> {
     if !(-90.0..=90.0).contains(&latitude) || !(-180.0..=180.0).contains(&longitude) {
         return Err("ugyldige koordinater".to_string());
     }
     let chart = compute_chart(utc, latitude, longitude).map_err(|e| e.to_string())?;
     let aspects = find_aspects(&chart.aspect_points(), orbs);
+    let lots = match lots {
+        Some(options) => {
+            let valid = |value: f64| value.is_finite() && value >= 0.0;
+            if !valid(options.orb) || !valid(options.exact_orb) {
+                return Err("ugyldig orb for lots".to_string());
+            }
+            Some(lot_report(&chart, options.sect_override, options.orb, options.exact_orb))
+        }
+        None => None,
+    };
     Ok(ComputedChart {
         chart,
         aspects,
         time,
+        lots,
     })
 }
 
@@ -107,7 +134,7 @@ fn app_info(app: tauri::AppHandle) -> AppInfo {
 /// The sky at this moment, seen from the given place.
 #[tauri::command]
 fn sky_now(latitude: f64, longitude: f64, orbs: Orbs) -> Result<ComputedChart, String> {
-    compute(Utc::now(), latitude, longitude, &orbs, None)
+    compute(Utc::now(), latitude, longitude, &orbs, None, None)
 }
 
 /// How a local birth time maps to UTC, so the form can show the offset.
@@ -117,9 +144,9 @@ fn birth_resolve(birth: BirthInput) -> Result<ResolvedTime, String> {
 }
 
 #[tauri::command]
-fn chart_compute(birth: BirthInput, orbs: Orbs) -> Result<ComputedChart, String> {
+fn chart_compute(birth: BirthInput, orbs: Orbs, lots: LotOptions) -> Result<ComputedChart, String> {
     let time = resolve_input(&birth)?;
-    compute(time.utc, birth.latitude, birth.longitude, &orbs, Some(time))
+    compute(time.utc, birth.latitude, birth.longitude, &orbs, Some(time), Some(&lots))
 }
 
 #[tauri::command]

@@ -85,10 +85,79 @@ const birth = {
 const resolved = await invoke("birth_resolve", { birth });
 check("Danish summer time 1947", resolved.offsetSeconds === 7200, `offset ${resolved.offsetSeconds}`);
 
-const computed = await invoke("chart_compute", { birth, orbs });
+const lotOptions = { sectOverride: null, orb: 3, exactOrb: 1 };
+const computed = await invoke("chart_compute", { birth, orbs, lots: lotOptions });
 const sun = computed.chart.positions.find((p) => p.body === "sun");
 check("chart_compute: Sun in Gemini on 1 June", sun.sign === "gemini", `${sun.degree}°${sun.minute}′`);
 check("chart_compute returns aspects", computed.aspects.length > 0, `${computed.aspects.length} aspects`);
+
+// Lots: recompute Fortune and Spirit here from the returned positions.
+const longitude = (body) => computed.chart.positions.find((p) => p.body === body).longitude;
+const mod360 = (x) => ((x % 360) + 360) % 360;
+const near = (a, b) => Math.abs(mod360(a - b + 180) - 180) < 1e-6;
+const asc = computed.chart.angles.ascendant.longitude;
+const dayFortune = mod360(asc + longitude("moon") - longitude("sun"));
+const daySpirit = mod360(asc + longitude("sun") - longitude("moon"));
+const lotOf = (result, lot) => result.lots.positions.find((p) => p.lot === lot);
+check("sky_now has no lots", sky.lots === null);
+check(
+  "chart_compute returns seven lots",
+  computed.lots.positions.map((p) => p.lot).join() ===
+    "fortune,spirit,eros,necessity,courage,victory,nemesis",
+);
+check(
+  "noon in June is a day chart, not overridden",
+  computed.chart.sect === "day" && computed.lots.sect === "day" && computed.lots.overridden === false,
+);
+check(
+  "day Fortune = ASC + Moon − Sun, Spirit = ASC + Sun − Moon",
+  near(lotOf(computed, "fortune").longitude, dayFortune) &&
+    near(lotOf(computed, "spirit").longitude, daySpirit),
+  `Fortune ${lotOf(computed, "fortune").longitude.toFixed(4)}`,
+);
+const fortune = lotOf(computed, "fortune");
+const fortuneRuler = computed.chart.positions.find((p) => p.body === fortune.ruler);
+check(
+  "lot overview gives the ruler's sign and house",
+  fortune.planet === "moon" &&
+    fortune.rulerSign === fortuneRuler.sign &&
+    fortune.rulerHouse === fortuneRuler.house,
+  `ruler ${fortune.ruler} in ${fortune.rulerSign}, house ${fortune.rulerHouse}`,
+);
+
+const night = await invoke("chart_compute", {
+  birth,
+  orbs,
+  lots: { ...lotOptions, sectOverride: "night" },
+});
+check(
+  "manual night sect swaps Fortune and Spirit",
+  night.lots.sect === "night" &&
+    night.lots.overridden === true &&
+    night.chart.sect === "day" &&
+    near(lotOf(night, "fortune").longitude, daySpirit) &&
+    near(lotOf(night, "spirit").longitude, dayFortune),
+);
+check(
+  "manual night sect recalculates the other five",
+  ["eros", "necessity", "courage", "victory", "nemesis"].every(
+    (lot) => !near(lotOf(night, lot).longitude, lotOf(computed, lot).longitude),
+  ),
+);
+
+const wide = await invoke("chart_compute", { birth, orbs, lots: { ...lotOptions, orb: 10, exactOrb: 2 } });
+check(
+  "lot aspects stay within the orb",
+  computed.lots.aspects.every((a) => a.orb <= 3) &&
+    wide.lots.aspects.length > computed.lots.aspects.length &&
+    wide.lots.aspects.every((a) => a.orb <= 10),
+  `${computed.lots.aspects.length} at 3°, ${wide.lots.aspects.length} at 10°`,
+);
+check(
+  "exact marker follows the limit",
+  computed.lots.aspects.every((a) => a.exact === a.orb < 1) &&
+    wide.lots.aspects.every((a) => a.exact === a.orb < 2),
+);
 
 const manual = await invoke("birth_resolve", { birth: { ...birth, zone: null, offsetSeconds: 3600 } });
 check("manual offset overrides zone", manual.utc === "1947-06-01T11:00:00Z", manual.utc);
@@ -117,9 +186,18 @@ const saved = await invoke("chart_save", {
     zone: birth.zone,
     offsetSeconds: null,
     featured: false,
+    sectOverride: null,
   },
 });
 check("chart_save assigns an id", Number.isInteger(saved.id));
+const overridden = await invoke("chart_save", { chart: { ...saved, sectOverride: "night" } });
+const reread = (await invoke("charts_list")).find((c) => c.id === saved.id);
+check(
+  "sect override is stored with the chart",
+  overridden.sectOverride === "night" && reread?.sectOverride === "night",
+);
+const cleared = await invoke("chart_save", { chart: { ...saved, sectOverride: null } });
+check("sect override can be cleared", cleared.sectOverride === null);
 check("charts_list grows by one", (await invoke("charts_list")).length === before + 1);
 
 await invoke("folder_delete", { id: folder.id });

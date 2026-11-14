@@ -2,7 +2,7 @@
 // opened in a plain browser. Calculations are NOT real here — every chart
 // is the same fixture. It is never included in the built app.
 
-import type { ChartRecord, Folder, Place } from "../astro";
+import type { ChartRecord, Folder, LotOptions, LotReport, Place } from "../astro";
 import fixture from "./fixture.json";
 
 let nextId = 3;
@@ -21,6 +21,7 @@ const charts: ChartRecord[] = [
     zone: "Europe/Copenhagen",
     offsetSeconds: null,
     featured: true,
+    sectOverride: null,
   },
   {
     id: 2,
@@ -35,6 +36,7 @@ const charts: ChartRecord[] = [
     zone: "Europe/Copenhagen",
     offsetSeconds: null,
     featured: false,
+    sectOverride: null,
   },
 ];
 const settings = new Map<string, string>();
@@ -60,14 +62,29 @@ const places: Place[] = [
   },
 ];
 
+const { devLotsNight, ...computed } = fixture;
+
+/** The fixture's lots for the asked sect, cut down to the asked orb. */
+function lotsFor(options: LotOptions): LotReport {
+  const source = (options.sectOverride === "night" ? devLotsNight : computed.lots) as LotReport;
+  return {
+    ...source,
+    sect: options.sectOverride ?? "day",
+    overridden: options.sectOverride !== null,
+    aspects: source.aspects
+      .filter((aspect) => aspect.orb <= options.orb)
+      .map((aspect) => ({ ...aspect, exact: aspect.orb < options.exactOrb })),
+  };
+}
+
 export async function mockInvoke(command: string, args: Record<string, any>): Promise<unknown> {
   switch (command) {
     case "app_info":
       return { version: "dev", coreVersion: "dev" };
     case "sky_now":
-      return { ...fixture, time: null };
+      return { ...computed, time: null, lots: null };
     case "chart_compute":
-      return fixture;
+      return { ...computed, lots: lotsFor(args.lots as LotOptions) };
     case "birth_resolve":
       return fixture.time;
     case "places_search":

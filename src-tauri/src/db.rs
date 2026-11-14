@@ -5,6 +5,7 @@
 use std::path::Path;
 
 use rusqlite::{Connection, OptionalExtension, params};
+use astro_core::chart::Sect;
 use serde::{Deserialize, Serialize};
 
 /// Applied in order; the database's `user_version` records how many have run.
@@ -34,6 +35,8 @@ const MIGRATIONS: &[&str] = &[
         key   TEXT PRIMARY KEY,
         value TEXT NOT NULL
      );",
+    // Manual day/night sect for the lots: NULL (use the Sun), 'day' or 'night'.
+    "ALTER TABLE charts ADD COLUMN sect_override TEXT;",
 ];
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -65,6 +68,24 @@ pub struct ChartRecord {
     pub offset_seconds: Option<i32>,
     /// Shown in the start screen's panel of selected charts.
     pub featured: bool,
+    /// Manual day/night sect; `None` derives it from the Sun.
+    #[serde(default)]
+    pub sect_override: Option<Sect>,
+}
+
+fn sect_to_text(sect: Option<Sect>) -> Option<&'static str> {
+    sect.map(|sect| match sect {
+        Sect::Day => "day",
+        Sect::Night => "night",
+    })
+}
+
+fn sect_from_text(text: Option<String>) -> Option<Sect> {
+    match text.as_deref() {
+        Some("day") => Some(Sect::Day),
+        Some("night") => Some(Sect::Night),
+        _ => None,
+    }
 }
 
 pub fn open(path: &Path) -> rusqlite::Result<Connection> {
@@ -86,7 +107,7 @@ fn prepare(connection: &mut Connection) -> rusqlite::Result<()> {
 }
 
 const CHART_COLUMNS: &str = "id, name, folder_id, birth_date, birth_time, place_name, \
-     country_code, latitude, longitude, zone, offset_seconds, featured";
+     country_code, latitude, longitude, zone, offset_seconds, featured, sect_override";
 
 fn chart_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<ChartRecord> {
     Ok(ChartRecord {
@@ -102,6 +123,7 @@ fn chart_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<ChartRecord> {
         zone: row.get(9)?,
         offset_seconds: row.get(10)?,
         featured: row.get(11)?,
+        sect_override: sect_from_text(row.get(12)?),
     })
 }
 
@@ -137,13 +159,15 @@ pub fn save_chart(connection: &Connection, chart: &ChartRecord) -> rusqlite::Res
         chart.zone,
         chart.offset_seconds,
         chart.featured,
+        sect_to_text(chart.sect_override),
     ];
     match chart.id {
         None => {
             connection.execute(
                 "INSERT INTO charts (name, folder_id, birth_date, birth_time, place_name,
-                     country_code, latitude, longitude, zone, offset_seconds, featured)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+                     country_code, latitude, longitude, zone, offset_seconds, featured,
+                     sect_override)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
                 values,
             )?;
             Ok(connection.last_insert_rowid())
@@ -154,7 +178,7 @@ pub fn save_chart(connection: &Connection, chart: &ChartRecord) -> rusqlite::Res
                     "UPDATE charts SET name = ?1, folder_id = ?2, birth_date = ?3,
                          birth_time = ?4, place_name = ?5, country_code = ?6, latitude = ?7,
                          longitude = ?8, zone = ?9, offset_seconds = ?10, featured = ?11,
-                         updated_at = CURRENT_TIMESTAMP
+                         sect_override = ?12, updated_at = CURRENT_TIMESTAMP
                      WHERE id = {id}"
                 ),
                 values,
@@ -242,6 +266,7 @@ mod tests {
             zone: Some("Europe/Copenhagen".to_string()),
             offset_seconds: None,
             featured: false,
+            sect_override: None,
         }
     }
 
@@ -263,6 +288,52 @@ mod tests {
 
         delete_chart(&db, id).unwrap();
         assert!(get_chart(&db, id).unwrap().is_none());
+    }
+
+    #[test]
+    fn sect_override_is_stored_per_chart_and_can_be_cleared() {
+        let db = memory();
+        let id = save_chart(&db, &sample("Anna")).unwrap();
+        let other = save_chart(&db, &sample("Bo")).unwrap();
+
+        let mut chart = get_chart(&db, id).unwrap().unwrap();
+        assert_eq!(chart.sect_override, None);
+        chart.sect_override = Some(Sect::Night);
+        save_chart(&db, &chart).unwrap();
+        assert_eq!(get_chart(&db, id).unwrap().unwrap().sect_override, Some(Sect::Night));
+        assert_eq!(get_chart(&db, other).unwrap().unwrap().sect_override, None);
+
+        chart.sect_override = None;
+        save_chart(&db, &chart).unwrap();
+        assert_eq!(get_chart(&db, id).unwrap().unwrap().sect_override, None);
+    }
+
+    #[test]
+    fn a_database_from_the_first_release_is_upgraded_in_place() {
+        let mut db = Connection::open_in_memory().unwrap();
+        db.execute_batch(MIGRATIONS[0]).unwrap();
+        db.pragma_update(None, "user_version", 1).unwrap();
+        db.execute(
+            "INSERT INTO charts (name, birth_date, place_name, latitude, longitude)
+             VALUES ('Gammel', '1950-06-15', 'Aarhus', 56.0, 10.0)",
+            [],
+        )
+        .unwrap();
+
+        prepare(&mut db).unwrap();
+        let charts = list_charts(&db).unwrap();
+        assert_eq!(charts.len(), 1);
+        assert_eq!(charts[0].name, "Gammel");
+        assert_eq!(charts[0].sect_override, None);
+    }
+
+    #[test]
+    fn a_saved_chart_without_the_field_reads_as_no_override() {
+        let json = r#"{"id":null,"name":"x","folderId":null,"birthDate":"1950-06-15",
+            "birthTime":null,"placeName":"y","countryCode":null,"latitude":1.0,
+            "longitude":2.0,"zone":null,"offsetSeconds":null,"featured":false}"#;
+        let chart: ChartRecord = serde_json::from_str(json).unwrap();
+        assert_eq!(chart.sect_override, None);
     }
 
     #[test]

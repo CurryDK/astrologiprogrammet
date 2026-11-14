@@ -1,4 +1,4 @@
-import { isBody, type Aspect } from "./astro";
+import { isBody, isLot, type Aspect, type LotAspect } from "./astro";
 import type { Settings } from "./settings";
 
 /**
@@ -18,4 +18,18 @@ export function aspectsForView(
         : settings.angleAspects[view][point],
     ),
   );
+}
+
+/**
+ * The lot aspects to show in the lot aspect overview: to planets (those
+ * switched on for aspects), to the angles and to other lots, each group
+ * switched separately.
+ */
+export function lotAspectsForView(aspects: LotAspect[], settings: Settings): LotAspect[] {
+  const { planets, angles, lots } = settings.lots.aspectsTo;
+  return aspects.filter(({ other }) => {
+    if (isLot(other)) return lots;
+    if (isBody(other)) return planets && settings.inAspects[other];
+    return angles;
+  });
 }

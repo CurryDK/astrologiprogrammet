@@ -4,7 +4,15 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { api } from "./api";
-import { ASPECT_KINDS, BODIES, type AspectKind, type Body, type Orbs } from "./astro";
+import {
+  ASPECT_KINDS,
+  BODIES,
+  LOTS,
+  type AspectKind,
+  type Body,
+  type Lot,
+  type Orbs,
+} from "./astro";
 
 export type Settings = {
   orbs: Orbs;
@@ -20,6 +28,17 @@ export type Settings = {
   angleAspects: {
     wheel: { ascendant: boolean; midheaven: boolean };
     table: { ascendant: boolean; midheaven: boolean };
+  };
+  /** The seven Hermetic lots (specification §10). */
+  lots: {
+    /** Maximum orb of lot aspects, in degrees. */
+    orb: number;
+    /** A lot aspect is marked "e" when its orb is below this, in degrees. */
+    exactOrb: number;
+    /** Which lots are drawn in the wheel. */
+    showInWheel: Record<Lot, boolean>;
+    /** What the lot aspect overview compares the lots with. */
+    aspectsTo: { planets: boolean; angles: boolean; lots: boolean };
   };
 };
 
@@ -61,6 +80,17 @@ export const DEFAULT_SETTINGS: Settings = {
   angleAspects: {
     wheel: { ascendant: false, midheaven: false },
     table: { ascendant: true, midheaven: true },
+  },
+  lots: {
+    // 3° is the specification's default (§10).
+    orb: 3,
+    // The specification does not define "exact". Proposed default: an orb
+    // below 1°, i.e. one that reads 0°xx′. Adjustable in the settings.
+    exactOrb: 1,
+    showInWheel: Object.fromEntries(LOTS.map((lot) => [lot, true])) as Record<Lot, boolean>,
+    // The specification does not say what lots are compared with. Proposed
+    // default: the planets only; angles and other lots can be switched on.
+    aspectsTo: { planets: true, angles: false, lots: false },
   },
 };
 

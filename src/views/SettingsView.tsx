@@ -75,6 +75,55 @@ export function SettingsView() {
       </section>
 
       <section className="panel">
+        <h2>Lots</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td>Orb for lot-aspekter (grader)</td>
+              <td>
+                <input
+                  type="number"
+                  min={0}
+                  max={15}
+                  step={0.5}
+                  aria-label="Orb for lot-aspekter"
+                  value={settings.lots.orb}
+                  onChange={(e) => {
+                    const value = e.target.valueAsNumber;
+                    if (!Number.isFinite(value) || value < 0 || value > 15) return;
+                    update((s) => ({ ...s, lots: { ...s.lots, orb: value } }));
+                  }}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>Markeres som eksakt (e) under (grader)</td>
+              <td>
+                <input
+                  type="number"
+                  min={0}
+                  max={15}
+                  step={0.25}
+                  aria-label="Grænse for eksakt lot-aspekt"
+                  value={settings.lots.exactOrb}
+                  onChange={(e) => {
+                    const value = e.target.valueAsNumber;
+                    if (!Number.isFinite(value) || value < 0 || value > 15) return;
+                    update((s) => ({ ...s, lots: { ...s.lots, exactOrb: value } }));
+                  }}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="muted">
+          Standard er 3° orb. Et lot-aspekt markeres med “e”, når orben er mindre end grænsen
+          (standard 1°). Hvilke lots der vises i hjulet, og hvad lot-aspekter beregnes til, vælges
+          under “Visning” ved horoskopet.
+        </p>
+      </section>
+
+      <section className="panel">
         <h2>Planeter og punkter</h2>
         <table>
           <thead>

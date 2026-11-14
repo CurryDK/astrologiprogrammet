@@ -1,4 +1,5 @@
 import {
+  LOT_SYMBOLS,
   POINT_GLYPHS,
   SIGNS,
   SIGN_GLYPHS,
@@ -6,6 +7,7 @@ import {
   isBody,
   type Aspect,
   type Chart,
+  type LotPosition,
   type PointId,
 } from "../astro";
 import type { Settings } from "../settings";
@@ -40,13 +42,15 @@ type Props = {
   /** Aspects to draw as lines; already filtered by the caller. */
   aspects: Aspect[];
   settings: Settings;
+  /** The chart's lots; those switched on in the settings are drawn. */
+  lots?: LotPosition[];
 };
 
 /**
  * The horoscope wheel (specification §4): whole-sign houses, the Ascendant
  * degree at the left, zodiac running counter-clockwise.
  */
-export function ChartWheel({ chart, aspects, settings }: Props) {
+export function ChartWheel({ chart, aspects, settings, lots = [] }: Props) {
   const ascendant = chart.angles.ascendant.longitude;
 
   /** Point on the wheel for a zodiac longitude at a given radius. */
@@ -61,10 +65,14 @@ export function ChartWheel({ chart, aspects, settings }: Props) {
   };
 
   const shown = chart.positions.filter((p) => settings.showInWheel[p.body]);
-  const displayAngles = spreadAngles(
-    shown.map((p) => p.longitude),
+  const shownLots = lots.filter((lot) => settings.lots.showInWheel[lot.lot]);
+  // Planets and lots share one ring, so they are spread apart together.
+  const allAngles = spreadAngles(
+    [...shown, ...shownLots].map((p) => p.longitude),
     MIN_GLYPH_SEPARATION,
   );
+  const displayAngles = allAngles.slice(0, shown.length);
+  const lotAngles = allAngles.slice(shown.length);
 
   const longitudeOf = (point: PointId): number =>
     isBody(point)
@@ -203,6 +211,40 @@ export function ChartWheel({ chart, aspects, settings }: Props) {
                 R
               </text>
             )}
+          </g>
+        );
+      })}
+
+      {/* Lots: placeholder symbol and a monochrome position line */}
+      {shownLots.map((lot, index) => {
+        const display = lotAngles[index];
+        const exact = at(lot.longitude, R.zodiacInner);
+        const lineEnd = at(display, R.glyph + 22);
+        const symbol = at(display, R.glyph);
+        const degree = at(display, R.degree);
+        const minute = at(display, R.minute);
+        const text = { fill: INK, textAnchor: "middle", dominantBaseline: "central" } as const;
+        return (
+          <g key={lot.lot} className="wheel-lot">
+            <line
+              x1={exact.x}
+              y1={exact.y}
+              x2={lineEnd.x}
+              y2={lineEnd.y}
+              stroke={INK}
+              strokeWidth={1}
+            />
+            <circle cx={exact.x} cy={exact.y} r={2.2} fill={INK} />
+            <circle cx={symbol.x} cy={symbol.y} r={17} fill="#fff" stroke={INK} strokeWidth={1.2} />
+            <text x={symbol.x} y={symbol.y} fontSize={18} fontWeight={600} {...text}>
+              {LOT_SYMBOLS[lot.lot]}
+            </text>
+            <text x={degree.x} y={degree.y} fontSize={21} {...text}>
+              {lot.degree}°
+            </text>
+            <text x={minute.x} y={minute.y} fontSize={17} {...text}>
+              {String(lot.minute).padStart(2, "0")}′
+            </text>
           </g>
         );
       })}

@@ -26,3 +26,19 @@ describe("mergeOver", () => {
     expect("obsolete" in merged).toBe(false);
   });
 });
+
+describe("lot settings", () => {
+  it("are filled in for settings saved before lots existed", () => {
+    const stored = { orbs: { square: 5 }, showInWheel: { sun: false } };
+    const merged = mergeOver(DEFAULT_SETTINGS, stored);
+    expect(merged.lots).toEqual(DEFAULT_SETTINGS.lots);
+    expect(merged.lots.orb).toBe(3);
+    expect(merged.lots.showInWheel.nemesis).toBe(true);
+  });
+
+  it("keep a single lot switched off", () => {
+    const merged = mergeOver(DEFAULT_SETTINGS, { lots: { showInWheel: { eros: false } } });
+    expect(merged.lots.showInWheel.eros).toBe(false);
+    expect(merged.lots.showInWheel.fortune).toBe(true);
+  });
+});

@@ -7,8 +7,9 @@
 use std::path::PathBuf;
 
 use astro_core::aspects::{Orbs, find_aspects};
-use astro_core::chart::compute_chart;
+use astro_core::chart::{Sect, compute_chart};
 use astro_core::ephemeris;
+use astro_core::lots::lot_report;
 use astro_core::time::{ZoneChoice, resolve};
 use chrono::{NaiveDate, NaiveTime};
 
@@ -25,6 +26,18 @@ fn main() {
     let chart = compute_chart(resolved.utc, 55.6759, 12.5655).expect("chart computes");
     let aspects = find_aspects(&chart.aspect_points(), &Orbs::default());
 
-    let json = serde_json::json!({ "chart": chart, "aspects": aspects, "time": resolved });
+    // Lot aspects with the app's defaults: 3° orb, exact below 1°.
+    let lots = lot_report(&chart, None, 3.0, 1.0);
+    // Not part of the command's reply: lets the stand-in backend show what
+    // a manual sect change does. The fixture is a day chart.
+    let lots_night = lot_report(&chart, Some(Sect::Night), 3.0, 1.0);
+
+    let json = serde_json::json!({
+        "chart": chart,
+        "aspects": aspects,
+        "time": resolved,
+        "lots": lots,
+        "devLotsNight": lots_night,
+    });
     println!("{}", serde_json::to_string_pretty(&json).unwrap());
 }

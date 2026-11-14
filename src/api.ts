@@ -6,6 +6,7 @@ import type {
   ChartRecord,
   ComputedChart,
   Folder,
+  LotOptions,
   Orbs,
   Place,
   ResolvedTime,
@@ -32,8 +33,8 @@ export const api = {
   skyNow: (latitude: number, longitude: number, orbs: Orbs) =>
     call<ComputedChart>("sky_now", { latitude, longitude, orbs }),
   birthResolve: (birth: BirthInput) => call<ResolvedTime>("birth_resolve", { birth }),
-  chartCompute: (birth: BirthInput, orbs: Orbs) =>
-    call<ComputedChart>("chart_compute", { birth, orbs }),
+  chartCompute: (birth: BirthInput, orbs: Orbs, lots: LotOptions) =>
+    call<ComputedChart>("chart_compute", { birth, orbs, lots }),
 
   placesSearch: (query: string) => call<Place[]>("places_search", { query }),
 

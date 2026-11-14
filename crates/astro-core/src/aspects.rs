@@ -179,9 +179,20 @@ pub fn find_aspects(points: &[AspectPoint], orbs: &Orbs) -> Vec<Aspect> {
     aspects
 }
 
-fn aspect_between(a: &AspectPoint, b: &AspectPoint, orbs: &Orbs) -> Option<Aspect> {
-    // Signed shortest arc from a to b, in (-180, 180].
-    let mut arc = normalize_degrees(b.longitude - a.longitude);
+/// The geometry of an aspect between two longitudes, without motion.
+pub(crate) struct AspectGeometry {
+    pub kind: AspectKind,
+    /// Signed shortest arc from the first point to the second, in (-180, 180].
+    pub arc: f64,
+    /// Separation minus the exact angle of the aspect; negative when the
+    /// points are closer together than the exact aspect.
+    pub deviation: f64,
+    pub out_of_sign: bool,
+}
+
+/// The aspect within orb between two longitudes, if any.
+pub(crate) fn aspect_geometry(a: f64, b: f64, orbs: &Orbs) -> Option<AspectGeometry> {
+    let mut arc = normalize_degrees(b - a);
     if arc > 180.0 {
         arc -= 360.0;
     }
@@ -194,16 +205,32 @@ fn aspect_between(a: &AspectPoint, b: &AspectPoint, orbs: &Orbs) -> Option<Aspec
         .filter(|(kind, deviation)| deviation.abs() <= orbs.for_kind(*kind))
         .min_by(|x, y| x.1.abs().total_cmp(&y.1.abs()))?;
 
-    // Rate of change of the separation, then of the orb.
-    let separation_rate = if arc >= 0.0 { b.speed - a.speed } else { a.speed - b.speed };
-    let orb_rate = if deviation >= 0.0 { separation_rate } else { -separation_rate };
-
-    let sign_a = Sign::from_longitude(a.longitude).index();
-    let sign_b = Sign::from_longitude(b.longitude).index();
+    let sign_a = Sign::from_longitude(a).index();
+    let sign_b = Sign::from_longitude(b).index();
     let signs_apart = {
         let d = sign_a.abs_diff(sign_b);
         d.min(12 - d)
     };
+
+    Some(AspectGeometry {
+        kind,
+        arc,
+        deviation,
+        out_of_sign: signs_apart != kind.sign_distance(),
+    })
+}
+
+fn aspect_between(a: &AspectPoint, b: &AspectPoint, orbs: &Orbs) -> Option<Aspect> {
+    let AspectGeometry {
+        kind,
+        arc,
+        deviation,
+        out_of_sign,
+    } = aspect_geometry(a.longitude, b.longitude, orbs)?;
+
+    // Rate of change of the separation, then of the orb.
+    let separation_rate = if arc >= 0.0 { b.speed - a.speed } else { a.speed - b.speed };
+    let orb_rate = if deviation >= 0.0 { separation_rate } else { -separation_rate };
 
     Some(Aspect {
         a: a.id,
@@ -211,7 +238,7 @@ fn aspect_between(a: &AspectPoint, b: &AspectPoint, orbs: &Orbs) -> Option<Aspec
         kind,
         orb: deviation.abs(),
         applying: orb_rate < 0.0,
-        out_of_sign: signs_apart != kind.sign_distance(),
+        out_of_sign,
     })
 }
 

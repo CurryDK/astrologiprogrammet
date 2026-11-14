@@ -7,6 +7,7 @@ pub mod aspects;
 pub mod chart;
 pub mod ephemeris;
 mod ffi;
+pub mod lots;
 pub mod places;
 pub mod time;
 pub mod zodiac;

@@ -25,8 +25,8 @@ Rules that follow from the specification:
 | 0 | Scaffold, self-update pipeline | Done, update verified on the user's PC |
 | 1 | Calculation core: positions, angles, whole-sign houses, sect, time zones | Done (v0.0.2) |
 | 2 | Natal chart: birth form, place search, archive, wheel, aspects, settings, start screen | Done (v0.1.0) |
-| 3 | Seven Hermetic lots | **Next** |
-| 4 | Profections | Not started |
+| 3 | Seven Hermetic lots: overview, lot aspects, wheel, manual sect per chart | Done, not released yet. Proposed defaults awaiting feedback: "e" = orb under 1° (setting), lot aspects to planets only (angles and other lots are switches), placeholder symbols (two letters in a circle) |
+| 4 | Profections | **Next** |
 | 5 | Transits, Live Chart, life events | Not started |
 | 6 | Planetary Condition | Category rules supplied for dignities, Sun conditions, houses, co-presence, domicile lord, reception, overcoming. Still blocked: the seven bonification/maltreatment algorithms, enclosure intervention, how sect changes the colours |
 | 7 | Secondary progressions, rectification | Blocked: Naibod in longitude or right ascension |
@@ -40,13 +40,14 @@ crates/astro-core/   Pure Rust: all astronomy and astrological rules. No Tauri, 
   src/ephemeris.rs   Safe wrapper over vendored Swiss Ephemeris 2.10.03 (vendor/swisseph, built by build.rs)
   src/chart.rs       compute_chart: positions, angles, houses, sect
   src/aspects.rs     find_aspects: orb, applying/separating, out-of-sign
+  src/lots.rs        the seven Hermetic lots, lot overview facts, lot aspects (lot_report)
   src/time.rs        local birth time → UTC (tzdb, includes pre-1970 "backzone" history)
   src/places.rs      offline place search over resources/places.tsv
   src/zodiac.rs      Sign, Body, ZodiacPoint, whole_sign_house
 src-tauri/           App shell: commands (src/lib.rs), SQLite storage (src/db.rs), updater
 src/                 React + TypeScript interface. Draws only; no astrological logic here.
   api.ts             Every backend call. astro.ts: types and Danish names. settings.tsx: remembered settings.
-  components/        ChartWheel (SVG), AspectTable, PositionsTable
+  components/        ChartWheel (SVG), AspectTable, PositionsTable, LotsTable, LotAspectTable
   views/             StartView, ArchiveView, ChartView, ChartForm, SettingsView
   dev/               Stand-in backend + fixture for working on screens in a plain browser
 resources/           ephe/*.se1 (1800–2399), places.tsv (GeoNames, built by scripts/build-places.mjs)

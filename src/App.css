@@ -71,6 +71,30 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
+/* Placeholder lot symbol: two letters in a circle, always monochrome. */
+.lot-symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75em;
+  height: 1.75em;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.center {
+  text-align: center;
+}
+
+.legend {
+  margin-top: 8px;
+  font-size: 0.8rem;
+}
+
 /* Controls */
 
 button,
@@ -329,6 +353,22 @@ label.check {
 
 .aspect-table td:last-child {
   width: auto;
+}
+
+.lots-table td {
+  white-space: nowrap;
+}
+
+.sect-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sect-choice select {
+  flex: 1;
+  min-width: 0;
 }
 
 details.panel summary {

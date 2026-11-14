@@ -2,7 +2,7 @@
 //! for one instant and place (specification §2).
 
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::ephemeris::{self, EphemerisError};
 use crate::ffi;
@@ -42,7 +42,7 @@ pub struct Angles {
     pub imum_coeli: Angle,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Sect {
     Day,
