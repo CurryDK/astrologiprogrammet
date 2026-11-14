@@ -55,3 +55,52 @@ body {
   color: #fff;
   text-decoration: underline;
 }
+
+.sky-now {
+  margin: 28px 0 20px;
+  padding: 20px 28px;
+  background: #fff;
+  border: 1px solid #e3dfd5;
+  border-radius: 8px;
+}
+
+.sky-now h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.sky-now .when {
+  margin: 4px 0 12px;
+  color: #6b6b70;
+  font-size: 0.9rem;
+}
+
+.sky-now table {
+  border-collapse: collapse;
+}
+
+.sky-now td {
+  padding: 3px 8px;
+}
+
+.sky-now .glyph {
+  font-family: "Segoe UI Symbol", "Noto Sans Symbols", sans-serif;
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.sky-now .degree {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding-left: 24px;
+}
+
+.sky-now .retro {
+  color: #a33;
+  font-weight: 600;
+}
+
+.error {
+  color: #a33;
+}

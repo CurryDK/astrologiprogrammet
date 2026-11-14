@@ -27,6 +27,9 @@
     "active": true,
     "targets": ["nsis"],
     "createUpdaterArtifacts": true,
+    "resources": {
+      "../resources/ephe": "ephe"
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

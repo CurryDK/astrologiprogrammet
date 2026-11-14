@@ -3,6 +3,12 @@
 //! Everything astronomical and astrological lives here so it can be tested
 //! without the app shell. The frontend only draws what this crate computes.
 
+pub mod chart;
+pub mod ephemeris;
+mod ffi;
+pub mod time;
+pub mod zodiac;
+
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Reduce an ecliptic longitude to the interval [0, 360).
