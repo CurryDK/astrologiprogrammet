@@ -11,6 +11,7 @@ The requirements are in `docs/` (private, git-ignored, only on the development P
 - `docs/lots_formler_kildetillaeg.txt` — exact formulas for the seven Hermetic lots.
 - `docs/planetary_condition_kvalitetssikring.txt` — Planetary Condition decisions of 14 November 2026 (Danish). Supplements the specification and overrides it where they differ (notably: overcoming is a right-hand whole-sign sextile, square or trine, not only the square). Its section 6 lists what is still undecided and must not be guessed.
 - `docs/planetary_condition_beslutningstillaeg.txt` — final decision supplement of the same date. Overrides the document above where they differ; its section 3 lists what is still not to be guessed.
+- `docs/beslutningstillaeg_seks_tekniske_afklaringer.txt` — six approved decisions of the same date: aspect colours and line-thickness formula, Naibod for progressed angles, Solar Return calculation and place, life events with missing date parts, sect on the horizon and manual override, lot display precision. Summarised in English at the end of `docs/plan.md`.
 - `docs/plan.md` — the approved build plan with phases and the open questions tied to each.
 
 Rules that follow from the specification:
@@ -30,8 +31,8 @@ Rules that follow from the specification:
 | 4 | Profections | **Next** |
 | 5 | Transits, Live Chart, life events | Not started |
 | 6 | Planetary Condition | Category rules supplied for dignities, Sun conditions, houses, co-presence, domicile lord, reception, overcoming, engagement, adherence, chariot, maltreatment by striking with a ray; sect never changes a colour; counteraction rejected. Still blocked: enclosure intervention algorithm, bonification/maltreatment sub-forms not spelled out, Mercury and joy geometry, modern planets (full list in `docs/plan.md`, Phase 6) |
-| 7 | Secondary progressions, rectification | Blocked: Naibod in longitude or right ascension |
-| 8 | Solar Return | Blocked: algorithm and default location |
+| 7 | Secondary progressions, rectification | Unblocked: progressed angles by Naibod in right ascension (default), ecliptic longitude selectable |
+| 8 | Solar Return | Unblocked: exact return of the Sun to its natal longitude; default place is the birthplace, changeable |
 | 9 | Synodic cycles, event search, reports | Reports need a description first |
 
 ## Layout
