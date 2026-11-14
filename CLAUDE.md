@@ -25,7 +25,7 @@ Rules that follow from the specification:
 | 0 | Scaffold, self-update pipeline | Done, update verified on the user's PC |
 | 1 | Calculation core: positions, angles, whole-sign houses, sect, time zones | Done (v0.0.2) |
 | 2 | Natal chart: birth form, place search, archive, wheel, aspects, settings, start screen | Done (v0.1.0) |
-| 3 | Seven Hermetic lots: overview, lot aspects, wheel, manual sect per chart | Done, not released yet. Proposed defaults awaiting feedback: "e" = orb under 1° (setting), lot aspects to planets only (angles and other lots are switches), placeholder symbols (two letters in a circle) |
+| 3 | Seven Hermetic lots: overview, lot aspects, wheel, manual sect per chart | Done (v0.2.0). Proposed defaults awaiting feedback: "e" = orb under 1° (setting), lot aspects to planets only (angles and other lots are switches), placeholder symbols (two letters in a circle) |
 | 4 | Profections | **Next** |
 | 5 | Transits, Live Chart, life events | Not started |
 | 6 | Planetary Condition | Category rules supplied for dignities, Sun conditions, houses, co-presence, domicile lord, reception, overcoming. Still blocked: the seven bonification/maltreatment algorithms, enclosure intervention, how sect changes the colours |
