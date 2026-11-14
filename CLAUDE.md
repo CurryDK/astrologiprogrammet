@@ -60,7 +60,7 @@ scripts/e2e-check.mjs  Drives the running app end to end
 Conventions:
 
 - New calculations go in `astro-core` with unit tests, are exposed through a command in `src-tauri/src/lib.rs`, typed in `src/astro.ts`, and called via `src/api.ts`. Add a matching case to `src/dev/mockBackend.ts`.
-- Longitudes are tropical ecliptic degrees in [0, 360); use `normalize_degrees`. Display truncates to whole arc-minutes (`ZodiacPoint`), never rounds up.
+- Longitudes are tropical ecliptic degrees in [0, 360); use `normalize_degrees`. Display truncates to whole arc-minutes (`ZodiacPoint`), never rounds up. Lots are the decided exception: shown rounded to the nearest minute, or second (`lotReading` in `src/astro.ts`), without ever rounding into the next sign.
 - Database changes are appended to `MIGRATIONS` in `src-tauri/src/db.rs`. Never edit a migration that has shipped: the user's data file must survive every update.
 - Anything the user can adjust is stored through `src/settings.tsx`; `mergeOver` fills in defaults for keys added later.
 - Verify astronomy against something independent of Swiss Ephemeris where possible (see `tests/reference.rs`, which uses JPL Horizons values).

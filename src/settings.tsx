@@ -35,6 +35,8 @@ export type Settings = {
     orb: number;
     /** A lot aspect is marked "e" when its orb is below this, in degrees. */
     exactOrb: number;
+    /** Show lot positions with seconds instead of rounded to the minute. */
+    showSeconds: boolean;
     /** Which lots are drawn in the wheel. */
     showInWheel: Record<Lot, boolean>;
     /** What the lot aspect overview compares the lots with. */
@@ -63,14 +65,14 @@ export const DEFAULT_SETTINGS: Settings = {
       northNode: "#555555",
       southNode: "#555555",
     },
-    // Sextile pink, trine green, square red, opposition strong orange
-    // (specification §4). The conjunction colour is used in the overview only.
+    // Decision supplement of 14 November 2026, point 1. The conjunction
+    // colour is used in the overview only; conjunctions get no line.
     aspects: {
       conjunction: "#444444",
-      sextile: "#f06aa8",
-      square: "#d32f2f",
-      trine: "#2e9e4f",
-      opposition: "#ff7a00",
+      sextile: "#ff1493",
+      square: "#e60000",
+      trine: "#00a000",
+      opposition: "#ff8c00",
     },
   },
   // The south node is always exactly opposite the north node, so it is off
@@ -87,6 +89,8 @@ export const DEFAULT_SETTINGS: Settings = {
     // The specification does not define "exact". Proposed default: an orb
     // below 1°, i.e. one that reads 0°xx′. Adjustable in the settings.
     exactOrb: 1,
+    // Degrees and minutes by default; seconds are optional.
+    showSeconds: false,
     showInWheel: Object.fromEntries(LOTS.map((lot) => [lot, true])) as Record<Lot, boolean>,
     // The specification does not say what lots are compared with. Proposed
     // default: the planets only; angles and other lots can be switched on.
@@ -112,6 +116,33 @@ export function mergeOver<T>(defaults: T, stored: unknown): T {
   return result as T;
 }
 
+/**
+ * Aspect colours that were the defaults up to version 0.2.1. Settings are
+ * saved as a whole, so a user who changed anything has these stored even
+ * though they never chose them.
+ */
+const ASPECT_COLORS_BEFORE_0_2_2: Partial<Record<AspectKind, string>> = {
+  sextile: "#f06aa8",
+  square: "#d32f2f",
+  trine: "#2e9e4f",
+  opposition: "#ff7a00",
+};
+
+/**
+ * Stored settings merged over the defaults. An aspect colour that still has
+ * its old default value follows the new default; one the user picked is kept.
+ */
+export function settingsFromStored(stored: unknown): Settings {
+  const settings = mergeOver(DEFAULT_SETTINGS, stored);
+  const aspects = { ...settings.colors.aspects };
+  for (const kind of ASPECT_KINDS) {
+    if (aspects[kind].toLowerCase() === ASPECT_COLORS_BEFORE_0_2_2[kind]) {
+      aspects[kind] = DEFAULT_SETTINGS.colors.aspects[kind];
+    }
+  }
+  return { ...settings, colors: { ...settings.colors, aspects } };
+}
+
 type SettingsContextValue = {
   settings: Settings;
   /** Apply a change and remember it. */
@@ -134,7 +165,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         } catch {
           // Unreadable settings fall back to defaults rather than blocking the app.
         }
-        setSettings(mergeOver(DEFAULT_SETTINGS, parsed));
+        setSettings(settingsFromStored(parsed));
       })
       .catch((error) => {
         console.error(error);

@@ -13,6 +13,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.2.2",
+    date: "2026-11-14",
+    added: ["Lots kan vises med sekunder; slås til under Indstillinger → Lots."],
+    changed: [
+      "Nye standardfarver for aspekter: sekstil pink (#FF1493), trigon grøn (#00A000), kvadrat rød (#E60000) og opposition orange (#FF8C00). Farver, du selv har valgt, bevares.",
+      "Aspektlinjernes tykkelse går nu jævnt fra 4,5 px ved eksakt aspekt til 0,8 px ved den valgte maksimale orb.",
+      "Lots vises afrundet til nærmeste minut i stedet for at blive skåret af. Beregningerne er uændrede og bruger fuld præcision.",
+    ],
+  },
+  {
     version: "0.2.1",
     date: "2026-11-14",
     added: ["Ændringslog: en oversigt over, hvad hver version har tilføjet og ændret."],

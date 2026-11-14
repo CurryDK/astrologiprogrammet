@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatOffset, formatOrb, parseOffset } from "./astro";
+import { formatLot, formatOffset, formatOrb, lotReading, parseOffset } from "./astro";
 
 describe("formatOrb", () => {
   it("truncates to whole minutes", () => {
@@ -41,5 +41,35 @@ describe("parseOffset", () => {
     expect(parseOffset("abc")).toBeNull();
     expect(parseOffset("+25")).toBeNull();
     expect(parseOffset("1:75")).toBeNull();
+  });
+});
+
+describe("lot display", () => {
+  // 12°34′31.2″ Taurus
+  const lot = { longitude: 30 + 12 + 34 / 60 + 31.2 / 3600, sign: "taurus" as const };
+
+  it("rounds to the nearest minute by default", () => {
+    expect(formatLot(lot, false)).toBe("12°35′");
+    expect(formatLot({ longitude: 30 + 12 + 34 / 60 + 29 / 3600, sign: "taurus" }, false)).toBe(
+      "12°34′",
+    );
+  });
+
+  it("rounds to the nearest second when seconds are shown", () => {
+    expect(formatLot(lot, true)).toBe("12°34′31″");
+    expect(formatLot({ longitude: 30 + 12 + 34 / 60 + 31.6 / 3600, sign: "taurus" }, true)).toBe(
+      "12°34′32″",
+    );
+  });
+
+  it("never rounds up into the next sign", () => {
+    const last = { longitude: 59.9999, sign: "taurus" as const };
+    expect(formatLot(last, false)).toBe("29°59′");
+    expect(formatLot(last, true)).toBe("29°59′59″");
+    expect(lotReading({ longitude: 0, sign: "aries" }, true)).toEqual({
+      degree: 0,
+      minute: 0,
+      second: 0,
+    });
   });
 });

@@ -70,10 +70,13 @@ export function spreadAngles(longitudes: number[], minSeparation: number): numbe
 }
 
 /**
- * Stroke width of an aspect line. It depends on the absolute orb only: the
- * tighter the aspect, the thicker the line, and the same orb gives the same
- * width for every aspect type (specification §4).
+ * Stroke width of an aspect line in pixels: linear from 4.5 at an exact
+ * aspect to 0.8 at the maximum orb in force, T = 0.8 + 3.7 × (1 − |o| / O)
+ * (decision supplement of 14 November 2026, point 1). The same orb gives the
+ * same width for every aspect type that has the same maximum orb.
  */
-export function aspectLineWidth(orb: number): number {
-  return Math.max(0.5, 3.4 - 0.4 * orb);
+export function aspectLineWidth(orb: number, maxOrb: number): number {
+  if (!(maxOrb > 0)) return 0.8;
+  const closeness = 1 - Math.min(Math.abs(orb), maxOrb) / maxOrb;
+  return 0.8 + 3.7 * closeness;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SETTINGS, mergeOver } from "./settings";
+import { DEFAULT_SETTINGS, mergeOver, settingsFromStored } from "./settings";
 
 describe("mergeOver", () => {
   it("uses the defaults when nothing is stored", () => {
@@ -24,6 +24,30 @@ describe("mergeOver", () => {
     expect(merged.orbs.square).toBe(7);
     expect(merged.showInWheel).toEqual(DEFAULT_SETTINGS.showInWheel);
     expect("obsolete" in merged).toBe(false);
+  });
+});
+
+describe("settingsFromStored", () => {
+  it("moves aspect colours still at their old default to the new default", () => {
+    const stored = {
+      colors: { aspects: { sextile: "#f06aa8", square: "#D32F2F", trine: "#123456" } },
+    };
+    const settings = settingsFromStored(stored);
+    expect(settings.colors.aspects.sextile).toBe("#ff1493");
+    expect(settings.colors.aspects.square).toBe("#e60000");
+    // A colour the user picked is kept.
+    expect(settings.colors.aspects.trine).toBe("#123456");
+    expect(settings.colors.aspects.opposition).toBe("#ff8c00");
+  });
+
+  it("uses the decided default colours when nothing is stored", () => {
+    expect(settingsFromStored(null).colors.aspects).toEqual({
+      conjunction: "#444444",
+      sextile: "#ff1493",
+      square: "#e60000",
+      trine: "#00a000",
+      opposition: "#ff8c00",
+    });
   });
 });
 

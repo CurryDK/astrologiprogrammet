@@ -66,9 +66,16 @@ describe("spreadAngles", () => {
 });
 
 describe("aspectLineWidth", () => {
-  it("is thicker for tighter orbs and never vanishes", () => {
-    expect(aspectLineWidth(0)).toBeGreaterThan(aspectLineWidth(3));
-    expect(aspectLineWidth(3)).toBeGreaterThan(aspectLineWidth(7));
-    expect(aspectLineWidth(15)).toBeGreaterThan(0);
+  it("runs linearly from 4.5 px at exact to 0.8 px at the maximum orb", () => {
+    expect(aspectLineWidth(0, 7)).toBeCloseTo(4.5);
+    expect(aspectLineWidth(7, 7)).toBeCloseTo(0.8);
+    expect(aspectLineWidth(3.5, 7)).toBeCloseTo(2.65);
+    expect(aspectLineWidth(1.5, 3)).toBeCloseTo(2.65);
+  });
+
+  it("depends on the absolute orb and stays within its range", () => {
+    expect(aspectLineWidth(-2, 7)).toBeCloseTo(aspectLineWidth(2, 7));
+    expect(aspectLineWidth(9, 7)).toBeCloseTo(0.8);
+    expect(aspectLineWidth(0, 0)).toBeCloseTo(0.8);
   });
 });

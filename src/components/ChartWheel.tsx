@@ -4,6 +4,7 @@ import {
   SIGNS,
   SIGN_GLYPHS,
   formatDegree,
+  lotReading,
   isBody,
   type Aspect,
   type Chart,
@@ -167,7 +168,9 @@ export function ChartWheel({ chart, aspects, settings, lots = [] }: Props) {
               x2={b.x}
               y2={b.y}
               stroke={settings.colors.aspects[aspect.kind]}
-              strokeWidth={aspectLineWidth(aspect.orb)}
+              strokeWidth={aspectLineWidth(aspect.orb, settings.orbs[aspect.kind])}
+              // The width is in screen pixels, whatever size the wheel is shown at.
+              vectorEffect="non-scaling-stroke"
               strokeLinecap="round"
             />
           );
@@ -224,6 +227,8 @@ export function ChartWheel({ chart, aspects, settings, lots = [] }: Props) {
         const degree = at(display, R.degree);
         const minute = at(display, R.minute);
         const text = { fill: INK, textAnchor: "middle", dominantBaseline: "central" } as const;
+        // The wheel has room for degrees and minutes only.
+        const reading = lotReading(lot, false);
         return (
           <g key={lot.lot} className="wheel-lot">
             <line
@@ -240,10 +245,10 @@ export function ChartWheel({ chart, aspects, settings, lots = [] }: Props) {
               {LOT_SYMBOLS[lot.lot]}
             </text>
             <text x={degree.x} y={degree.y} fontSize={21} {...text}>
-              {lot.degree}°
+              {reading.degree}°
             </text>
             <text x={minute.x} y={minute.y} fontSize={17} {...text}>
-              {String(lot.minute).padStart(2, "0")}′
+              {String(reading.minute).padStart(2, "0")}′
             </text>
           </g>
         );

@@ -5,7 +5,7 @@ import {
   POINT_NAMES,
   SIGN_GLYPHS,
   SIGN_NAMES,
-  formatDegree,
+  formatLot,
   type Lot,
   type LotPosition,
 } from "../astro";
@@ -54,7 +54,7 @@ export function LotsTable({ lots, settings }: Props) {
               <LotSymbol lot={lot.lot} />
             </td>
             <td>{LOT_NAMES[lot.lot]}</td>
-            <td className="number">{formatDegree(lot)}</td>
+            <td className="number">{formatLot(lot, settings.lots.showSeconds)}</td>
             <td className="glyph" title={SIGN_NAMES[lot.sign]}>
               {SIGN_GLYPHS[lot.sign]}
             </td>

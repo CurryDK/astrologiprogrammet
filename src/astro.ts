@@ -354,6 +354,38 @@ export function formatDegree(point: { degree: number; minute: number }): string 
   return `${point.degree}°${String(point.minute).padStart(2, "0")}′`;
 }
 
+/**
+ * A lot's position within its sign for display, rounded to the nearest minute
+ * or, with `seconds`, to the nearest second (decision supplement of
+ * 14 November 2026, point 6). Only the display is rounded; the longitude is
+ * untouched. A reading never rounds up into the next sign: it stops at
+ * 29°59′ (or 29°59′59″), so the sign shown is always the sign the lot is in.
+ */
+export function lotReading(
+  lot: { longitude: number; sign: Sign },
+  seconds: boolean,
+): { degree: number; minute: number; second: number } {
+  const unitsPerDegree = seconds ? 3600 : 60;
+  const withinSign = lot.longitude - SIGNS.indexOf(lot.sign) * 30;
+  const units = Math.min(
+    Math.max(Math.round(withinSign * unitsPerDegree), 0),
+    30 * unitsPerDegree - 1,
+  );
+  const totalSeconds = seconds ? units : units * 60;
+  return {
+    degree: Math.floor(totalSeconds / 3600),
+    minute: Math.floor(totalSeconds / 60) % 60,
+    second: totalSeconds % 60,
+  };
+}
+
+/** A lot's position as "10°22′", or "10°22′31″" with seconds. */
+export function formatLot(lot: { longitude: number; sign: Sign }, seconds: boolean): string {
+  const reading = lotReading(lot, seconds);
+  const text = formatDegree(reading);
+  return seconds ? `${text}${String(reading.second).padStart(2, "0")}″` : text;
+}
+
 /** An orb in degrees as "2°13′", truncated to whole minutes. */
 export function formatOrb(orb: number): string {
   const totalMinutes = Math.floor(orb * 60 + 1e-9);

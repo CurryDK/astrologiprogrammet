@@ -70,7 +70,8 @@ export function SettingsView() {
           </tbody>
         </table>
         <p className="muted">
-          Konjunktioner vises i aspektoversigten, men tegnes ikke som linje i hjulet.
+          Konjunktioner vises i aspektoversigten, men tegnes ikke som linje i hjulet. Linjerne i
+          hjulet er tykkest ved eksakt aspekt og tyndest ved den valgte orb.
         </p>
       </section>
 
@@ -116,6 +117,20 @@ export function SettingsView() {
             </tr>
           </tbody>
         </table>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={settings.lots.showSeconds}
+            onChange={(e) =>
+              update((s) => ({ ...s, lots: { ...s.lots, showSeconds: e.target.checked } }))
+            }
+          />
+          Vis lots med sekunder i lots-oversigten
+        </label>
+        <p className="muted">
+          Lots vises som standard i grader og minutter, afrundet til nærmeste minut. Afrundingen
+          gælder kun visningen; beregningerne bruger altid den fulde præcision.
+        </p>
         <p className="muted">
           Standard er 3° orb. Et lot-aspekt markeres med “e”, når orben er mindre end grænsen
           (standard 1°). Hvilke lots der vises i hjulet, og hvad lot-aspekter beregnes til, vælges
