@@ -13,7 +13,7 @@ import {
   type YearStart,
 } from "../astro";
 import { RATING_NAMES } from "../conditionText";
-import { DEFAULT_SETTINGS, useSettings, type LayerLines, type ModernDecanRulers } from "../settings";
+import { DEFAULT_SETTINGS, useSettings, type LayerLines, type ModernDecanRulers, type WheelOrientation } from "../settings";
 
 /** Colours and orbs. Every change takes effect at once and is remembered. */
 export function SettingsView() {
@@ -435,6 +435,24 @@ export function SettingsView() {
                 >
                   <option value="modern">Med Pluto, Uranus og Neptun</option>
                   <option value="traditional">Kun de traditionelle herskere</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Hjulets orientering</td>
+              <td>
+                <select
+                  aria-label="Hjulets orientering"
+                  value={settings.wheel.orientation}
+                  onChange={(e) =>
+                    update((s) => ({
+                      ...s,
+                      wheel: { ...s.wheel, orientation: e.target.value as WheelOrientation },
+                    }))
+                  }
+                >
+                  <option value="ascendant">ASC-graden på den vandrette linje til venstre</option>
+                  <option value="risingSign">Starten af 1. hus på den vandrette linje til venstre</option>
                 </select>
               </td>
             </tr>

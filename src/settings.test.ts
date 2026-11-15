@@ -90,6 +90,9 @@ describe("lot settings", () => {
     const settings = settingsFromStored({ wheel: { rings: { bounds: false }, modernDecanRulers: "other" } });
     expect(settings.wheel.rings).toEqual({ chaldeanDecans: true, modernDecans: false, bounds: false });
     expect(settings.wheel.modernDecanRulers).toBe("modern");
+    expect(settings.wheel.orientation).toBe("ascendant");
+    expect(settingsFromStored({ wheel: { orientation: "risingSign" } }).wheel.orientation).toBe("risingSign");
+    expect(settingsFromStored({ wheel: { orientation: "other" } }).wheel.orientation).toBe("ascendant");
     expect(settings.colors.elements).toEqual(DEFAULT_SETTINGS.colors.elements);
   });
 });

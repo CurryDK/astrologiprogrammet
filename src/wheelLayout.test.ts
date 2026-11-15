@@ -7,6 +7,7 @@ import {
   normalize,
   spreadAngles,
   spreadAnglesBy,
+  wheelAnchor,
 } from "./wheelLayout";
 
 /** Smallest distance between two angles on the circle. */
@@ -177,5 +178,19 @@ describe("spreadAnglesBy with preferred angles", () => {
   });
   it("lets a lone symbol stand at its preferred angle", () => {
     expect(spreadAnglesBy([270.5, 90], () => 5, [276, 90])[0]).toBeCloseTo(276);
+  });
+});
+
+describe("wheelAnchor", () => {
+  it("is the exact degree of the Ascendant by default", () => {
+    expect(wheelAnchor(229.64, "ascendant")).toBeCloseTo(229.64);
+    expect(wheelAnchor(-10, "ascendant")).toBeCloseTo(350);
+  });
+
+  it("is the start of the rising sign when the first house starts on the horizontal line", () => {
+    expect(wheelAnchor(229.64, "risingSign")).toBe(210);
+    expect(wheelAnchor(207.39, "risingSign")).toBe(180);
+    expect(wheelAnchor(359.99, "risingSign")).toBe(330);
+    expect(wheelAnchor(0, "risingSign")).toBe(0);
   });
 });

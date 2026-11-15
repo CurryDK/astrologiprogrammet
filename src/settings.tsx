@@ -39,6 +39,8 @@ export type Settings = {
     rings: { chaldeanDecans: boolean; modernDecans: boolean; bounds: boolean };
     /** Rulers of Scorpio, Aquarius and Pisces in the modern decans. */
     modernDecanRulers: ModernDecanRulers;
+    /** What stands on the horizontal line at the left of the wheel. */
+    orientation: WheelOrientation;
   };
   /** Which bodies are drawn in the wheel. */
   showInWheel: Record<Body, boolean>;
@@ -123,6 +125,14 @@ export type Settings = {
 export type ModernDecanRulers = "modern" | "traditional";
 const MODERN_DECAN_RULERS: ModernDecanRulers[] = ["modern", "traditional"];
 
+/**
+ * What the wheel is turned by (decision of 15 November 2026 on the wheel's
+ * orientation): the exact degree of the Ascendant, or the start of the
+ * rising sign, which is the start of the first whole-sign house.
+ */
+export type WheelOrientation = "ascendant" | "risingSign";
+const WHEEL_ORIENTATIONS: WheelOrientation[] = ["ascendant", "risingSign"];
+
 export type LayerLines = "center" | "rings";
 const LAYER_LINES: LayerLines[] = ["center", "rings"];
 const ANGLE_METHODS: AngleMethod[] = ["naibodRightAscension", "naibodLongitude"];
@@ -176,6 +186,12 @@ export const DEFAULT_SETTINGS: Settings = {
     // Proposed default: Pluto, Uranus and Neptune for Scorpio, Aquarius
     // and Pisces; the traditional rulers can be chosen instead.
     modernDecanRulers: "modern",
+    // The decision of 15 November 2026 says in words that the wheel is turned
+    // by the exact degree of the Ascendant, so the ASC–DSC axis is horizontal;
+    // its reference picture has the start of the first whole-sign house on
+    // the horizontal line instead. The words are the default, the picture
+    // can be chosen.
+    orientation: "ascendant",
   },
   // The south node is always exactly opposite the north node, so it is off
   // until switched on.
@@ -328,6 +344,9 @@ export function settingsFromStored(stored: unknown): Settings {
   const wheel = { ...settings.wheel };
   if (!MODERN_DECAN_RULERS.includes(wheel.modernDecanRulers)) {
     wheel.modernDecanRulers = DEFAULT_SETTINGS.wheel.modernDecanRulers;
+  }
+  if (!WHEEL_ORIENTATIONS.includes(wheel.orientation)) {
+    wheel.orientation = DEFAULT_SETTINGS.wheel.orientation;
   }
   return { ...settings, colors: { ...settings.colors, aspects }, profections,
     transits,

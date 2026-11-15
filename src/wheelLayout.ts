@@ -208,3 +208,14 @@ export function keepInSign(longitude: number, before: number, after: number): nu
   if (low > high) return start + 15;
   return Math.min(Math.max(exact, low), high);
 }
+
+/**
+ * The zodiac longitude that stands on the horizontal line at the left of the
+ * wheel (decision of 15 November 2026): the exact degree of the Ascendant,
+ * or the start of the rising sign, where the first whole-sign house begins.
+ * Only the drawing turns; no position, house or aspect changes.
+ */
+export function wheelAnchor(ascendant: number, orientation: "ascendant" | "risingSign"): number {
+  const degree = normalize(ascendant);
+  return orientation === "risingSign" ? Math.floor(degree / 30) * 30 : degree;
+}

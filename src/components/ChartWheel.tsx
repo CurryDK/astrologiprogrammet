@@ -28,6 +28,7 @@ import {
   normalize,
   spreadAngles,
   spreadAnglesBy,
+  wheelAnchor,
 } from "../wheelLayout";
 import { LotGlyph, SYMBOL_FONT, WHEEL_LOT_SIZE } from "./LotSymbol";
 
@@ -168,8 +169,10 @@ function useRoom() {
 
 /**
  * The horoscope wheel (specification §4 and the visual wheel specification
- * of 15 November 2026): whole-sign houses, the Ascendant degree at the left,
- * zodiac running counter-clockwise.
+ * of 15 November 2026): whole-sign houses, zodiac running counter-clockwise.
+ * The horizontal line at the left holds the exact Ascendant degree, or the
+ * start of the first house when that orientation is chosen (decision of
+ * 15 November 2026); the angles always stand at their own degrees.
  */
 export function ChartWheel({
   chart,
@@ -186,7 +189,7 @@ export function ChartWheel({
   // clicked, which stays until it is clicked again or the wheel is clicked.
   const [hovered, setHovered] = useState<string | null>(null);
   const [pinned, setPinned] = useState<string | null>(null);
-  const ascendant = chart.angles.ascendant.longitude;
+  const anchor = wheelAnchor(chart.angles.ascendant.longitude, settings.wheel.orientation);
 
   // Natal innermost, progressions in the middle, transits outermost
   // (decision 9 of 15 November 2026 on progressions).
@@ -252,7 +255,7 @@ export function ChartWheel({
   const houseNumberRadius = Math.min(46, aspectRadius * 0.45);
 
   /** Screen angle of a zodiac longitude, in degrees counter-clockwise from the right. */
-  const screenAngle = (longitude: number) => 180 + longitude - ascendant;
+  const screenAngle = (longitude: number) => 180 + longitude - anchor;
   /** Point on the wheel for a zodiac longitude at a given radius. */
   const at = (longitude: number, radius: number) => {
     const theta = (screenAngle(longitude) * Math.PI) / 180;
@@ -805,7 +808,7 @@ export function ChartWheel({
           const theta = normalize(screenAngle(angle.longitude));
           const horizontal = Math.cos((theta * Math.PI) / 180);
           const vertical = Math.sin((theta * Math.PI) / 180);
-          const anchor = horizontal > 0.35 ? "start" : horizontal < -0.35 ? "end" : "middle";
+          const textAnchor = horizontal > 0.35 ? "start" : horizontal < -0.35 ? "end" : "middle";
           const baseline =
             vertical > 0.35 ? "text-after-edge" : vertical < -0.35 ? "text-before-edge" : "central";
           return (
@@ -818,7 +821,7 @@ export function ChartWheel({
                 fontSize={12}
                 fontWeight={700}
                 fill={INK}
-                textAnchor={anchor}
+                textAnchor={textAnchor}
                 dominantBaseline={baseline}
               >
                 {label} {formatDegree(angle)}

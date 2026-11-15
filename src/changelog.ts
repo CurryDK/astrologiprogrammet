@@ -13,6 +13,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.7.1",
+    date: "2026-11-15",
+    added: [
+      "Ny indstilling “Hjulets orientering” under Indstillinger → Horoskophjul. Standard er som hidtil: hjulet drejes efter Ascendantens præcise grad, så ASC står på den vandrette linje til venstre (kl. 9) og DSC til højre (kl. 3). Alternativet lægger starten af 1. hus (0° i det opstigende tegn) på den vandrette linje, så 1. hus strækker sig nedad fra linjen, og ASC står ved sin egen grad.",
+    ],
+    changed: [
+      "Kun tegningen drejes. Planetpositioner, huse og aspekter er de samme i begge orienteringer, og MC og IC står altid ved deres faktiske grader. Valget gælder også hjulet i Live Chart.",
+    ],
+  },
+  {
     version: "0.7.0",
     date: "2026-11-15",
     added: [
