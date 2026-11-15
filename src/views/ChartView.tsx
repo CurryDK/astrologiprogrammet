@@ -17,6 +17,7 @@ import {
   type Sect,
 } from "../astro";
 import { AspectTable } from "../components/AspectTable";
+import { ChartAnalysisPanel } from "../components/ChartAnalysisPanel";
 import { ChartWheel } from "../components/ChartWheel";
 import { ConditionPanel } from "../components/ConditionPanel";
 import { LifeEventsPanel } from "../components/LifeEventsPanel";
@@ -139,6 +140,7 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
                 lots={computed.lots?.positions}
               />
             </div>
+            <ChartAnalysisPanel record={record} />
             <ConditionPanel record={record} />
             <ProfectionPanel record={record} />
             <LifeEventsPanel record={record} onJump={onLive} jumpLabel="Vis i Live Chart" />

@@ -209,9 +209,12 @@ export const CONDITION_ROWS: ConditionRow[] = [
   row(
     "houses",
     "nearAngle",
-    "Tæt på en vinkel",
-    "Planeten står højst 3° fra ASC, DSC, MC eller IC, uanset hvilket heltegnshus den er i. Neutral: nærhed til en vinkel er ikke i sig selv en bonification.",
-    `${BASIS}; ${DECISIONS}, punkt 10`,
+    // Called "Tæt på en vinkel" until the Chart Analysis specification of
+    // 15 November 2026 (section 11) renamed it. Not the same as "House:
+    // angular", which is about the whole-sign house.
+    "Angular",
+    "Planeten står højst 3° fra ASC, DSC, MC eller IC, uanset hvilket heltegnshus den er i. Det er noget andet end “House: angular”, som gælder heltegnshus 1, 4, 7 og 10. Neutral: nærhed til en vinkel er ikke i sig selv en bonification.",
+    `${BASIS}; ${DECISIONS}, punkt 10; Chart Analysis-kravspecifikation, 15. november 2026, punkt 11`,
   ),
 
   row(

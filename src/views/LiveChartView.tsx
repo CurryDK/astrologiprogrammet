@@ -23,6 +23,7 @@ import {
   type TimeStep,
 } from "../astro";
 import { ChartWheel, type LayerPoint } from "../components/ChartWheel";
+import { ChartAnalysisPanel } from "../components/ChartAnalysisPanel";
 import { ConditionPanel } from "../components/ConditionPanel";
 import { LifeEventsPanel } from "../components/LifeEventsPanel";
 import { LotsTable } from "../components/LotsTable";
@@ -429,6 +430,7 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
               <PositionsTable chart={natal.chart} settings={settings} />
               {natal.lots && <LotsTable lots={natal.lots.positions} settings={settings} />}
             </details>
+            {changed && <ChartAnalysisPanel record={working} />}
             {changed && <ConditionPanel record={working} />}
             <LifeEventsPanel record={record} onJump={goTo} jumpLabel="Gå til" />
           </div>

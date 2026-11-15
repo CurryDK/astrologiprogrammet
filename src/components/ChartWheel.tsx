@@ -29,7 +29,7 @@ import {
   spreadAngles,
   spreadAnglesBy,
 } from "../wheelLayout";
-import { LotGlyph, SYMBOL_FONT } from "./LotSymbol";
+import { LotGlyph, SYMBOL_FONT, WHEEL_LOT_SIZE } from "./LotSymbol";
 
 // Everything is measured in screen pixels. Text and symbols keep their size
 // when the window changes; only the wheel's radius follows the room there is
@@ -714,7 +714,7 @@ export function ChartWheel({
                 stroke={INK}
                 strokeWidth={0.8}
               />
-              <LotGlyph lot={lot.lot} x={label.x} y={label.top + LABEL.glyph / 2} size={22} color={INK} />
+              <LotGlyph lot={lot.lot} x={label.x} y={label.top + LABEL.glyph / 2} size={WHEEL_LOT_SIZE} color={INK} />
               <text x={label.x} y={label.top + LABEL.glyph + LABEL.line / 2} fontSize={READING_SIZE} {...text}>
                 {reading.degree}°
               </text>

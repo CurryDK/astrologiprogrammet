@@ -4,6 +4,19 @@ export const SYMBOL_FONT =
   '"Astro Glyphs", "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", sans-serif';
 
 /**
+ * Font size of the planet glyph inside a lot's circle, as a share of the
+ * whole symbol: as large as it can be with the circle only just enclosing
+ * it (Chart Analysis specification of 15 November 2026, section 10).
+ */
+const GLYPH_SHARE = 0.8;
+
+/**
+ * Size of a lot symbol in the wheel. The planet glyphs there are set at
+ * 24 px, which draws them about 19 px across; a lot must not look larger.
+ */
+export const WHEEL_LOT_SIZE = 19;
+
+/**
  * The symbol of a lot as SVG, centred on (x, y) and `size` across (visual
  * wheel specification of 15 November 2026, section 5): Fortune is a circle
  * with a diagonal cross, Spirit a circle with a plus, and the other five a
@@ -34,7 +47,7 @@ export function LotGlyph({
           x={x}
           y={y}
           fontFamily={SYMBOL_FONT}
-          fontSize={size * 0.64}
+          fontSize={size * GLYPH_SHARE}
           fill={color}
           textAnchor="middle"
           dominantBaseline="central"

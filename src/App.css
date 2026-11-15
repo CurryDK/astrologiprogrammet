@@ -871,6 +871,167 @@ button.cond-line strong {
   margin: 2px 0;
 }
 
+/* Chart Analysis */
+
+.ca-self-key {
+  margin-left: 14px;
+  font-size: 0.8rem;
+}
+
+.ca-self-swatch {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border: 1px solid var(--line);
+  background: var(--self-rulership);
+  vertical-align: -1px;
+}
+
+.chart-analysis {
+  --self-rulership: #cfe9e6;
+}
+
+.ca-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.ca-table th,
+.ca-table td {
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ca-table thead th {
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 400;
+}
+
+.ca-table tbody th {
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.ca-table td.self {
+  background: var(--self-rulership);
+}
+
+.ca-table .glyph-inline {
+  font-size: 1.05rem;
+}
+
+.ca-words {
+  font-size: 0.72rem;
+  line-height: 1.15;
+  color: var(--muted);
+}
+
+span.ca-words {
+  display: inline-block;
+}
+
+.ca-relation {
+  margin-left: 5px;
+}
+
+.ca-table .ca-relation.glyph-inline {
+  font-size: 0.85rem;
+}
+
+.ca-lists {
+  margin-top: 14px;
+  column-width: 250px;
+  column-gap: 22px;
+}
+
+.ca-group-title {
+  margin: 0 0 6px;
+  padding: 4px 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  break-after: avoid;
+}
+
+.ca-group + .ca-group .ca-group-title {
+  margin-top: 12px;
+}
+
+.ca-planet {
+  margin-bottom: 12px;
+  break-inside: avoid;
+}
+
+.ca-planet h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.ca-planet h4 span:last-child {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ca-planet ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.ca-planet li {
+  display: flex;
+  gap: 7px;
+}
+
+.ca-bar {
+  flex: none;
+  box-sizing: border-box;
+  width: 5px;
+  border: 1.5px solid;
+  border-radius: 2px;
+}
+
+.ca-bar.fact {
+  border-color: #b9b6ae;
+  background: #b9b6ae;
+  opacity: 0.6;
+}
+
+.ca-legend .ca-bar {
+  display: inline-block;
+  height: 12px;
+  vertical-align: -2px;
+}
+
+.ca-note {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+}
+
 /* Archive */
 
 .archive {

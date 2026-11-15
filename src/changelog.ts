@@ -13,6 +13,21 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.7.0",
+    date: "2026-11-15",
+    added: [
+      "Chart Analysis: en ny, kompakt oversigt på horoskopsiden mellem hjulet og Planetary Condition. Øverst en tabel med planeterne som kolonner: tegn og hus, element og modalitet, domicile lord med dens relation til planeten, exaltation lord, bound lord, triplicity lords og decan lord. Self rulership er markeret med en svag farve.",
+      "Under tabellen står en kort liste for hver planet med dens betingelser, grupperet efter sect: favored sect først, derefter contrary sect. Merkur står i den gruppe, dens beregnede sect giver; ved eksakt konjunktion med Solen står den for sig som uafklaret.",
+      "Hver linje er markeret med en streg: udfyldt turkis (meget understøttende), turkis kontur (understøttende), rød kontur (udfordrende), udfyldt rød (meget udfordrende) eller grå (fakta uden vurdering). Hold musen over en linje for at se reglen.",
+      "“Vis neutrale fakta” i Chart Analysis skjuler eller viser de linjer, der ikke har en vurdering. Valget huskes.",
+    ],
+    changed: [
+      "Chart Analysis og Planetary Condition bygger på samme beregning og viser derfor altid det samme. Kategorier, der er slået fra under Planetary Condition, er også skjult i Chart Analysis. Der er fortsat ingen point eller samlet vurdering.",
+      "Lots-symbolerne i hjulet har nu samme størrelse som planetsymbolerne, og cirklen omslutter kun lige planetsymbolet.",
+      "“Tæt på en vinkel” hedder nu “Angular”. Reglen er uændret (højst 3° fra ASC, DSC, MC eller IC) og er stadig noget andet end “House: angular”.",
+    ],
+  },
+  {
     version: "0.6.3",
     date: "2026-11-15",
     added: [],

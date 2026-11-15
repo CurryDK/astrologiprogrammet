@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { api } from "../api";
+import { useState } from "react";
 import {
   CONDITION_GROUPS,
   PLANETS,
@@ -9,14 +8,12 @@ import {
   SECT_NAMES,
   SIGN_GLYPHS,
   SIGN_NAMES,
-  birthInputOf,
   formatMoment,
   formatOrb,
   type Body,
   type ChartRecord,
   type Condition,
   type ConditionGroup,
-  type ConditionReport,
   type PlanetCondition,
   type PlanetStations,
   type Rating,
@@ -32,6 +29,7 @@ import {
   type ConditionRow,
 } from "../conditionText";
 import { useSettings, type Settings } from "../settings";
+import { useConditionReport } from "../useConditionReport";
 
 /** The mark of a condition: filled for "very", an outline otherwise, a grey dot for a plain fact. */
 function Mark({ rating, colors }: { rating: Rating | null; colors: Settings["condition"]["colors"] }) {
@@ -71,29 +69,11 @@ type Props = { record: ChartRecord };
  */
 export function ConditionPanel({ record }: Props) {
   const { settings, update } = useSettings();
-  const { cazimi, combust, beams, colors, groups } = settings.condition;
-  const [report, setReport] = useState<ConditionReport | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { colors, groups } = settings.condition;
+  const { report, error } = useConditionReport(record);
   const [open, setOpen] = useState<Partial<Record<Body, boolean>>>({});
   // The condition whose rule and source are shown: "body:index".
   const [explained, setExplained] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .planetaryCondition(birthInputOf(record), record.sectOverride, { cazimi, combust, beams })
-      .then((result) => {
-        if (cancelled) return;
-        setReport(result);
-        setError(null);
-      })
-      .catch((reason) => {
-        if (!cancelled) setError(String(reason));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [record, cazimi, combust, beams]);
 
   if (error) {
     return (

@@ -115,6 +115,8 @@ export type Settings = {
     colors: Record<Rating, string>;
     /** Which analysis categories are shown. */
     groups: Record<ConditionGroup, boolean>;
+    /** Whether Chart Analysis also lists the facts that carry no rating. */
+    analysisNeutral: boolean;
   };
 };
 
@@ -252,6 +254,10 @@ export const DEFAULT_SETTINGS: Settings = {
       ConditionGroup,
       boolean
     >,
+    // Chart Analysis reuses the five categories, the neutral facts
+    // included (specification of 15 November 2026, section 6). They make
+    // the lists long, so they can be hidden. Proposed default: shown.
+    analysisNeutral: true,
   },
 };
 
