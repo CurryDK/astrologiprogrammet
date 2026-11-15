@@ -26,6 +26,7 @@ import {
   CONDITION_ROWS,
   GROUP_NAMES,
   RATING_NAMES,
+  SPEED_NAMES,
   conditionDetail,
   rowOf,
   type ConditionRow,
@@ -165,6 +166,20 @@ export function ConditionPanel({ record }: Props) {
               ))}
             </tr>
           </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Hastighed</th>
+              {report.planets.map((planet) => (
+                <td
+                  key={planet.body}
+                  className="cond-speed"
+                  title={`${planet.retrograde ? "−" : ""}${formatOrb(Math.abs(planet.speed))} pr. dag`}
+                >
+                  {planet.speedStatus ? SPEED_NAMES[planet.speedStatus] : ""}
+                </td>
+              ))}
+            </tr>
+          </tbody>
           {shownGroups.map((group) => (
             <tbody key={group}>
               <tr className="group-row">
@@ -256,6 +271,7 @@ export function ConditionPanel({ record }: Props) {
               <li>
                 {planet.retrograde ? "Retrograd" : "Direkte"} · {planet.retrograde ? "−" : ""}
                 {formatOrb(Math.abs(planet.speed))} pr. dag
+                {planet.speedStatus && ` (${SPEED_NAMES[planet.speedStatus]})`}
                 {stations && (
                   <>
                     {" "}

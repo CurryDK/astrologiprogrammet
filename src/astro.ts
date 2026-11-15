@@ -307,6 +307,8 @@ export type PlanetCondition = {
   /** Degrees per day; negative when retrograde. */
   speed: number;
   retrograde: boolean;
+  /** Retro when retrograde; otherwise Slow or Fast against the planet's mean daily motion. */
+  speedStatus: "retro" | "slow" | "fast" | null;
   lords: {
     domicile: Body;
     exaltation: Body | null;

@@ -13,6 +13,23 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.5.1",
+    date: "2026-11-15",
+    added: [
+      "Planetary Condition: striking with a ray fra Venus og Jupiter. Kun stråler bagud i zodiakken, inden for 3° fra eksakt, både applicerende og separerende. Kvadrat, trigon og opposition er meget understøttende, sekstil understøttende. Applicerende er markeret som stærkere.",
+      "Planetary Condition: rækken “Hastighed” øverst i matrixen viser Retro, Slow eller Fast for hver planet. Retro ved retrograd bevægelse; ellers Slow under og Fast på eller over Demetra Georges gennemsnitshastighed for planeten. Den faktiske daglige hastighed vises fortsat i detaljerne.",
+      "Merkur har nu joy by solar phase: som morgenstjerne i et dagkort og som aftenstjerne i et natkort.",
+    ],
+    changed: [
+      "1. hus vises nu både som House: angular og House: fortunate.",
+      "Combust er nu meget udfordrende (udfyldt rød). Under the beams er fortsat udfordrende (rød kontur). Chariot skjuler stadig vurderingen.",
+      "Cazimi er nu meget understøttende (udfyldt turkis).",
+      "Detriment og fall er nu udfordrende (rød kontur) i stedet for fakta uden vurdering.",
+      "De fire joys er nu understøttende (turkis kontur) i stedet for fakta uden vurdering.",
+      "Ved striking with a ray fra Mars og Saturn er en applicerende stråle nu også markeret som stærkere.",
+    ],
+  },
+  {
     version: "0.5.0",
     date: "2026-11-15",
     added: [

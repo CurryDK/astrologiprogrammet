@@ -513,7 +513,7 @@
             "kind": "joyHemisphere",
             "orb": null,
             "others": [],
-            "rating": null,
+            "rating": "supportive",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -531,7 +531,7 @@
             "kind": "joySignPolarity",
             "orb": null,
             "others": [],
-            "rating": null,
+            "rating": "supportive",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -549,7 +549,7 @@
             "kind": "detriment",
             "orb": null,
             "others": [],
-            "rating": null,
+            "rating": "challenging",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -801,6 +801,7 @@
         "sect": "diurnal",
         "sign": "aquarius",
         "speed": 1.014359780058286,
+        "speedStatus": "fast",
         "sunDistance": null
       },
       {
@@ -837,7 +838,7 @@
             "kind": "combust",
             "orb": 6.319345397448785,
             "others": [],
-            "rating": "challenging",
+            "rating": "veryChallenging",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -1150,6 +1151,7 @@
         "sect": "nocturnal",
         "sign": "aquarius",
         "speed": 14.975065748437432,
+        "speedStatus": "fast",
         "sunDistance": 6.319345397448785
       },
       {
@@ -1222,7 +1224,7 @@
             "kind": "combust",
             "orb": 2.2044736425107203,
             "others": [],
-            "rating": "challenging",
+            "rating": "veryChallenging",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -1498,6 +1500,7 @@
         "sect": "nocturnal",
         "sign": "aquarius",
         "speed": -1.1722542754097875,
+        "speedStatus": "retro",
         "sunDistance": 2.2044736425107203
       },
       {
@@ -1534,7 +1537,7 @@
             "kind": "joySolarPhase",
             "orb": null,
             "others": [],
-            "rating": null,
+            "rating": "supportive",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -1552,7 +1555,7 @@
             "kind": "combust",
             "orb": 1.9532475218067589,
             "others": [],
-            "rating": "challenging",
+            "rating": "veryChallenging",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -1826,6 +1829,7 @@
         "sect": "nocturnal",
         "sign": "aquarius",
         "speed": 1.2551729260880626,
+        "speedStatus": "fast",
         "sunDistance": 1.9532475218067589
       },
       {
@@ -2155,6 +2159,7 @@
         "sect": "nocturnal",
         "sign": "aquarius",
         "speed": 0.7773150531936374,
+        "speedStatus": "fast",
         "sunDistance": 13.241423615162887
       },
       {
@@ -2191,7 +2196,7 @@
             "kind": "joyHemisphere",
             "orb": null,
             "others": [],
-            "rating": null,
+            "rating": "supportive",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -2209,7 +2214,7 @@
             "kind": "joySignPolarity",
             "orb": null,
             "others": [],
-            "rating": null,
+            "rating": "supportive",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -2537,6 +2542,7 @@
         "sect": "diurnal",
         "sign": "aquarius",
         "speed": 0.2392523763851194,
+        "speedStatus": "fast",
         "sunDistance": 3.251511906389794
       },
       {
@@ -2573,7 +2579,7 @@
             "kind": "joyHemisphere",
             "orb": null,
             "others": [],
-            "rating": null,
+            "rating": "supportive",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -2591,7 +2597,7 @@
             "kind": "joySignPolarity",
             "orb": null,
             "others": [],
-            "rating": null,
+            "rating": "supportive",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -2609,7 +2615,7 @@
             "kind": "joySolarPhase",
             "orb": null,
             "others": [],
-            "rating": null,
+            "rating": "supportive",
             "returnDignities": [],
             "sectRole": null,
             "suppressed": false,
@@ -2942,6 +2948,7 @@
         "sect": "diurnal",
         "sign": "aquarius",
         "speed": 0.11755807030374481,
+        "speedStatus": "fast",
         "sunDistance": 11.50264286505103
       }
     ],

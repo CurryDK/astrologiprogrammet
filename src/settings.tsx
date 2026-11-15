@@ -165,7 +165,8 @@ export const DEFAULT_SETTINGS: Settings = {
     combust: 8,
     beams: 15,
     // Decided: turquoise for supportive, red for challenging; the "very"
-    // categories are drawn filled, the others as an outline.
+    // categories are drawn filled, the others as an outline. Turquoise was
+    // confirmed on 15 November 2026 over the green of a later legend.
     colors: {
       verySupportive: "#0e9aa7",
       supportive: "#0e9aa7",

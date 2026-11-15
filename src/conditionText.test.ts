@@ -47,10 +47,30 @@ describe("Planetary Condition texts", () => {
     }
   });
 
-  it("offers no row for the undecided or rejected conditions", () => {
-    // Striking with a ray from a benefic is undecided; counteraction is rejected.
-    expect(rowOf({ group: "bonification", kind: "strikingRay" })).toBeUndefined();
+  it("offers no row for the rejected counteraction", () => {
     expect(CONDITION_ROWS.some((r) => /counteraction/i.test(r.label))).toBe(false);
+  });
+
+  it("has striking with a ray from both benefics and malefics", () => {
+    expect(rowOf({ group: "bonification", kind: "strikingRay" })).toBeDefined();
+    expect(rowOf({ group: "maltreatment", kind: "strikingRay" })).toBeDefined();
+  });
+
+  it("marks an applying ray as the stronger one", () => {
+    const ray = { kind: "strikingRay", group: "bonification", others: ["jupiter"], aspect: "trine", orb: 1 } as const;
+    expect(conditionDetail(condition({ ...ray, others: ["jupiter"], applying: true }))).toBe(
+      "Jupiter, trigon 1°00′, applicerende (stærkere)",
+    );
+    expect(conditionDetail(condition({ ...ray, others: ["jupiter"], applying: false }))).toBe(
+      "Jupiter, trigon 1°00′, separerende",
+    );
+  });
+
+  it("gives every planet a speed status", () => {
+    for (const planet of report.planets) {
+      expect(["retro", "slow", "fast"]).toContain(planet.speedStatus);
+      expect(planet.speedStatus === "retro").toBe(planet.retrograde);
+    }
   });
 
   it("covers only the seven traditional planets", () => {

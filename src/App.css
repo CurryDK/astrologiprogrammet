@@ -758,6 +758,11 @@ details.panel summary {
   text-transform: uppercase;
 }
 
+.condition-matrix .cond-speed {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
 button.cond-cell {
   display: inline-flex;
   align-items: center;

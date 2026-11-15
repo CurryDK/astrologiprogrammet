@@ -6,10 +6,10 @@
 //! separate fact: there is no score, no total and no ranking, and day/night
 //! sect never changes a bonification or maltreatment rating.
 //!
-//! Deliberately absent, because the documents leave them undecided or
-//! reject them: bonification by striking with a ray from Venus/Jupiter,
-//! counteraction, hayz, and a rating for conditions the documents name
-//! without classifying (those are reported with no rating).
+//! Deliberately absent, because the documents reject them: counteraction
+//! and hayz. Conditions the documents classify as neutral (own decan,
+//! nearness to an angle, one-sided reception, the bare overcoming
+//! relation) are reported with no rating.
 
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -195,6 +195,46 @@ pub enum SolarPhase {
     Undetermined,
 }
 
+/// How a planet moves compared with its mean daily motion.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum SpeedStatus {
+    /// Retrograde, whatever the numeric speed.
+    Retro,
+    /// Direct and slower than the reference speed.
+    Slow,
+    /// Direct and at or above the reference speed.
+    Fast,
+}
+
+/// Mean daily motion in degrees: Demetra George, Ancient Astrology in
+/// Theory and Practice, vol. I, table 20 (decision of 15 November 2026).
+pub fn reference_speed(body: Body) -> Option<f64> {
+    let minutes = match body {
+        Body::Moon => 13.0 * 60.0 + 10.56,
+        Body::Sun => 59.16,
+        Body::Mercury | Body::Venus => 59.0,
+        Body::Mars => 31.444,
+        Body::Jupiter => 4.987,
+        Body::Saturn => 2.009,
+        _ => return None,
+    };
+    Some(minutes / 60.0)
+}
+
+/// Retro when retrograde; otherwise Slow below the reference speed and
+/// Fast at or above it. Compared at full precision, with no tolerance.
+pub fn speed_status(body: Body, speed: f64) -> Option<SpeedStatus> {
+    let reference = reference_speed(body)?;
+    Some(if speed < 0.0 {
+        SpeedStatus::Retro
+    } else if speed < reference {
+        SpeedStatus::Slow
+    } else {
+        SpeedStatus::Fast
+    })
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum HouseType {
@@ -312,6 +352,8 @@ pub struct PlanetCondition {
     /// Degrees per day; negative when retrograde.
     pub speed: f64,
     pub retrograde: bool,
+    /// Retro, Slow or Fast against the planet's mean daily motion.
+    pub speed_status: Option<SpeedStatus>,
     pub lords: Lords,
     pub conditions: Vec<Condition>,
 }
@@ -538,6 +580,40 @@ fn close_aspect(a: &Planet, b: &Planet, limit: f64) -> Option<CloseAspect> {
     })
 }
 
+/// A ray cast backwards in the order of the signs: `striker` stands later
+/// in the zodiac than `target` by one of the given aspects, within the
+/// close limit of exact (inclusive). An opposition has no direction.
+fn backward_ray(target: &Planet, striker: &Planet, kinds: &[AspectKind]) -> Option<CloseAspect> {
+    let ahead = signed(striker.longitude - target.longitude);
+    kinds.iter().find_map(|&kind| {
+        let deviation = if kind == AspectKind::Opposition {
+            ahead.abs() - 180.0
+        } else {
+            ahead - kind.angle()
+        };
+        if deviation.abs() > CLOSE_LIMIT + EPSILON {
+            return None;
+        }
+        let separation_rate = if ahead >= 0.0 {
+            striker.speed - target.speed
+        } else {
+            target.speed - striker.speed
+        };
+        let orb_rate = if deviation >= 0.0 { separation_rate } else { -separation_rate };
+        Some(CloseAspect {
+            kind,
+            orb: deviation.abs(),
+            applying: if deviation.abs() < EPSILON {
+                Some(true)
+            } else if orb_rate == 0.0 {
+                None
+            } else {
+                Some(orb_rate < 0.0)
+            },
+        })
+    })
+}
+
 /// The points a planet's sextile, square, trine and opposition rays fall on.
 fn ray_points(longitude: f64) -> [(AspectKind, f64); 7] {
     [
@@ -690,27 +766,32 @@ pub fn condition_report(
                 conditions.push(condition);
             }
 
-            // Joys: four separate facts.
+            // Joys: four separate conditions, each supportive.
+            let joy = Some(Rating::Supportive);
             if let Some(planet_sect) = planet_sect {
                 if in_favor(planet_sect) == above {
-                    conditions.push(Condition::new(K::JoyHemisphere, G::Joys, None));
+                    conditions.push(Condition::new(K::JoyHemisphere, G::Joys, joy));
                 }
                 let masculine = planet.sign.index() % 2 == 0;
                 if (planet_sect == PlanetSect::Diurnal) == masculine {
-                    conditions.push(Condition::new(K::JoySignPolarity, G::Joys, None));
+                    conditions.push(Condition::new(K::JoySignPolarity, G::Joys, joy));
                 }
             }
             let rejoicing_phase = match body {
                 Body::Jupiter | Body::Saturn => Some(SolarPhase::Morning),
                 Body::Venus | Body::Mars => Some(SolarPhase::Evening),
-                // Mercury's own rule is not decided; its phase is shown as a fact.
+                // Mercury: morning star in a day chart, evening star at night.
+                Body::Mercury => Some(match sect {
+                    Sect::Day => SolarPhase::Morning,
+                    Sect::Night => SolarPhase::Evening,
+                }),
                 _ => None,
             };
             if rejoicing_phase.is_some() && rejoicing_phase == phase {
-                conditions.push(Condition::new(K::JoySolarPhase, G::Joys, None));
+                conditions.push(Condition::new(K::JoySolarPhase, G::Joys, joy));
             }
             if house_joy(body) == Some(planet.house) {
-                conditions.push(Condition::new(K::JoyHouse, G::Joys, None));
+                conditions.push(Condition::new(K::JoyHouse, G::Joys, joy));
             }
 
             // Essential dignities and debilities.
@@ -740,12 +821,11 @@ pub fn condition_report(
             if own.contains(&Dignity::Decan) {
                 conditions.push(Condition::new(K::Decan, G::Dignities, None));
             }
-            // Named in the documents without a classification: no rating.
             if opposite(planet.sign).ruler() == body {
-                conditions.push(Condition::new(K::Detriment, G::Dignities, None));
+                conditions.push(Condition::new(K::Detriment, G::Dignities, Some(Rating::Challenging)));
             }
             if exaltation_sign(body) == Some(opposite(planet.sign)) {
-                conditions.push(Condition::new(K::Fall, G::Dignities, None));
+                conditions.push(Condition::new(K::Fall, G::Dignities, Some(Rating::Challenging)));
             }
 
             // Relation to the Sun.
@@ -753,18 +833,22 @@ pub fn condition_report(
             if let Some(distance) = sun_distance {
                 let within = |limit: f64| distance <= limit + EPSILON;
                 if within(options.cazimi) {
-                    let mut condition = Condition::new(K::Cazimi, G::Sun, None);
+                    let mut condition = Condition::new(K::Cazimi, G::Sun, very);
                     condition.orb = Some(distance);
                     conditions.push(condition);
                 } else if within(options.beams) {
-                    let kind = if within(options.combust) { K::Combust } else { K::UnderBeams };
+                    let (kind, negative) = if within(options.combust) {
+                        (K::Combust, Rating::VeryChallenging)
+                    } else {
+                        (K::UnderBeams, Rating::Challenging)
+                    };
                     let protecting: Vec<Dignity> = own
                         .iter()
                         .copied()
                         .filter(|d| matches!(d, Dignity::Domicile | Dignity::Exaltation | Dignity::Bounds))
                         .collect();
                     let protected = !protecting.is_empty();
-                    let rating = (!protected).then_some(Rating::Challenging);
+                    let rating = (!protected).then_some(negative);
                     let mut condition = Condition::new(kind, G::Sun, rating);
                     condition.orb = Some(distance);
                     condition.suppressed = protected;
@@ -783,7 +867,7 @@ pub fn condition_report(
             if matches!(planet.house, 1 | 4 | 7 | 10) {
                 conditions.push(Condition::new(K::HouseAngular, G::Houses, supportive));
             }
-            if matches!(planet.house, 3 | 4 | 5 | 7 | 9 | 10 | 11) {
+            if matches!(planet.house, 1 | 3 | 4 | 5 | 7 | 9 | 10 | 11) {
                 conditions.push(Condition::new(K::HouseFortunate, G::Houses, supportive));
             }
             if matches!(planet.house, 2 | 6 | 8 | 12) {
@@ -913,6 +997,25 @@ pub fn condition_report(
                     conditions.push(condition);
                 }
             }
+            // Striking with a ray from a benefic: a backward ray by sextile,
+            // square, trine or opposition within 3° of exact, applying or
+            // separating. Kept apart from engagement.
+            const BENEFIC_RAYS: [AspectKind; 4] = [
+                AspectKind::Sextile,
+                AspectKind::Square,
+                AspectKind::Trine,
+                AspectKind::Opposition,
+            ];
+            for other in others().filter(|other| is_benefic(other.body)) {
+                if let Some(ray) = backward_ray(planet, other, &BENEFIC_RAYS) {
+                    let rating = if ray.kind == AspectKind::Sextile { supportive } else { very };
+                    let mut condition = Condition::new(K::StrikingRay, G::Bonification, rating).with(other.body);
+                    condition.aspect = Some(ray.kind);
+                    condition.orb = Some(ray.orb);
+                    condition.applying = ray.applying;
+                    conditions.push(condition);
+                }
+            }
             if let Some(condition) = enclosure(planet, &planets, [Body::Venus, Body::Jupiter], G::Bonification, very) {
                 conditions.extend(condition);
             }
@@ -951,24 +1054,11 @@ pub fn condition_report(
                 }
                 // Striking with a ray: the malefic in the inferior position
                 // (later in the zodiac) with a square within 3° of exact.
-                let ahead = signed(other.longitude - planet.longitude);
-                let deviation = ahead - 90.0;
-                if deviation.abs() <= CLOSE_LIMIT + EPSILON {
-                    let orb_rate = if deviation >= 0.0 {
-                        other.speed - planet.speed
-                    } else {
-                        planet.speed - other.speed
-                    };
+                if let Some(ray) = backward_ray(planet, other, &[AspectKind::Square]) {
                     let mut condition = Condition::new(K::StrikingRay, G::Maltreatment, very_bad).with(other.body);
                     condition.aspect = Some(AspectKind::Square);
-                    condition.orb = Some(deviation.abs());
-                    condition.applying = if deviation.abs() < EPSILON {
-                        Some(true)
-                    } else if orb_rate == 0.0 {
-                        None
-                    } else {
-                        Some(orb_rate < 0.0)
-                    };
+                    condition.orb = Some(ray.orb);
+                    condition.applying = ray.applying;
                     conditions.push(condition);
                 }
             }
@@ -991,6 +1081,7 @@ pub fn condition_report(
                 sun_distance,
                 speed: planet.speed,
                 retrograde: planet.speed < 0.0,
+                speed_status: speed_status(body, planet.speed),
                 lords: lords_at(planet.longitude),
                 conditions,
             }
@@ -1409,10 +1500,16 @@ mod tests {
         assert!(has(&r, Body::Sun, G::Dignities, K::Exaltation));
         // Saturn in Aries: fall, participating triplicity lord.
         let r = report(&chart_at(ARIES, &[(Body::Saturn, ARIES + 15.0)]));
-        assert!(has(&r, Body::Saturn, G::Dignities, K::Fall));
+        assert_eq!(
+            find(&r, Body::Saturn, G::Dignities, K::Fall)[0].rating,
+            Some(Rating::Challenging)
+        );
         // Venus in Aries: detriment.
         let r = report(&chart_at(ARIES, &[(Body::Venus, ARIES + 15.0)]));
-        assert!(has(&r, Body::Venus, G::Dignities, K::Detriment));
+        assert_eq!(
+            find(&r, Body::Venus, G::Dignities, K::Detriment)[0].rating,
+            Some(Rating::Challenging)
+        );
     }
 
     #[test]
@@ -1451,6 +1548,21 @@ mod tests {
     }
 
     #[test]
+    fn cazimi_combust_and_beams_each_have_their_own_rating() {
+        // Mercury in Aquarius, outside its own bounds: no chariot.
+        let rating = |distance: f64| {
+            let r = report(&chart_at(ARIES, &[(Body::Sun, 310.0), (Body::Mercury, 310.0 + distance)]));
+            let p = planet(&r, Body::Mercury);
+            let found: Vec<_> = p.conditions.iter().filter(|c| c.group == G::Sun).collect();
+            assert_eq!(found.len(), 1, "{found:?}");
+            (found[0].kind, found[0].rating)
+        };
+        assert_eq!(rating(0.5), (K::Cazimi, Some(Rating::VerySupportive)));
+        assert_eq!(rating(5.0), (K::Combust, Some(Rating::VeryChallenging)));
+        assert_eq!(rating(12.0), (K::UnderBeams, Some(Rating::Challenging)));
+    }
+
+    #[test]
     fn sun_limits_follow_the_settings() {
         let chart = chart_at(ARIES, &[(Body::Sun, 200.0), (Body::Mars, 210.0)]);
         let options = ConditionOptions {
@@ -1467,7 +1579,7 @@ mod tests {
         let r = report(&chart_at(ARIES, &[(Body::Sun, 357.0), (Body::Saturn, 2.0)]));
         let found = find(&r, Body::Saturn, G::Sun, K::Combust);
         assert!((found[0].orb.unwrap() - 5.0).abs() < 1e-9);
-        assert_eq!(found[0].rating, Some(Rating::Challenging));
+        assert_eq!(found[0].rating, Some(Rating::VeryChallenging));
     }
 
     #[test]
@@ -1497,7 +1609,7 @@ mod tests {
         assert!(!has(&r, Body::Jupiter, G::Sun, K::Chariot));
         assert_eq!(
             find(&r, Body::Jupiter, G::Sun, K::Combust)[0].rating,
-            Some(Rating::Challenging)
+            Some(Rating::VeryChallenging)
         );
     }
 
@@ -1514,8 +1626,8 @@ mod tests {
         };
         let good = Some(Rating::Supportive);
         let bad = Some(Rating::Challenging);
-        // House 1: angular only.
-        assert_eq!(kinds(ARIES), vec![(K::HouseAngular, good)]);
+        // House 1: angular and fortunate.
+        assert_eq!(kinds(ARIES), vec![(K::HouseAngular, good), (K::HouseFortunate, good)]);
         // House 4: angular and fortunate.
         assert_eq!(kinds(CANCER), vec![(K::HouseAngular, good), (K::HouseFortunate, good)]);
         // House 11 is fortunate.
@@ -1691,10 +1803,105 @@ mod tests {
         assert!(!strikes(PISCES + 10.0));
     }
 
+    /// Jupiter's ray to the Moon at 10° Gemini; Venus is kept out of the way.
+    fn jupiter_ray(jupiter: f64) -> Option<(AspectKind, Option<Rating>, Option<bool>)> {
+        let chart = chart_at(
+            ARIES,
+            &[(Body::Moon, GEMINI + 10.0), (Body::Jupiter, jupiter), (Body::Venus, AQUARIUS)],
+        );
+        let r = report(&chart);
+        find(&r, Body::Moon, G::Bonification, K::StrikingRay)
+            .first()
+            .map(|c| (c.aspect.unwrap(), c.rating, c.applying))
+    }
+
     #[test]
-    fn striking_with_a_ray_from_a_benefic_is_not_recorded() {
-        let r = report(&chart_at(ARIES, &[(Body::Moon, GEMINI + 10.0), (Body::Jupiter, VIRGO + 10.0)]));
-        assert!(!has(&r, Body::Moon, G::Bonification, K::StrikingRay));
+    fn a_benefic_strikes_with_a_backward_ray_by_four_aspects() {
+        let very = Some(Rating::VerySupportive);
+        // Jupiter later in the zodiac: its ray goes backwards to the Moon.
+        // The Moon moves towards the exact aspect, so each is applying.
+        assert_eq!(jupiter_ray(LEO + 11.0), Some((AspectKind::Sextile, Some(Rating::Supportive), Some(true))));
+        assert_eq!(jupiter_ray(VIRGO + 11.0), Some((AspectKind::Square, very, Some(true))));
+        assert_eq!(jupiter_ray(LIBRA + 11.0), Some((AspectKind::Trine, very, Some(true))));
+        assert_eq!(jupiter_ray(SAGITTARIUS + 11.0), Some((AspectKind::Opposition, very, Some(true))));
+        // Jupiter earlier in the zodiac: a forward ray, not recorded.
+        assert_eq!(jupiter_ray(ARIES + 10.0), None);
+        assert_eq!(jupiter_ray(PISCES + 10.0), None);
+        assert_eq!(jupiter_ray(AQUARIUS + 10.0), None);
+    }
+
+    #[test]
+    fn a_benefic_ray_counts_to_three_degrees_applying_or_separating() {
+        assert!(jupiter_ray(VIRGO + 13.0).is_some());
+        assert!(jupiter_ray(VIRGO + 7.0).is_some());
+        assert!(jupiter_ray(VIRGO + 13.1).is_none());
+        assert!(jupiter_ray(VIRGO + 6.9).is_none());
+        // The Moon has passed the exact square: separating, still recorded.
+        assert_eq!(
+            jupiter_ray(VIRGO + 9.0),
+            Some((AspectKind::Square, Some(Rating::VerySupportive), Some(false)))
+        );
+        // An opposition counts from either side of exact.
+        assert_eq!(jupiter_ray(SAGITTARIUS + 8.0).map(|r| r.2), Some(Some(false)));
+    }
+
+    #[test]
+    fn a_benefic_ray_and_engagement_are_recorded_separately_once_each() {
+        let chart = chart_at(
+            ARIES,
+            &[(Body::Sun, GEMINI + 10.0), (Body::Jupiter, VIRGO + 11.0), (Body::Venus, AQUARIUS)],
+        );
+        let r = report(&chart);
+        assert_eq!(find(&r, Body::Sun, G::Bonification, K::StrikingRay).len(), 1);
+        assert_eq!(find(&r, Body::Sun, G::Bonification, K::Engagement).len(), 1);
+    }
+
+    #[test]
+    fn speed_is_retro_slow_or_fast_against_the_reference() {
+        assert_eq!(speed_status(Body::Sun, 59.16 / 60.0), Some(SpeedStatus::Fast));
+        assert_eq!(speed_status(Body::Sun, 59.15 / 60.0), Some(SpeedStatus::Slow));
+        assert_eq!(speed_status(Body::Moon, 13.2), Some(SpeedStatus::Fast));
+        assert_eq!(speed_status(Body::Moon, 13.1), Some(SpeedStatus::Slow));
+        assert_eq!(speed_status(Body::Mars, 0.6), Some(SpeedStatus::Fast));
+        assert_eq!(speed_status(Body::Jupiter, 0.05), Some(SpeedStatus::Slow));
+        assert_eq!(speed_status(Body::Saturn, 0.034), Some(SpeedStatus::Fast));
+        // Retrograde: Retro whatever the numeric speed.
+        assert_eq!(speed_status(Body::Mercury, -1.2), Some(SpeedStatus::Retro));
+        assert_eq!(speed_status(Body::Venus, -0.01), Some(SpeedStatus::Retro));
+        // The outer planets are not classified.
+        assert_eq!(speed_status(Body::Uranus, 0.05), None);
+        let r = report(&chart_with(ARIES, &[(Body::Mercury, 224.0, -0.5)]));
+        assert_eq!(planet(&r, Body::Mercury).speed_status, Some(SpeedStatus::Retro));
+        assert_eq!(planet(&r, Body::Mars).speed_status, Some(SpeedStatus::Slow));
+    }
+
+    #[test]
+    fn mercury_rejoices_as_morning_star_by_day_and_evening_star_by_night() {
+        // Sun at 196°, above the horizon with Aries rising: a day chart.
+        let morning = chart_at(ARIES, &[(Body::Mercury, 180.0)]);
+        let evening = chart_at(ARIES, &[(Body::Mercury, 215.0)]);
+        let joy = |chart: &Chart, sect: Option<Sect>| {
+            let r = condition_report(chart, sect, &ConditionOptions::default());
+            has(&r, Body::Mercury, G::Joys, K::JoySolarPhase)
+        };
+        assert!(joy(&morning, None));
+        assert!(!joy(&evening, None));
+        assert!(!joy(&morning, Some(Sect::Night)));
+        assert!(joy(&evening, Some(Sect::Night)));
+        // Exactly conjunct the Sun: undetermined, no joy either way.
+        let conjunct = chart_at(ARIES, &[(Body::Mercury, 196.0)]);
+        assert!(!joy(&conjunct, None));
+        assert!(!joy(&conjunct, Some(Sect::Night)));
+    }
+
+    #[test]
+    fn the_four_joys_are_supportive() {
+        let chart = chart_at(ARIES, &[(Body::Jupiter, AQUARIUS + 5.0)]);
+        let r = report(&chart);
+        // Jupiter in house 11, above the horizon by day, in a masculine sign.
+        for kind in [K::JoyHouse, K::JoyHemisphere, K::JoySignPolarity] {
+            assert_eq!(find(&r, Body::Jupiter, G::Joys, kind)[0].rating, Some(Rating::Supportive));
+        }
     }
 
     #[test]
@@ -2124,7 +2331,12 @@ mod tests {
         assert!(!has(&r, Body::Venus, G::Joys, K::JoySolarPhase));
         assert!(!has(&r, Body::Saturn, G::Joys, K::JoySolarPhase));
         assert!(has(&r, Body::Mars, G::Joys, K::JoySolarPhase));
-        // Never for the Sun, the Moon or Mercury.
+        assert_eq!(
+            find(&r, Body::Mars, G::Joys, K::JoySolarPhase)[0].rating,
+            Some(Rating::Supportive)
+        );
+        // Never for the Sun or the Moon; Mercury here is an evening star
+        // in a day chart.
         for body in [Body::Sun, Body::Moon, Body::Mercury] {
             assert!(!has(&r, body, G::Joys, K::JoySolarPhase));
         }

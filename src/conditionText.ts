@@ -35,6 +35,8 @@ export const RATING_NAMES: Record<Rating, string> = {
   veryChallenging: "Meget udfordrende",
 };
 
+export const SPEED_NAMES = { retro: "Retro", slow: "Slow", fast: "Fast" } as const;
+
 export const DIGNITY_NAMES: Record<Dignity, string> = {
   domicile: "domicil",
   exaltation: "eksaltation",
@@ -53,6 +55,7 @@ const ANGLE_NAMES: Record<AngleName, string> = {
 const BASIS = "Planetary Condition – beslutningsgrundlag, 14. november 2026";
 const SUPPLEMENT = "Endeligt beslutningstillæg, 14. november 2026";
 const ANSWERS = "Svar på de 11 spørgsmål, 15. november 2026";
+const DECISIONS = "13 implementeringsbeslutninger, 15. november 2026";
 
 export type ConditionRow = {
   group: ConditionGroup;
@@ -71,7 +74,6 @@ const row = (
   source: string,
 ): ConditionRow => ({ group, kind, label, rule, source });
 
-const UNRATED = "Vises uden vurderingsfarve, fordi klassifikationen ikke er besluttet.";
 const CLOSE =
   "inden for 3° (13° når Månen indgår), grænsen medregnet. Et eksakt aspekt tæller med; et separerende gør ikke";
 
@@ -98,28 +100,28 @@ export const CONDITION_ROWS: ConditionRow[] = [
     "joyHemisphere",
     "Joy by hemisphere",
     "Dagkort: diurnale planeter over horisonten, nocturnale under. Natkort: nocturnale over, diurnale under. Horisonten er den faktiske ASC–DSC-akse, ikke husnummeret.",
-    `${ANSWERS}, punkt 8`,
+    `${ANSWERS}, punkt 8; ${DECISIONS}, punkt 11`,
   ),
   row(
     "joys",
     "joySignPolarity",
     "Joy by sign polarity",
     "Diurnale planeter i maskuline tegn, nocturnale i feminine tegn, uanset om horoskopet er et dag- eller natkort.",
-    `${ANSWERS}, punkt 8`,
+    `${ANSWERS}, punkt 8; ${DECISIONS}, punkt 11`,
   ),
   row(
     "joys",
     "joySolarPhase",
     "Joy by solar phase",
-    "Jupiter og Saturn som morgenstjerner (vest for Solen), Venus og Mars som aftenstjerner. Merkur vises med sin egen morgen-/aftenstatus uden vurdering, og Månen indgår ikke.",
-    `${ANSWERS}, punkt 8`,
+    "Jupiter og Saturn som morgenstjerner (vest for Solen), Venus og Mars som aftenstjerner. Merkur som morgenstjerne i et dagkort og som aftenstjerne i et natkort. Månen indgår ikke.",
+    `${ANSWERS}, punkt 8; ${DECISIONS}, punkt 2 og 11`,
   ),
   row(
     "joys",
     "joyHouse",
     "Planetary joy (hus)",
     "Merkur i 1., Månen i 3., Venus i 5., Mars i 6., Solen i 9., Jupiter i 11. og Saturn i 12. hus.",
-    BASIS,
+    `${BASIS}; ${DECISIONS}, punkt 11`,
   ),
 
   row("dignities", "domicile", "Domicil", "Planeten står i et tegn, den selv hersker over.", BASIS),
@@ -145,29 +147,41 @@ export const CONDITION_ROWS: ConditionRow[] = [
     "Planeten står i sin egen kaldæiske decan. Vises som fakta uden vurderingsfarve.",
     BASIS,
   ),
-  row("dignities", "detriment", "Detriment", `Planeten står i tegnet over for sit domicil. ${UNRATED}`, BASIS),
-  row("dignities", "fall", "Fall", `Planeten står i tegnet over for sin eksaltation. ${UNRATED}`, BASIS),
+  row(
+    "dignities",
+    "detriment",
+    "Detriment",
+    "Planeten står i tegnet over for sit domicil.",
+    `${BASIS}; ${DECISIONS}, punkt 7`,
+  ),
+  row(
+    "dignities",
+    "fall",
+    "Fall",
+    "Planeten står i tegnet over for sin eksaltation.",
+    `${BASIS}; ${DECISIONS}, punkt 8`,
+  ),
 
   row(
     "sun",
     "cazimi",
     "Cazimi",
-    `Planeten står inden for cazimi-grænsen fra Solen (standard 1°, grænsen medregnet). ${UNRATED}`,
-    BASIS,
+    "Planeten står inden for cazimi-grænsen fra Solen (standard 1°, grænsen medregnet). En særskilt soltilstand, som ikke samtidig vises som combust.",
+    `${BASIS}; ${DECISIONS}, punkt 9`,
   ),
   row(
     "sun",
     "combust",
     "Combust",
-    "Planeten står længere fra Solen end cazimi-grænsen og højst combust-grænsen (standard 8°, medregnet). Den negative vurdering skjules ved chariot.",
-    `${BASIS}; ${SUPPLEMENT}`,
+    "Planeten står længere fra Solen end cazimi-grænsen og højst combust-grænsen (standard 8°, medregnet). Meget udfordrende; vurderingen skjules ved chariot.",
+    `${BASIS}; ${SUPPLEMENT}; ${DECISIONS}, punkt 4`,
   ),
   row(
     "sun",
     "underBeams",
     "Under the beams",
-    "Planeten står længere fra Solen end combust-grænsen og højst grænsen for under the beams (standard 15°, medregnet). Den negative vurdering skjules ved chariot.",
-    `${BASIS}; ${SUPPLEMENT}`,
+    "Planeten står længere fra Solen end combust-grænsen og højst grænsen for under the beams (standard 15°, medregnet). Udfordrende; vurderingen skjules ved chariot.",
+    `${BASIS}; ${SUPPLEMENT}; ${DECISIONS}, punkt 4`,
   ),
   row(
     "sun",
@@ -182,8 +196,8 @@ export const CONDITION_ROWS: ConditionRow[] = [
     "houses",
     "houseFortunate",
     "House: fortunate",
-    "Planeten står i heltegnshus 3, 4, 5, 7, 9, 10 eller 11, regnet fra Ascendantens tegn.",
-    `${ANSWERS}, punkt 10; Brennan, Hellenistic Astrology, kap. 10, s. 332–333`,
+    "Planeten står i heltegnshus 1, 3, 4, 5, 7, 9, 10 eller 11, regnet fra Ascendantens tegn. At hus 1 er med, er programmets valg.",
+    `${DECISIONS}, punkt 1; Brennan, Hellenistic Astrology, kap. 10, s. 332–333`,
   ),
   row(
     "houses",
@@ -196,8 +210,8 @@ export const CONDITION_ROWS: ConditionRow[] = [
     "houses",
     "nearAngle",
     "Tæt på en vinkel",
-    `Planeten står højst 3° fra ASC, DSC, MC eller IC, uanset hvilket heltegnshus den er i. ${UNRATED}`,
-    BASIS,
+    "Planeten står højst 3° fra ASC, DSC, MC eller IC, uanset hvilket heltegnshus den er i. Neutral: nærhed til en vinkel er ikke i sig selv en bonification.",
+    `${BASIS}; ${DECISIONS}, punkt 10`,
   ),
 
   row(
@@ -279,8 +293,15 @@ export const CONDITION_ROWS: ConditionRow[] = [
     "bonification",
     "engagement",
     "Engagement med benefic",
-    `Applicerende gradbaseret aspekt til Venus eller Jupiter ${CLOSE}. Kvadrat, trigon og opposition: meget understøttende. Sekstil: understøttende.`,
-    `${SUPPLEMENT}; ${ANSWERS}, punkt 5 og 6`,
+    `Applicerende gradbaseret aspekt til Venus eller Jupiter ${CLOSE}. Kvadrat, trigon og opposition: meget understøttende. Sekstil: understøttende. En konjunktion er adherence og vises ikke også her.`,
+    `${SUPPLEMENT}; ${ANSWERS}, punkt 5 og 6; ${DECISIONS}, punkt 3 og 6`,
+  ),
+  row(
+    "bonification",
+    "strikingRay",
+    "Striking with a ray",
+    "Venus eller Jupiter står senere i zodiakken og kaster en stråle bagud inden for 3° fra eksakt, applicerende eller separerende; applicerende er stærkere. Kvadrat, trigon og opposition: meget understøttende. Sekstil: understøttende. Den samlede regel er programmets valg; oppositionen støtter sig til Porphyrys omtale.",
+    `${DECISIONS}, punkt 12`,
   ),
   row(
     "bonification",
@@ -293,8 +314,8 @@ export const CONDITION_ROWS: ConditionRow[] = [
     "bonification",
     "enclosure",
     "Enclosure mellem benefics",
-    "Venus og Jupiter står, eller kaster stråler, højst 7° på hver sin side af planeten, og ingen anden planets krop eller stråle falder imellem.",
-    `Brennan, kap. 14, s. 474–476; ${ANSWERS}, punkt 1. 7°-grænsen er programmets valg`,
+    "Venus og Jupiter står begge, eller kaster begge stråler, højst 7° på hver sin side af planeten, og ingen anden planets krop eller stråle falder imellem. Én krop og én stråle tæller ikke.",
+    `Brennan, kap. 14, s. 474–476; ${ANSWERS}, punkt 1; ${DECISIONS}, punkt 5. 7°-grænsen er programmets valg`,
   ),
   row(
     "bonification",
@@ -308,7 +329,7 @@ export const CONDITION_ROWS: ConditionRow[] = [
     "maltreatment",
     "strikingRay",
     "Striking with a ray",
-    "Mars eller Saturn står i underordnet position (senere i zodiakken) og kaster et kvadrat inden for 3° fra eksakt, applicerende eller separerende. Den tilsvarende regel for Venus og Jupiter er ikke besluttet og beregnes ikke.",
+    "Mars eller Saturn står i underordnet position (senere i zodiakken) og kaster et kvadrat bagud inden for 3° fra eksakt, applicerende eller separerende; applicerende er stærkere.",
     `${SUPPLEMENT}; ${ANSWERS}, punkt 3`,
   ),
   row(
@@ -343,8 +364,8 @@ export const CONDITION_ROWS: ConditionRow[] = [
     "maltreatment",
     "enclosure",
     "Enclosure mellem malefics",
-    "Mars og Saturn står, eller kaster stråler, højst 7° på hver sin side af planeten (besiegement), og ingen anden planets krop eller stråle falder imellem.",
-    `Brennan, kap. 14, s. 474–476; ${ANSWERS}, punkt 1. 7°-grænsen er programmets valg`,
+    "Mars og Saturn står begge, eller kaster begge stråler, højst 7° på hver sin side af planeten (besiegement), og ingen anden planets krop eller stråle falder imellem. Én krop og én stråle tæller ikke.",
+    `Brennan, kap. 14, s. 474–476; ${ANSWERS}, punkt 1; ${DECISIONS}, punkt 5. 7°-grænsen er programmets valg`,
   ),
   row(
     "maltreatment",
@@ -437,8 +458,10 @@ export function conditionDetail(c: Condition): string {
       return `${who}, ${aspect}`;
     case "engagement":
     case "adherence":
-    case "strikingRay":
       return `${who}, ${aspect} ${orb}, ${motion}`;
+    case "strikingRay":
+      // Both directions count; the applying ray is the stronger one.
+      return `${who}, ${aspect} ${orb}, ${motion}${c.applying ? " (stærkere)" : ""}`;
     case "enclosure":
       return `${who}, ${c.bodily ? "ved kroppene" : "ved stråler"}`;
     case "enclosureBroken": {
