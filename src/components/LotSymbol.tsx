@@ -1,7 +1,7 @@
 import { LOT_NAMES, LOT_SYMBOL_PLANETS, POINT_GLYPHS, type Lot } from "../astro";
 
 export const SYMBOL_FONT =
-  '"Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", sans-serif';
+  '"Astro Glyphs", "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", sans-serif';
 
 /**
  * The symbol of a lot as SVG, centred on (x, y) and `size` across (visual

@@ -13,6 +13,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.6.2",
+    date: "2026-11-15",
+    added: [],
+    changed: [
+      "Stenbukken og Pluto har fået de ønskede glyffer: Stenbukken med flad overstreg og løkke, Pluto som cirkel med halvmåne. De bruges overalt i programmet, både i hjulet og i tabellerne.",
+    ],
+  },
+  {
     version: "0.6.1",
     date: "2026-11-15",
     added: [

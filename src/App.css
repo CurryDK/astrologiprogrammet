@@ -1,3 +1,12 @@
+/* The Capricorn and Pluto variants of the visual wheel specification
+   (reference 2), drawn by scripts/build-glyph-font.py. Listed ahead of the
+   system symbol font, so they replace its two glyphs everywhere. */
+@font-face {
+  font-family: "Astro Glyphs";
+  src: url("./assets/astro-glyphs.woff") format("woff");
+  unicode-range: U+2647, U+2651;
+}
+
 :root {
   --ink: #1d1d1f;
   --muted: #6b6b70;
@@ -6,7 +15,7 @@
   --line: #e3dfd5;
   --accent: #1f3a5f;
   --danger: #a8322d;
-  --symbols: "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", sans-serif;
+  --symbols: "Astro Glyphs", "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", sans-serif;
 
   font-family: "Segoe UI", system-ui, sans-serif;
   font-size: 15px;
