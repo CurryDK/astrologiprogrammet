@@ -229,6 +229,10 @@ label.check {
   overflow-x: auto;
 }
 
+.chart-wheel .aspect-line {
+  transition: opacity 0.12s;
+}
+
 .chart-wheel {
   display: block;
   margin: 0 auto;

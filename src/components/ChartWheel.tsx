@@ -179,6 +179,10 @@ export function ChartWheel({
 }: Props) {
   const { box, room } = useRoom();
   const tables = useWheelRings();
+  // The planet whose aspect lines stand out: the one pointed at, or the one
+  // clicked, which stays until it is clicked again or the wheel is clicked.
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [pinned, setPinned] = useState<string | null>(null);
   const ascendant = chart.angles.ascendant.longitude;
 
   // Natal innermost, progressions in the middle, transits outermost
@@ -309,6 +313,23 @@ export function ChartWheel({
       ? chart.positions.find((p) => p.body === point)!.longitude
       : chart.angles[point].longitude;
 
+  /**
+   * Where an aspect line of a natal point ends: at the planet itself, on the
+   * inner edge of its label, so the lines run out to the planets (feedback
+   * of 15 November 2026 with a reference picture). A crowded label that has
+   * been moved along the wheel takes its line end with it. An angle has no
+   * label inside the wheel; its line ends at the degree scale.
+   */
+  const natalLineEnd = (point: PointId) => {
+    const index = isBody(point) ? shown.findIndex((p) => p.body === point) : -1;
+    if (index < 0) {
+      return at(longitudeOf(point), isBody(point) ? aspectRadius : scale - TICK_FIVE - 2);
+    }
+    const display = displayAngles[index];
+    const reach = boxReach(screenAngle(display), LABEL.width, heights[index]);
+    return at(display, labelRadius(display, heights[index]) - reach - 3);
+  };
+
   const layerOf = (name: LayerName) => layers.find((layer) => layer.name === name);
   /** Exact longitude of a point in a layer, if that layer shows it. */
   const layerLongitude = (name: LayerName, point: PointId): number | undefined =>
@@ -394,6 +415,37 @@ export function ChartWheel({
 
   const centered = { textAnchor: "middle", dominantBaseline: "central" } as const;
 
+  // Every aspect line that is drawn, with the two points it joins.
+  const pointKey = (layer: LayerName, point: PointId) => `${layer}:${point}`;
+  const natalLines = aspects
+    .filter((aspect) => aspect.kind !== "conjunction")
+    .map((aspect) => ({ aspect, ends: [pointKey("natal", aspect.a), pointKey("natal", aspect.b)] }));
+  const drawnLayerLines = layerLines.flatMap((item) => {
+    const from = layerLongitude(item.from[0], item.from[1]);
+    const to = layerLongitude(item.to[0], item.to[1]);
+    if (item.aspect.kind === "conjunction" || from === undefined || to === undefined) return [];
+    return [{ ...item, fromLongitude: from, toLongitude: to, ends: [pointKey(item.from[0], item.from[1]), pointKey(item.to[0], item.to[1])] }];
+  });
+  const joined = new Set([...natalLines, ...drawnLayerLines].flatMap((line) => line.ends));
+  // A planet without lines, or one no longer shown, highlights nothing.
+  const chosen = pinned ?? hovered;
+  const focus = chosen !== null && joined.has(chosen) ? chosen : null;
+  /** Lines of the planet in focus at full strength, the others faded. */
+  const lineOpacity = (ends: string[], normal: number) =>
+    focus === null ? normal : ends.includes(focus) ? 1 : 0.1;
+  const focusHandlers = (layer: LayerName, point: PointId) => {
+    const key = pointKey(layer, point);
+    return {
+      onMouseEnter: () => setHovered(key),
+      onMouseLeave: () => setHovered(null),
+      onClick: (event: { stopPropagation: () => void }) => {
+        event.stopPropagation();
+        setPinned((current) => (current === key ? null : key));
+      },
+      style: { cursor: "pointer" },
+    };
+  };
+
   return (
     <div className="chart-wheel-box" ref={box}>
       <svg
@@ -404,6 +456,7 @@ export function ChartWheel({
         role="img"
         aria-label="Horoskophjul"
         fontFamily={TEXT_FONT}
+        onClick={() => setPinned(null)}
       >
         {/* House area: plain white, no alternating colours */}
         <circle cx={center.x} cy={center.y} r={outer} fill="#fff" />
@@ -480,39 +533,37 @@ export function ChartWheel({
         ))}
         {ticks}
 
-        {/* Aspect lines, straight between the exact positions */}
-        {aspects
-          .filter((aspect) => aspect.kind !== "conjunction")
-          .map((aspect) => {
-            const a = at(longitudeOf(aspect.a), aspectRadius);
-            const b = at(longitudeOf(aspect.b), aspectRadius);
-            return (
-              <line
-                key={`${aspect.a}-${aspect.b}`}
-                x1={a.x}
-                y1={a.y}
-                x2={b.x}
-                y2={b.y}
-                stroke={settings.colors.aspects[aspect.kind]}
-                strokeWidth={aspectLineWidth(aspect.orb, settings.orbs[aspect.kind])}
-                strokeLinecap="round"
-                // In a Live Chart the natal aspects step back behind the other layers.
-                opacity={bands ? 0.3 : 1}
-              />
-            );
-          })}
+        {/* Aspect lines out to the planets; slightly see-through so crossings stay readable */}
+        {natalLines.map(({ aspect, ends }) => {
+          const a = natalLineEnd(aspect.a);
+          const b = natalLineEnd(aspect.b);
+          return (
+            <line
+              key={`${aspect.a}-${aspect.b}`}
+              className="aspect-line"
+              x1={a.x}
+              y1={a.y}
+              x2={b.x}
+              y2={b.y}
+              stroke={settings.colors.aspects[aspect.kind]}
+              strokeWidth={aspectLineWidth(aspect.orb, settings.orbs[aspect.kind])}
+              strokeLinecap="round"
+              // In a Live Chart the natal aspects step back behind the other layers.
+              opacity={lineOpacity(ends, bands ? 0.3 : 0.85)}
+            />
+          );
+        })}
 
         {/* Aspect lines of the outer layers: transits solid to natal points and dashed among themselves, progressions dotted */}
-        {layerLines.map((item) => {
-          const from = layerLongitude(item.from[0], item.from[1]);
-          const to = layerLongitude(item.to[0], item.to[1]);
-          if (item.aspect.kind === "conjunction" || from === undefined || to === undefined) return null;
-          const a = at(from, lineRadius(item.from[0]));
-          const b = at(to, lineRadius(item.to[0]));
+        {drawnLayerLines.map((item) => {
+          const end = ([layer, point]: readonly [LayerName, PointId], longitude: number) =>
+            layer === "natal" ? natalLineEnd(point) : at(longitude, lineRadius(layer));
+          const a = end(item.from, item.fromLongitude);
+          const b = end(item.to, item.toLongitude);
           return (
             <line
               key={item.key}
-              className={item.className}
+              className={`aspect-line ${item.className}`}
               x1={a.x}
               y1={a.y}
               x2={b.x}
@@ -521,9 +572,27 @@ export function ChartWheel({
               strokeWidth={aspectLineWidth(item.aspect.orb, item.orb)}
               strokeDasharray={item.dash}
               strokeLinecap="round"
+              opacity={lineOpacity(item.ends, 0.85)}
             />
           );
         })}
+
+        {/* A dot in the planet's colour where its lines meet it */}
+        {shown
+          .filter((position) => joined.has(pointKey("natal", position.body)))
+          .map((position) => {
+            const end = natalLineEnd(position.body);
+            return (
+              <circle
+                key={position.body}
+                className="aspect-end"
+                cx={end.x}
+                cy={end.y}
+                r={2.4}
+                fill={settings.colors.bodies[position.body]}
+              />
+            );
+          })}
 
         {/* Whole-sign house numbers, close to the centre */}
         {chart.houses.map((house) => {
@@ -550,10 +619,21 @@ export function ChartWheel({
         {shown.map((position, index) => {
           const color = settings.colors.bodies[position.body];
           const label = place(position.longitude, displayAngles[index], heights[index]);
-          const marker = at(position.longitude, aspectRadius);
           const text = { fill: color, ...centered };
           return (
-            <g key={position.body} className="wheel-body">
+            <g key={position.body} className="wheel-body" {...focusHandlers("natal", position.body)}>
+              {/* The whole label answers the pointer; outlined while its lines are in focus. */}
+              <rect
+                x={label.x - LABEL.width / 2 - 1}
+                y={label.top - 1}
+                width={LABEL.width + 2}
+                height={heights[index] + 2}
+                rx={4}
+                fill="transparent"
+                stroke={focus === pointKey("natal", position.body) ? color : "none"}
+                strokeWidth={1}
+                strokeOpacity={0.6}
+              />
               <line
                 x1={label.exact.x}
                 y1={label.exact.y}
@@ -562,7 +642,6 @@ export function ChartWheel({
                 stroke={color}
                 strokeWidth={0.8}
               />
-              <circle cx={marker.x} cy={marker.y} r={2} fill={color} />
               <text
                 x={label.x}
                 y={label.top + LABEL.glyph / 2}
@@ -651,7 +730,15 @@ export function ChartWheel({
                 const marker = at(point.longitude, aspectRadius);
                 const text = { fill: color, ...centered };
                 return (
-                  <g key={point.id} className={`wheel-${layer.name}`}>
+                  <g key={point.id} className={`wheel-${layer.name}`} {...focusHandlers(layer.name, point.id)}>
+                    <circle
+                      cx={glyph.x}
+                      cy={glyph.y}
+                      r={12}
+                      fill="transparent"
+                      stroke={focus === pointKey(layer.name, point.id) ? color : "none"}
+                      strokeOpacity={0.6}
+                    />
                     <line x1={exact.x} y1={exact.y} x2={lineEnd.x} y2={lineEnd.y} stroke={color} strokeWidth={0.8} />
                     <circle cx={exact.x} cy={exact.y} r={1.6} fill={color} />
                     {settings.layerLines === "center" &&

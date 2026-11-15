@@ -13,6 +13,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.6.1",
+    date: "2026-11-15",
+    added: [
+      "Peg på en planet i hjulet for at fremhæve dens aspektlinjer; de øvrige linjer dæmpes. Klik på planeten for at holde fremhævningen, og klik igen eller et andet sted i hjulet for at slippe den. Virker også for progressive planeter og transitplaneter i Live Chart.",
+      "En lille prik i planetens farve viser, hvor aspektlinjerne møder planeten.",
+    ],
+    changed: [
+      "Aspektlinjerne går nu helt ud til planeterne i stedet for at ende på en fælles cirkel inde i hjulet. Er en planet flyttet lidt for at undgå overlap, følger linjen med; den tynde streg viser stadig den præcise grad.",
+      "Aspektlinjerne er en smule gennemsigtige, så krydsninger og husnumre kan ses igennem dem.",
+    ],
+  },
+  {
     version: "0.6.0",
     date: "2026-11-15",
     added: [
