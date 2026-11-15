@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   aspectLineWidth,
   boxReach,
+  keepInSign,
   labelSeparation,
   normalize,
   spreadAngles,
@@ -143,5 +144,38 @@ describe("label geometry", () => {
     expect(labelSeparation(270, 26, 60, radius)).toBeCloseTo(26);
     expect(labelSeparation(0, 26, 60, radius)).toBeCloseTo(60);
     expect(labelSeparation(45, 26, 60, radius)).toBeCloseTo(26 * Math.SQRT2);
+  });
+});
+
+describe("keepInSign", () => {
+  it("leaves a label alone in the middle of its sign", () => {
+    expect(keepInSign(285, 6, 6)).toBe(285);
+  });
+  it("moves a label in from the start and the end of its sign", () => {
+    expect(keepInSign(270.58, 6, 4)).toBe(276);
+    expect(keepInSign(299.5, 6, 4)).toBe(296);
+  });
+  it("never leaves the sign, also at 0° Aries", () => {
+    expect(keepInSign(0, 5, 5)).toBe(5);
+    expect(keepInSign(359.9, 5, 5)).toBe(355);
+  });
+  it("uses the middle when the sign is too small for the label", () => {
+    expect(keepInSign(31, 20, 20)).toBe(45);
+  });
+});
+
+describe("spreadAnglesBy with preferred angles", () => {
+  it("keeps the zodiac order when several symbols prefer the same angle", () => {
+    const longitudes = [308.9, 302, 303.7, 150];
+    const preferred = [309.3, 309.3, 309.3, 150];
+    const shown = spreadAnglesBy(longitudes, () => 5, preferred);
+    expect(shown[3]).toBeCloseTo(150);
+    // Mars (302) before Saturn (303.7) before the Moon (308.9), 5° apart.
+    expect(shown[2] - shown[1]).toBeCloseTo(5);
+    expect(shown[0] - shown[2]).toBeCloseTo(5);
+    expect(shown[2]).toBeCloseTo(309.3);
+  });
+  it("lets a lone symbol stand at its preferred angle", () => {
+    expect(spreadAnglesBy([270.5, 90], () => 5, [276, 90])[0]).toBeCloseTo(276);
   });
 });

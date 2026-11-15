@@ -13,6 +13,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.6.3",
+    date: "2026-11-15",
+    added: [],
+    changed: [
+      "Grad- og minuttallene under planeterne i hjulet er blevet mindre.",
+      "Planetens glyf og tal står nu så vidt muligt inde i det tegn, planeten hører til. En planet tæt på en tegngrænse rykkes lige inden for grænsen; den tynde streg viser stadig den præcise grad. Står der mange planeter i samme tegn, kan nogle stadig nå ind over nabotegnet.",
+    ],
+  },
+  {
     version: "0.6.2",
     date: "2026-11-15",
     added: [],

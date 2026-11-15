@@ -23,6 +23,7 @@ import type { Settings } from "../settings";
 import {
   aspectLineWidth,
   boxReach,
+  keepInSign,
   labelSeparation,
   normalize,
   spreadAngles,
@@ -48,7 +49,9 @@ const TICK = 4;
 const TICK_FIVE = 8;
 
 /** An upright planet label: symbol, degrees, minutes and, when retrograde, Rx. */
-const LABEL = { width: 27, glyph: 24, line: 14, rx: 11, gap: 6 };
+const LABEL = { width: 27, glyph: 24, line: 11.5, rx: 9.5, gap: 6 };
+/** Size of the degrees and minutes under a planet or lot; kept small so a label fits in its sign. */
+const READING_SIZE = 10.5;
 const labelHeight = (retrograde: boolean) =>
   LABEL.glyph + 2 * LABEL.line + (retrograde ? LABEL.rx : 0);
 /** From the degree scale in to the circle the aspect lines run between. */
@@ -283,6 +286,15 @@ export function ChartWheel({
   /** Radius of a label's centre: its outer edge stays clear of the degree scale. */
   const labelRadius = (longitude: number, height: number) =>
     scale - TICK_FIVE - LABEL.gap - boxReach(screenAngle(longitude), LABEL.width, height);
+  /**
+   * Degrees a label must stand from a sign border at `border` to stay on its
+   * own side of it.
+   */
+  const roomAtBorder = (border: number, height: number) => {
+    const reach = boxReach(screenAngle(border) + 90, LABEL.width, height) + 1;
+    const ratio = Math.min(reach / Math.max(labelRadius(border, height), 1), 1);
+    return (Math.asin(ratio) * 180) / Math.PI;
+  };
   const allAngles = spreadAnglesBy(
     [...shown, ...shownLots].map((p) => p.longitude),
     (a, b, i, j) => {
@@ -295,6 +307,16 @@ export function ChartWheel({
         labelRadius(middle, height),
       );
     },
+    // Each label would like to stand wholly inside the sign of its planet;
+    // the position line still points to the exact degree.
+    [...shown, ...shownLots].map((p, i) => {
+      const start = Math.floor(p.longitude / 30) * 30;
+      return keepInSign(
+        p.longitude,
+        roomAtBorder(start, heights[i]),
+        roomAtBorder(start + 30, heights[i]),
+      );
+    }),
   );
   const displayAngles = allAngles.slice(0, shown.length);
   const lotAngles = allAngles.slice(shown.length);
@@ -651,13 +673,13 @@ export function ChartWheel({
               >
                 {POINT_GLYPHS[position.body]}
               </text>
-              <text x={label.x} y={label.top + LABEL.glyph + LABEL.line / 2} fontSize={12.5} {...text}>
+              <text x={label.x} y={label.top + LABEL.glyph + LABEL.line / 2} fontSize={READING_SIZE} {...text}>
                 {position.degree}°
               </text>
               <text
                 x={label.x}
                 y={label.top + LABEL.glyph + LABEL.line * 1.5}
-                fontSize={12.5}
+                fontSize={READING_SIZE}
                 {...text}
               >
                 {String(position.minute).padStart(2, "0")}′
@@ -666,7 +688,7 @@ export function ChartWheel({
                 <text
                   x={label.x}
                   y={label.top + LABEL.glyph + LABEL.line * 2 + LABEL.rx / 2}
-                  fontSize={9.5}
+                  fontSize={8.5}
                   {...text}
                 >
                   Rx
@@ -693,13 +715,13 @@ export function ChartWheel({
                 strokeWidth={0.8}
               />
               <LotGlyph lot={lot.lot} x={label.x} y={label.top + LABEL.glyph / 2} size={22} color={INK} />
-              <text x={label.x} y={label.top + LABEL.glyph + LABEL.line / 2} fontSize={12.5} {...text}>
+              <text x={label.x} y={label.top + LABEL.glyph + LABEL.line / 2} fontSize={READING_SIZE} {...text}>
                 {reading.degree}°
               </text>
               <text
                 x={label.x}
                 y={label.top + LABEL.glyph + LABEL.line * 1.5}
-                fontSize={12.5}
+                fontSize={READING_SIZE}
                 {...text}
               >
                 {String(reading.minute).padStart(2, "0")}′

@@ -116,10 +116,15 @@ export function labelSeparation(
  * degrees between items `i` and `j` when shown at `a` and `b` (`a` before
  * `b`, not reduced to [0, 360)). Each run of crowded symbols is moved as
  * little as possible in total, keeping the zodiac order.
+ *
+ * `preferred` says where each symbol would like to stand when that is not
+ * its longitude (see `keepInSign`). The order still follows the longitudes,
+ * so the preferred angles must not change it.
  */
 export function spreadAnglesBy(
   longitudes: number[],
   gap: (a: number, b: number, i: number, j: number) => number,
+  preferred: number[] = longitudes,
 ): number[] {
   const count = longitudes.length;
   if (count === 0) return [];
@@ -142,7 +147,10 @@ export function spreadAnglesBy(
   }
   const sequence = Array.from({ length: count }, (_, k) => order[(start + k) % count]);
   const base = sequence[0].longitude;
-  const exact = sequence.map((item) => base + normalize(item.longitude - base));
+  const exact = sequence.map((item) => {
+    const wish = normalize(preferred[item.index] - item.longitude);
+    return base + normalize(item.longitude - base) + (wish > 180 ? wish - 360 : wish);
+  });
 
   let shown = exact.slice();
   // The gaps depend on where the symbols end up, so settle in a few rounds.
@@ -183,4 +191,20 @@ export function spreadAnglesBy(
     result[item.index] = normalize(shown[k]);
   });
   return result;
+}
+
+/**
+ * Where a label would like to stand so that it stays inside the sign of its
+ * longitude (feedback of 15 November 2026): the longitude itself, moved in
+ * from a sign border by the room the label needs there. `before` and `after`
+ * are that room in degrees at the start and the end of the sign. A label too
+ * large for the sign stands in its middle.
+ */
+export function keepInSign(longitude: number, before: number, after: number): number {
+  const exact = normalize(longitude);
+  const start = Math.floor(exact / 30) * 30;
+  const low = start + before;
+  const high = start + 30 - after;
+  if (low > high) return start + 15;
+  return Math.min(Math.max(exact, low), high);
 }
