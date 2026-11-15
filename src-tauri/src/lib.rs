@@ -14,6 +14,7 @@ use astro_core::profections::{
 use astro_core::aspects::{AspectKind, ChartPoint, AngleId};
 use astro_core::chart::BodyPosition;
 use astro_core::profections::Moment;
+use astro_core::rings::{WheelRings, wheel_rings as core_wheel_rings};
 use astro_core::time::{ResolvedTime, StepUnit, ZoneChoice, resolve, step};
 use astro_core::transits::{PassTarget, TransitAspect, exact_passes, transit_aspects};
 use astro_core::zodiac::{Body, whole_sign_house};
@@ -360,6 +361,12 @@ fn planetary_condition(
     })
 }
 
+/// The decan and bounds rings of the wheel: fixed tables, the same for every chart.
+#[tauri::command]
+fn wheel_rings() -> WheelRings {
+    core_wheel_rings()
+}
+
 /// The moments a transit aspect is exact around `at`: several when
 /// retrograde motion makes the transiting body pass more than once.
 #[tauri::command]
@@ -552,6 +559,7 @@ pub fn run() {
             live_chart,
             transit_passes,
             planetary_condition,
+            wheel_rings,
             events_list,
             event_save,
             event_delete,

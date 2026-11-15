@@ -14,6 +14,7 @@ The requirements are in `docs/` (private, git-ignored, only on the development P
 - `docs/planetary_condition_svar_11_spoergsmaal.txt` — answers of 15 November 2026 to the 11 remaining Planetary Condition questions (enclosure intervention, overcoming, opposition/trine, engagement, stations, Mercury, joys, modern planets, house 11, "Åbn alle/Luk alle"). Latest decision wins. Its point 3 leaves striking with a ray from Venus/Jupiter undecided: do not code it. Summarised in English at the end of `docs/plan.md`.
 - `docs/planetary_condition_13_beslutninger.txt` — 13 implementation decisions of 15 November 2026, the newest Planetary Condition document; has priority on its 13 points (house 1 fortunate, Mercury's joy by solar phase, ratings for combust, beams, cazimi, detriment, fall and the joys, striking with a ray from Venus/Jupiter, Slow/Fast/Retro speed). Summarised at the end of `docs/plan.md`.
 - `docs/beslutningstillaeg_seks_tekniske_afklaringer.txt` — six approved decisions of the same date: aspect colours and line-thickness formula, Naibod for progressed angles, Solar Return calculation and place, life events with missing date parts, sect on the horizon and manual override, lot display precision. Summarised in English at the end of `docs/plan.md`.
+- `docs/natalhjul_visuel_specifikation.txt` — visual specification of the natal wheel, 15 November 2026 (Danish; the `.docx` beside it has the reference pictures): element colours, degree scale, decan and bounds rings, upright planet labels with `Rx`, lot symbols, aspect line reference. Its ÅBENT/FORELØBIGT/KONTROL marks say what is still to be judged in the program. Summarised at the end of `docs/plan.md`.
 - `docs/plan.md` — the approved build plan with phases and the open questions tied to each.
 
 Rules that follow from the specification:
@@ -33,6 +34,7 @@ Rules that follow from the specification:
 | 4 | Profections: annual and monthly, Time Lord, overview, timeline, year navigation | Done (v0.3.0). Proposed defaults awaiting feedback (all settings): year starts on the calendar birthday at the birth clock time in the birthplace's time zone (alternatives: 00:00, or the Sun's exact return); 29 February births use 28 February in other years (alternative: 1 March); month dates shown with clock times, dates only when the birth time is unknown |
 | 5 | Transits, Live Chart (natal + transit layers), life events, standalone transit chart | Done (v0.4.0). Proposed defaults awaiting feedback: transit orb 7° (setting); Time Lord filters add up and match a planet as transiting or natal, "planets in the profection sign" = natal planets in it plus transiting planets passing through it; times shown and entered in the computer's time zone, each life event stores that zone; a month step is a calendar month, day/week steps keep the clock time; no transiting ASC/MC; exact-pass search ends when the bodies are 25° apart and returns at most 9 passes; standalone transit chart seen from Copenhagen; transits drawn as a simple outer ring (biwheel design still deferred) |
 | 6 | Planetary Condition | Done (v0.5.1, including the 13 decisions of 15 November 2026). Matrix and per-planet details for the seven traditional planets under the wheel; rules from the four Planetary Condition documents (latest wins); sect never changes a bonification/maltreatment rating; counteraction rejected. Neutral by decision: own decan, within 3° of an angle, one-sided reception, the bare overcoming relation. The supportive colour stays turquoise (confirmed 15 November 2026), although the legend of the 13-decisions document says green |
+| — | Natal wheel redesign after the visual specification of 15 November 2026 | Built, not released. Drawn in screen pixels so text keeps its size. Awaiting: larger picture of the Capricorn and Pluto glyphs (not changed yet); confirmation that aspect lines end on a circle just inside the planet labels. Proposed defaults (settings): element colour codes, modern decans with Pluto/Uranus/Neptune (traditional rulers selectable). Provisional: Verdana, minimum wheel radius 270 px |
 | 7 | Secondary progressions, rectification | **Next.** Adds the progression layer to Live Chart. Unblocked: progressed angles by Naibod in right ascension (default), ecliptic longitude selectable |
 | 8 | Solar Return | Unblocked: exact return of the Sun to its natal longitude; default place is the birthplace, changeable |
 | 9 | Synodic cycles, event search, reports | Reports need a description first |
@@ -45,6 +47,7 @@ crates/astro-core/   Pure Rust: all astronomy and astrological rules. No Tauri, 
   src/chart.rs       compute_chart: positions, angles, houses, sect
   src/aspects.rs     find_aspects: orb, applying/separating, out-of-sign
   src/lots.rs        the seven Hermetic lots, lot overview facts, lot aspects (lot_report)
+  src/rings.rs       decan and bounds rings of the wheel (wheel_rings): Chaldean decans, modern decans, Egyptian bounds
   src/profections.rs annual and monthly profections, year start rules, age_at / month_at
   src/condition.rs   Planetary Condition: dignity tables, condition_report (every rule), stations
   src/transits.rs    transit → natal aspects, exact passes of a transit aspect (retrograde series)
@@ -56,7 +59,8 @@ src/                 React + TypeScript interface. Draws only; no astrological l
   api.ts             Every backend call. astro.ts: types and Danish names. settings.tsx: remembered settings.
   conditionText.ts   Planetary Condition: matrix rows, rule and source texts, the reason of each condition
   liveFilter.ts      Which transit aspects a Live Chart shows: body choices per layer, Time Lord filters
-  components/        ChartWheel (SVG, optional transit ring), AspectTable, PositionsTable, LotsTable, LotAspectTable,
+  wheelLayout.ts     Wheel geometry: spreading upright labels apart, aspect line width
+  components/        ChartWheel (SVG in screen pixels, optional transit ring), LotSymbol, AspectTable, PositionsTable, LotsTable, LotAspectTable,
                      ConditionPanel, ProfectionPanel, TimeNavigator, TransitAspectTable, LifeEventsPanel
   views/             StartView, ArchiveView, ChartView, LiveChartView, TransitView, ChartForm, SettingsView, ChangelogView
   changelog.ts       What each version added and changed; shown when the version number is pressed

@@ -13,6 +13,7 @@ import {
   type AspectKind,
   type Body,
   type ConditionGroup,
+  type Element,
   type LeapDayBirthday,
   type Lot,
   type Orbs,
@@ -26,6 +27,15 @@ export type Settings = {
   colors: {
     bodies: Record<Body, string>;
     aspects: Record<AspectKind, string>;
+    /** Background of the sign fields in the zodiac ring, by element. */
+    elements: Record<Element, string>;
+  };
+  /** The wheel itself (visual wheel specification of 15 November 2026). */
+  wheel: {
+    /** The information rings between the zodiac ring and the degree scale. */
+    rings: { chaldeanDecans: boolean; modernDecans: boolean; bounds: boolean };
+    /** Rulers of Scorpio, Aquarius and Pisces in the modern decans. */
+    modernDecanRulers: ModernDecanRulers;
   };
   /** Which bodies are drawn in the wheel. */
   showInWheel: Record<Body, boolean>;
@@ -86,6 +96,9 @@ export type Settings = {
   };
 };
 
+export type ModernDecanRulers = "modern" | "traditional";
+const MODERN_DECAN_RULERS: ModernDecanRulers[] = ["modern", "traditional"];
+
 const everyBody = <T,>(value: (body: Body) => T) =>
   Object.fromEntries(BODIES.map((body) => [body, value(body)])) as Record<Body, T>;
 
@@ -116,6 +129,22 @@ export const DEFAULT_SETTINGS: Settings = {
       trine: "#00a000",
       opposition: "#ff8c00",
     },
+    // The specification fixes the hues (pale orange, green, yellow, blue)
+    // and leaves the exact codes open. Proposed defaults, each adjustable.
+    elements: {
+      fire: "#fbdcc0",
+      earth: "#d5e8c8",
+      air: "#fbf2bd",
+      water: "#cfe3f5",
+    },
+  },
+  wheel: {
+    // Decided: Chaldean decans and Egyptian bounds on, modern decans off.
+    rings: { chaldeanDecans: true, modernDecans: false, bounds: true },
+    // The specification does not say which rulers the modern decans use.
+    // Proposed default: Pluto, Uranus and Neptune for Scorpio, Aquarius
+    // and Pisces; the traditional rulers can be chosen instead.
+    modernDecanRulers: "modern",
   },
   // The south node is always exactly opposite the north node, so it is off
   // until switched on.
@@ -133,7 +162,8 @@ export const DEFAULT_SETTINGS: Settings = {
     exactOrb: 1,
     // Degrees and minutes by default; seconds are optional.
     showSeconds: false,
-    showInWheel: Object.fromEntries(LOTS.map((lot) => [lot, true])) as Record<Lot, boolean>,
+    // Decided: every lot is hidden in the wheel until switched on.
+    showInWheel: Object.fromEntries(LOTS.map((lot) => [lot, false])) as Record<Lot, boolean>,
     // The specification does not say what lots are compared with. Proposed
     // default: the planets only; angles and other lots can be switched on.
     aspectsTo: { planets: true, angles: false, lots: false },
@@ -237,7 +267,11 @@ export function settingsFromStored(stored: unknown): Settings {
   if (!STEP_UNITS.includes(transits.stepUnit)) {
     transits.stepUnit = DEFAULT_SETTINGS.transits.stepUnit;
   }
-  return { ...settings, colors: { ...settings.colors, aspects }, profections, transits };
+  const wheel = { ...settings.wheel };
+  if (!MODERN_DECAN_RULERS.includes(wheel.modernDecanRulers)) {
+    wheel.modernDecanRulers = DEFAULT_SETTINGS.wheel.modernDecanRulers;
+  }
+  return { ...settings, colors: { ...settings.colors, aspects }, profections, transits, wheel };
 }
 
 type SettingsContextValue = {

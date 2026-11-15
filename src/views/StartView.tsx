@@ -62,6 +62,7 @@ export function StartView({ charts, onOpen, onArchive }: Props) {
               chart={sky.chart}
               aspects={aspectsForView(sky.aspects, settings, "wheel")}
               settings={settings}
+              maxRadius={300}
             />
           </>
         )}

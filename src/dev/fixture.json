@@ -3312,6 +3312,856 @@
     ],
     "sect": "night"
   },
+  "devRings": {
+    "bounds": [
+      {
+        "end": 6.0,
+        "lord": "jupiter",
+        "start": 0.0
+      },
+      {
+        "end": 12.0,
+        "lord": "venus",
+        "start": 6.0
+      },
+      {
+        "end": 20.0,
+        "lord": "mercury",
+        "start": 12.0
+      },
+      {
+        "end": 25.0,
+        "lord": "mars",
+        "start": 20.0
+      },
+      {
+        "end": 30.0,
+        "lord": "saturn",
+        "start": 25.0
+      },
+      {
+        "end": 38.0,
+        "lord": "venus",
+        "start": 30.0
+      },
+      {
+        "end": 44.0,
+        "lord": "mercury",
+        "start": 38.0
+      },
+      {
+        "end": 52.0,
+        "lord": "jupiter",
+        "start": 44.0
+      },
+      {
+        "end": 57.0,
+        "lord": "saturn",
+        "start": 52.0
+      },
+      {
+        "end": 60.0,
+        "lord": "mars",
+        "start": 57.0
+      },
+      {
+        "end": 66.0,
+        "lord": "mercury",
+        "start": 60.0
+      },
+      {
+        "end": 72.0,
+        "lord": "jupiter",
+        "start": 66.0
+      },
+      {
+        "end": 77.0,
+        "lord": "venus",
+        "start": 72.0
+      },
+      {
+        "end": 84.0,
+        "lord": "mars",
+        "start": 77.0
+      },
+      {
+        "end": 90.0,
+        "lord": "saturn",
+        "start": 84.0
+      },
+      {
+        "end": 97.0,
+        "lord": "mars",
+        "start": 90.0
+      },
+      {
+        "end": 103.0,
+        "lord": "venus",
+        "start": 97.0
+      },
+      {
+        "end": 109.0,
+        "lord": "mercury",
+        "start": 103.0
+      },
+      {
+        "end": 116.0,
+        "lord": "jupiter",
+        "start": 109.0
+      },
+      {
+        "end": 120.0,
+        "lord": "saturn",
+        "start": 116.0
+      },
+      {
+        "end": 126.0,
+        "lord": "jupiter",
+        "start": 120.0
+      },
+      {
+        "end": 131.0,
+        "lord": "venus",
+        "start": 126.0
+      },
+      {
+        "end": 138.0,
+        "lord": "saturn",
+        "start": 131.0
+      },
+      {
+        "end": 144.0,
+        "lord": "mercury",
+        "start": 138.0
+      },
+      {
+        "end": 150.0,
+        "lord": "mars",
+        "start": 144.0
+      },
+      {
+        "end": 157.0,
+        "lord": "mercury",
+        "start": 150.0
+      },
+      {
+        "end": 167.0,
+        "lord": "venus",
+        "start": 157.0
+      },
+      {
+        "end": 171.0,
+        "lord": "jupiter",
+        "start": 167.0
+      },
+      {
+        "end": 178.0,
+        "lord": "mars",
+        "start": 171.0
+      },
+      {
+        "end": 180.0,
+        "lord": "saturn",
+        "start": 178.0
+      },
+      {
+        "end": 186.0,
+        "lord": "saturn",
+        "start": 180.0
+      },
+      {
+        "end": 194.0,
+        "lord": "mercury",
+        "start": 186.0
+      },
+      {
+        "end": 201.0,
+        "lord": "jupiter",
+        "start": 194.0
+      },
+      {
+        "end": 208.0,
+        "lord": "venus",
+        "start": 201.0
+      },
+      {
+        "end": 210.0,
+        "lord": "mars",
+        "start": 208.0
+      },
+      {
+        "end": 217.0,
+        "lord": "mars",
+        "start": 210.0
+      },
+      {
+        "end": 221.0,
+        "lord": "venus",
+        "start": 217.0
+      },
+      {
+        "end": 229.0,
+        "lord": "mercury",
+        "start": 221.0
+      },
+      {
+        "end": 234.0,
+        "lord": "jupiter",
+        "start": 229.0
+      },
+      {
+        "end": 240.0,
+        "lord": "saturn",
+        "start": 234.0
+      },
+      {
+        "end": 252.0,
+        "lord": "jupiter",
+        "start": 240.0
+      },
+      {
+        "end": 257.0,
+        "lord": "venus",
+        "start": 252.0
+      },
+      {
+        "end": 261.0,
+        "lord": "mercury",
+        "start": 257.0
+      },
+      {
+        "end": 266.0,
+        "lord": "saturn",
+        "start": 261.0
+      },
+      {
+        "end": 270.0,
+        "lord": "mars",
+        "start": 266.0
+      },
+      {
+        "end": 277.0,
+        "lord": "mercury",
+        "start": 270.0
+      },
+      {
+        "end": 284.0,
+        "lord": "jupiter",
+        "start": 277.0
+      },
+      {
+        "end": 292.0,
+        "lord": "venus",
+        "start": 284.0
+      },
+      {
+        "end": 296.0,
+        "lord": "saturn",
+        "start": 292.0
+      },
+      {
+        "end": 300.0,
+        "lord": "mars",
+        "start": 296.0
+      },
+      {
+        "end": 307.0,
+        "lord": "mercury",
+        "start": 300.0
+      },
+      {
+        "end": 313.0,
+        "lord": "venus",
+        "start": 307.0
+      },
+      {
+        "end": 320.0,
+        "lord": "jupiter",
+        "start": 313.0
+      },
+      {
+        "end": 325.0,
+        "lord": "mars",
+        "start": 320.0
+      },
+      {
+        "end": 330.0,
+        "lord": "saturn",
+        "start": 325.0
+      },
+      {
+        "end": 342.0,
+        "lord": "venus",
+        "start": 330.0
+      },
+      {
+        "end": 346.0,
+        "lord": "jupiter",
+        "start": 342.0
+      },
+      {
+        "end": 349.0,
+        "lord": "mercury",
+        "start": 346.0
+      },
+      {
+        "end": 358.0,
+        "lord": "mars",
+        "start": 349.0
+      },
+      {
+        "end": 360.0,
+        "lord": "saturn",
+        "start": 358.0
+      }
+    ],
+    "chaldeanDecans": [
+      {
+        "end": 10.0,
+        "lord": "mars",
+        "start": 0.0
+      },
+      {
+        "end": 20.0,
+        "lord": "sun",
+        "start": 10.0
+      },
+      {
+        "end": 30.0,
+        "lord": "venus",
+        "start": 20.0
+      },
+      {
+        "end": 40.0,
+        "lord": "mercury",
+        "start": 30.0
+      },
+      {
+        "end": 50.0,
+        "lord": "moon",
+        "start": 40.0
+      },
+      {
+        "end": 60.0,
+        "lord": "saturn",
+        "start": 50.0
+      },
+      {
+        "end": 70.0,
+        "lord": "jupiter",
+        "start": 60.0
+      },
+      {
+        "end": 80.0,
+        "lord": "mars",
+        "start": 70.0
+      },
+      {
+        "end": 90.0,
+        "lord": "sun",
+        "start": 80.0
+      },
+      {
+        "end": 100.0,
+        "lord": "venus",
+        "start": 90.0
+      },
+      {
+        "end": 110.0,
+        "lord": "mercury",
+        "start": 100.0
+      },
+      {
+        "end": 120.0,
+        "lord": "moon",
+        "start": 110.0
+      },
+      {
+        "end": 130.0,
+        "lord": "saturn",
+        "start": 120.0
+      },
+      {
+        "end": 140.0,
+        "lord": "jupiter",
+        "start": 130.0
+      },
+      {
+        "end": 150.0,
+        "lord": "mars",
+        "start": 140.0
+      },
+      {
+        "end": 160.0,
+        "lord": "sun",
+        "start": 150.0
+      },
+      {
+        "end": 170.0,
+        "lord": "venus",
+        "start": 160.0
+      },
+      {
+        "end": 180.0,
+        "lord": "mercury",
+        "start": 170.0
+      },
+      {
+        "end": 190.0,
+        "lord": "moon",
+        "start": 180.0
+      },
+      {
+        "end": 200.0,
+        "lord": "saturn",
+        "start": 190.0
+      },
+      {
+        "end": 210.0,
+        "lord": "jupiter",
+        "start": 200.0
+      },
+      {
+        "end": 220.0,
+        "lord": "mars",
+        "start": 210.0
+      },
+      {
+        "end": 230.0,
+        "lord": "sun",
+        "start": 220.0
+      },
+      {
+        "end": 240.0,
+        "lord": "venus",
+        "start": 230.0
+      },
+      {
+        "end": 250.0,
+        "lord": "mercury",
+        "start": 240.0
+      },
+      {
+        "end": 260.0,
+        "lord": "moon",
+        "start": 250.0
+      },
+      {
+        "end": 270.0,
+        "lord": "saturn",
+        "start": 260.0
+      },
+      {
+        "end": 280.0,
+        "lord": "jupiter",
+        "start": 270.0
+      },
+      {
+        "end": 290.0,
+        "lord": "mars",
+        "start": 280.0
+      },
+      {
+        "end": 300.0,
+        "lord": "sun",
+        "start": 290.0
+      },
+      {
+        "end": 310.0,
+        "lord": "venus",
+        "start": 300.0
+      },
+      {
+        "end": 320.0,
+        "lord": "mercury",
+        "start": 310.0
+      },
+      {
+        "end": 330.0,
+        "lord": "moon",
+        "start": 320.0
+      },
+      {
+        "end": 340.0,
+        "lord": "saturn",
+        "start": 330.0
+      },
+      {
+        "end": 350.0,
+        "lord": "jupiter",
+        "start": 340.0
+      },
+      {
+        "end": 360.0,
+        "lord": "mars",
+        "start": 350.0
+      }
+    ],
+    "modernDecans": [
+      {
+        "end": 10.0,
+        "lord": "mars",
+        "start": 0.0
+      },
+      {
+        "end": 20.0,
+        "lord": "sun",
+        "start": 10.0
+      },
+      {
+        "end": 30.0,
+        "lord": "jupiter",
+        "start": 20.0
+      },
+      {
+        "end": 40.0,
+        "lord": "venus",
+        "start": 30.0
+      },
+      {
+        "end": 50.0,
+        "lord": "mercury",
+        "start": 40.0
+      },
+      {
+        "end": 60.0,
+        "lord": "saturn",
+        "start": 50.0
+      },
+      {
+        "end": 70.0,
+        "lord": "mercury",
+        "start": 60.0
+      },
+      {
+        "end": 80.0,
+        "lord": "venus",
+        "start": 70.0
+      },
+      {
+        "end": 90.0,
+        "lord": "uranus",
+        "start": 80.0
+      },
+      {
+        "end": 100.0,
+        "lord": "moon",
+        "start": 90.0
+      },
+      {
+        "end": 110.0,
+        "lord": "pluto",
+        "start": 100.0
+      },
+      {
+        "end": 120.0,
+        "lord": "neptune",
+        "start": 110.0
+      },
+      {
+        "end": 130.0,
+        "lord": "sun",
+        "start": 120.0
+      },
+      {
+        "end": 140.0,
+        "lord": "jupiter",
+        "start": 130.0
+      },
+      {
+        "end": 150.0,
+        "lord": "mars",
+        "start": 140.0
+      },
+      {
+        "end": 160.0,
+        "lord": "mercury",
+        "start": 150.0
+      },
+      {
+        "end": 170.0,
+        "lord": "saturn",
+        "start": 160.0
+      },
+      {
+        "end": 180.0,
+        "lord": "venus",
+        "start": 170.0
+      },
+      {
+        "end": 190.0,
+        "lord": "venus",
+        "start": 180.0
+      },
+      {
+        "end": 200.0,
+        "lord": "uranus",
+        "start": 190.0
+      },
+      {
+        "end": 210.0,
+        "lord": "mercury",
+        "start": 200.0
+      },
+      {
+        "end": 220.0,
+        "lord": "pluto",
+        "start": 210.0
+      },
+      {
+        "end": 230.0,
+        "lord": "neptune",
+        "start": 220.0
+      },
+      {
+        "end": 240.0,
+        "lord": "moon",
+        "start": 230.0
+      },
+      {
+        "end": 250.0,
+        "lord": "jupiter",
+        "start": 240.0
+      },
+      {
+        "end": 260.0,
+        "lord": "mars",
+        "start": 250.0
+      },
+      {
+        "end": 270.0,
+        "lord": "sun",
+        "start": 260.0
+      },
+      {
+        "end": 280.0,
+        "lord": "saturn",
+        "start": 270.0
+      },
+      {
+        "end": 290.0,
+        "lord": "venus",
+        "start": 280.0
+      },
+      {
+        "end": 300.0,
+        "lord": "mercury",
+        "start": 290.0
+      },
+      {
+        "end": 310.0,
+        "lord": "uranus",
+        "start": 300.0
+      },
+      {
+        "end": 320.0,
+        "lord": "mercury",
+        "start": 310.0
+      },
+      {
+        "end": 330.0,
+        "lord": "venus",
+        "start": 320.0
+      },
+      {
+        "end": 340.0,
+        "lord": "neptune",
+        "start": 330.0
+      },
+      {
+        "end": 350.0,
+        "lord": "moon",
+        "start": 340.0
+      },
+      {
+        "end": 360.0,
+        "lord": "pluto",
+        "start": 350.0
+      }
+    ],
+    "modernDecansTraditional": [
+      {
+        "end": 10.0,
+        "lord": "mars",
+        "start": 0.0
+      },
+      {
+        "end": 20.0,
+        "lord": "sun",
+        "start": 10.0
+      },
+      {
+        "end": 30.0,
+        "lord": "jupiter",
+        "start": 20.0
+      },
+      {
+        "end": 40.0,
+        "lord": "venus",
+        "start": 30.0
+      },
+      {
+        "end": 50.0,
+        "lord": "mercury",
+        "start": 40.0
+      },
+      {
+        "end": 60.0,
+        "lord": "saturn",
+        "start": 50.0
+      },
+      {
+        "end": 70.0,
+        "lord": "mercury",
+        "start": 60.0
+      },
+      {
+        "end": 80.0,
+        "lord": "venus",
+        "start": 70.0
+      },
+      {
+        "end": 90.0,
+        "lord": "saturn",
+        "start": 80.0
+      },
+      {
+        "end": 100.0,
+        "lord": "moon",
+        "start": 90.0
+      },
+      {
+        "end": 110.0,
+        "lord": "mars",
+        "start": 100.0
+      },
+      {
+        "end": 120.0,
+        "lord": "jupiter",
+        "start": 110.0
+      },
+      {
+        "end": 130.0,
+        "lord": "sun",
+        "start": 120.0
+      },
+      {
+        "end": 140.0,
+        "lord": "jupiter",
+        "start": 130.0
+      },
+      {
+        "end": 150.0,
+        "lord": "mars",
+        "start": 140.0
+      },
+      {
+        "end": 160.0,
+        "lord": "mercury",
+        "start": 150.0
+      },
+      {
+        "end": 170.0,
+        "lord": "saturn",
+        "start": 160.0
+      },
+      {
+        "end": 180.0,
+        "lord": "venus",
+        "start": 170.0
+      },
+      {
+        "end": 190.0,
+        "lord": "venus",
+        "start": 180.0
+      },
+      {
+        "end": 200.0,
+        "lord": "saturn",
+        "start": 190.0
+      },
+      {
+        "end": 210.0,
+        "lord": "mercury",
+        "start": 200.0
+      },
+      {
+        "end": 220.0,
+        "lord": "mars",
+        "start": 210.0
+      },
+      {
+        "end": 230.0,
+        "lord": "jupiter",
+        "start": 220.0
+      },
+      {
+        "end": 240.0,
+        "lord": "moon",
+        "start": 230.0
+      },
+      {
+        "end": 250.0,
+        "lord": "jupiter",
+        "start": 240.0
+      },
+      {
+        "end": 260.0,
+        "lord": "mars",
+        "start": 250.0
+      },
+      {
+        "end": 270.0,
+        "lord": "sun",
+        "start": 260.0
+      },
+      {
+        "end": 280.0,
+        "lord": "saturn",
+        "start": 270.0
+      },
+      {
+        "end": 290.0,
+        "lord": "venus",
+        "start": 280.0
+      },
+      {
+        "end": 300.0,
+        "lord": "mercury",
+        "start": 290.0
+      },
+      {
+        "end": 310.0,
+        "lord": "saturn",
+        "start": 300.0
+      },
+      {
+        "end": 320.0,
+        "lord": "mercury",
+        "start": 310.0
+      },
+      {
+        "end": 330.0,
+        "lord": "venus",
+        "start": 320.0
+      },
+      {
+        "end": 340.0,
+        "lord": "jupiter",
+        "start": 330.0
+      },
+      {
+        "end": 350.0,
+        "lord": "moon",
+        "start": 340.0
+      },
+      {
+        "end": 360.0,
+        "lord": "mars",
+        "start": 350.0
+      }
+    ]
+  },
   "lots": {
     "aspects": [
       {

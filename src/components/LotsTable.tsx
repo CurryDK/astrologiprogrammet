@@ -1,24 +1,16 @@
 import {
   LOT_NAMES,
-  LOT_SYMBOLS,
   POINT_GLYPHS,
   POINT_NAMES,
   SIGN_GLYPHS,
   SIGN_NAMES,
   formatLot,
-  type Lot,
   type LotPosition,
 } from "../astro";
 import type { Settings } from "../settings";
+import { LotSymbol } from "./LotSymbol";
 
-/** A lot's symbol. A placeholder until the real symbols are chosen. */
-export function LotSymbol({ lot }: { lot: Lot }) {
-  return (
-    <span className="lot-symbol" title={LOT_NAMES[lot]}>
-      {LOT_SYMBOLS[lot]}
-    </span>
-  );
-}
+export { LotSymbol };
 
 type Props = {
   lots: LotPosition[];

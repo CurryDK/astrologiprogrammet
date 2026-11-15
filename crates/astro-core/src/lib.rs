@@ -11,6 +11,7 @@ mod ffi;
 pub mod lots;
 pub mod places;
 pub mod profections;
+pub mod rings;
 pub mod time;
 pub mod transits;
 pub mod zodiac;

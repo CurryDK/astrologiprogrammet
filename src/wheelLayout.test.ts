@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { aspectLineWidth, normalize, spreadAngles } from "./wheelLayout";
+import {
+  aspectLineWidth,
+  boxReach,
+  labelSeparation,
+  normalize,
+  spreadAngles,
+  spreadAnglesBy,
+} from "./wheelLayout";
 
 /** Smallest distance between two angles on the circle. */
 function distance(a: number, b: number): number {
@@ -77,5 +84,64 @@ describe("aspectLineWidth", () => {
     expect(aspectLineWidth(-2, 7)).toBeCloseTo(aspectLineWidth(2, 7));
     expect(aspectLineWidth(9, 7)).toBeCloseTo(0.8);
     expect(aspectLineWidth(0, 0)).toBeCloseTo(0.8);
+  });
+});
+
+describe("spreadAnglesBy", () => {
+  const constant = (degrees: number) => () => degrees;
+  const distance = (a: number, b: number) => Math.min(normalize(a - b), normalize(b - a));
+
+  it("leaves symbols alone when they have room", () => {
+    expect(spreadAnglesBy([10, 100, 250], constant(8))).toEqual([10, 100, 250]);
+  });
+
+  it("matches spreadAngles when every gap is the same", () => {
+    const input = [100, 101, 110, 111, 300, 358, 1];
+    const expected = spreadAngles(input, 8);
+    spreadAnglesBy(input, constant(8)).forEach((angle, index) => {
+      expect(angle).toBeCloseTo(expected[index]);
+    });
+  });
+
+  it("gives each pair the room it asks for and keeps the order", () => {
+    // The middle symbol is wide: it needs 12° to either neighbour, the others 6°.
+    const gap = (_a: number, _b: number, i: number, j: number) => (i === 1 || j === 1 ? 12 : 6);
+    const [a, b, c, d] = spreadAnglesBy([50, 51, 52, 53], gap);
+    expect(distance(a, b)).toBeCloseTo(12);
+    expect(distance(b, c)).toBeCloseTo(12);
+    expect(distance(c, d)).toBeCloseTo(6);
+    expect(normalize(b - a)).toBeLessThan(180);
+    expect(normalize(d - c)).toBeLessThan(180);
+  });
+
+  it("handles a group across 0° Aries", () => {
+    const output = spreadAnglesBy([358, 359, 1, 2], constant(8));
+    expect(distance(output[0], output[1])).toBeCloseTo(8);
+    expect(distance(output[1], output[2])).toBeCloseTo(8);
+    expect(distance(output[2], output[3])).toBeCloseTo(8);
+  });
+
+  it("shrinks the gaps when the wheel is full", () => {
+    const input = Array.from({ length: 10 }, (_, k) => k);
+    const output = spreadAnglesBy(input, constant(60));
+    for (let k = 0; k + 1 < output.length; k++) {
+      expect(distance(output[k], output[k + 1])).toBeCloseTo(36);
+    }
+  });
+});
+
+describe("label geometry", () => {
+  it("an upright box reaches half its height upwards and half its width sideways", () => {
+    expect(boxReach(90, 26, 60)).toBeCloseTo(30);
+    expect(boxReach(0, 26, 60)).toBeCloseTo(13);
+    expect(boxReach(180, 26, 60)).toBeCloseTo(13);
+  });
+
+  it("labels need their width at the top and their height at the sides", () => {
+    const radius = 180 / Math.PI; // one degree is one pixel
+    expect(labelSeparation(90, 26, 60, radius)).toBeCloseTo(26);
+    expect(labelSeparation(270, 26, 60, radius)).toBeCloseTo(26);
+    expect(labelSeparation(0, 26, 60, radius)).toBeCloseTo(60);
+    expect(labelSeparation(45, 26, 60, radius)).toBeCloseTo(26 * Math.SQRT2);
   });
 });

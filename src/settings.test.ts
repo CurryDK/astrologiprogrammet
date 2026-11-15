@@ -76,12 +76,20 @@ describe("lot settings", () => {
     const merged = mergeOver(DEFAULT_SETTINGS, stored);
     expect(merged.lots).toEqual(DEFAULT_SETTINGS.lots);
     expect(merged.lots.orb).toBe(3);
-    expect(merged.lots.showInWheel.nemesis).toBe(true);
+    // Decided 15 November 2026: lots are hidden in the wheel until switched on.
+    expect(merged.lots.showInWheel.nemesis).toBe(false);
   });
 
-  it("keep a single lot switched off", () => {
-    const merged = mergeOver(DEFAULT_SETTINGS, { lots: { showInWheel: { eros: false } } });
-    expect(merged.lots.showInWheel.eros).toBe(false);
-    expect(merged.lots.showInWheel.fortune).toBe(true);
+  it("keep a single lot switched on", () => {
+    const merged = mergeOver(DEFAULT_SETTINGS, { lots: { showInWheel: { eros: true } } });
+    expect(merged.lots.showInWheel.eros).toBe(true);
+    expect(merged.lots.showInWheel.fortune).toBe(false);
+  });
+
+  it("wheel settings are filled in and an unknown ruler choice falls back", () => {
+    const settings = settingsFromStored({ wheel: { rings: { bounds: false }, modernDecanRulers: "other" } });
+    expect(settings.wheel.rings).toEqual({ chaldeanDecans: true, modernDecans: false, bounds: false });
+    expect(settings.wheel.modernDecanRulers).toBe("modern");
+    expect(settings.colors.elements).toEqual(DEFAULT_SETTINGS.colors.elements);
   });
 });

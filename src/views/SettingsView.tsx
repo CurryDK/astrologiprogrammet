@@ -3,6 +3,8 @@ import {
   ASPECT_KINDS,
   ASPECT_NAMES,
   BODIES,
+  ELEMENTS,
+  ELEMENT_NAMES,
   POINT_GLYPHS,
   POINT_NAMES,
   RATINGS,
@@ -10,7 +12,7 @@ import {
   type YearStart,
 } from "../astro";
 import { RATING_NAMES } from "../conditionText";
-import { useSettings } from "../settings";
+import { DEFAULT_SETTINGS, useSettings, type ModernDecanRulers } from "../settings";
 
 /** Colours and orbs. Every change takes effect at once and is remembered. */
 export function SettingsView() {
@@ -316,6 +318,111 @@ export function SettingsView() {
           datoer med klokkeslæt. Datoer og klokkeslæt gælder fødestedets tidszone. Tiden mellem to
           fødselsdage deles i 12 præcist lige lange måneder. For horoskoper uden kendt fødselstid
           vises kun datoer.
+        </p>
+      </section>
+
+      <section className="panel">
+        <h2>Horoskophjul</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Ring</th>
+              <th>Vises</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(
+              [
+                ["chaldeanDecans", "Kaldæiske decaner"],
+                ["modernDecans", "Moderne decaner"],
+                ["bounds", "Egyptiske bounds"],
+              ] as const
+            ).map(([ring, name]) => (
+              <tr key={ring}>
+                <td>{name}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    aria-label={`${name} i hjulet`}
+                    checked={settings.wheel.rings[ring]}
+                    onChange={(e) =>
+                      update((s) => ({
+                        ...s,
+                        wheel: { ...s.wheel, rings: { ...s.wheel.rings, [ring]: e.target.checked } },
+                      }))
+                    }
+                  />
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td>Herskere i de moderne decaner</td>
+              <td>
+                <select
+                  aria-label="Herskere i de moderne decaner"
+                  value={settings.wheel.modernDecanRulers}
+                  onChange={(e) =>
+                    update((s) => ({
+                      ...s,
+                      wheel: { ...s.wheel, modernDecanRulers: e.target.value as ModernDecanRulers },
+                    }))
+                  }
+                >
+                  <option value="modern">Med Pluto, Uranus og Neptun</option>
+                  <option value="traditional">Kun de traditionelle herskere</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table>
+          <thead>
+            <tr>
+              <th>Element</th>
+              <th>Farve i zodiakringen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ELEMENTS.map((element) => (
+              <tr key={element}>
+                <td>{ELEMENT_NAMES[element]}</td>
+                <td>
+                  <input
+                    type="color"
+                    aria-label={`Farve for ${ELEMENT_NAMES[element]}`}
+                    value={settings.colors.elements[element]}
+                    onChange={(e) =>
+                      update((s) => ({
+                        ...s,
+                        colors: {
+                          ...s.colors,
+                          elements: { ...s.colors.elements, [element]: e.target.value },
+                        },
+                      }))
+                    }
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p>
+          <button
+            type="button"
+            onClick={() =>
+              update((s) => ({
+                ...s,
+                colors: { ...s.colors, elements: DEFAULT_SETTINGS.colors.elements },
+              }))
+            }
+          >
+            Gendan standardfarver
+          </button>
+        </p>
+        <p className="muted">
+          Ringene ligger mellem zodiakringen og gradskalaen og rykker sammen, når en ring skjules.
+          Hver ring viser kun herskerens symbol. Standard er kaldæiske decaner og bounds slået til
+          og moderne decaner slået fra.
         </p>
       </section>
 

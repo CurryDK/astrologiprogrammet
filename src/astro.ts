@@ -625,14 +625,48 @@ export const LOT_NAMES: Record<Lot, string> = {
  * PLACEHOLDERS. The specification says the lot symbols are not chosen yet,
  * so each lot is shown as two letters in a circle until they are.
  */
-export const LOT_SYMBOLS: Record<Lot, string> = {
-  fortune: "Fo",
-  spirit: "Sp",
-  eros: "Er",
-  necessity: "Nc",
-  courage: "Co",
-  victory: "Vi",
-  nemesis: "Nm",
+/**
+ * The planet whose glyph stands inside a lot's circle. Fortune and Spirit
+ * have their own traditional symbols instead (visual wheel specification of
+ * 15 November 2026, section 5).
+ */
+export const LOT_SYMBOL_PLANETS: Record<Lot, Body | null> = {
+  fortune: null,
+  spirit: null,
+  eros: "venus",
+  necessity: "mercury",
+  courage: "mars",
+  victory: "jupiter",
+  nemesis: "saturn",
+};
+
+export type Element = "fire" | "earth" | "air" | "water";
+
+export const ELEMENTS: Element[] = ["fire", "earth", "air", "water"];
+
+export const ELEMENT_NAMES: Record<Element, string> = {
+  fire: "Ild",
+  earth: "Jord",
+  air: "Luft",
+  water: "Vand",
+};
+
+/** The signs run fire, earth, air, water from Aries. */
+export function elementOf(sign: Sign): Element {
+  return ELEMENTS[SIGNS.indexOf(sign) % 4];
+}
+
+/** One segment of a ring around the wheel: [start, end) in degrees, and its lord. */
+export type RingSegment = { start: number; end: number; lord: Body };
+
+/** The decan and bounds rings; fixed tables from the calculation core. */
+export type WheelRings = {
+  chaldeanDecans: RingSegment[];
+  /** Modern decans with Pluto, Uranus and Neptune as rulers. */
+  modernDecans: RingSegment[];
+  /** Modern decans with the traditional rulers only. */
+  modernDecansTraditional: RingSegment[];
+  bounds: RingSegment[];
 };
 
 export const SECT_NAMES: Record<Sect, string> = { day: "Dagkort", night: "Natkort" };

@@ -524,6 +524,19 @@ const badLimits = await invoke("planetary_condition", {
 );
 check("planetary_condition refuses limits out of order", badLimits !== null, badLimits ?? "");
 
+const rings = await invoke("wheel_rings");
+check(
+  "wheel_rings gives 36 decans in each scheme and 60 bounds",
+  rings.chaldeanDecans.length === 36 &&
+    rings.modernDecans.length === 36 &&
+    rings.modernDecansTraditional.length === 36 &&
+    rings.bounds.length === 60 &&
+    rings.chaldeanDecans[0].lord === "mars" &&
+    rings.bounds[0].lord === "jupiter" &&
+    rings.bounds[0].end === 6,
+  `first bound: ${rings.bounds[0]?.lord} to ${rings.bounds[0]?.end}°`,
+);
+
 socket.close();
 
 console.log(failures.length === 0 ? "\nAll checks passed." : `\n${failures.length} check(s) failed.`);

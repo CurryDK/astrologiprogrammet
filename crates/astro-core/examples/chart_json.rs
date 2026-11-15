@@ -11,6 +11,7 @@ use astro_core::chart::{Sect, compute_chart};
 use astro_core::condition::{ConditionOptions, condition_report, planet_stations};
 use astro_core::ephemeris;
 use astro_core::lots::lot_report;
+use astro_core::rings::wheel_rings;
 use astro_core::time::{ZoneChoice, resolve};
 use chrono::{NaiveDate, NaiveTime};
 
@@ -46,6 +47,7 @@ fn main() {
         "lots": lots,
         "devLotsNight": lots_night,
         "devCondition": condition,
+        "devRings": wheel_rings(),
     });
     println!("{}", serde_json::to_string_pretty(&json).unwrap());
 }

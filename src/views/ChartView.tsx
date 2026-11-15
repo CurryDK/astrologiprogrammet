@@ -242,7 +242,27 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
                 <thead>
                   <tr>
                     <th>Lots</th>
-                    <th>I hjulet</th>
+                    <th>
+                      <label>
+                        <input
+                          type="checkbox"
+                          aria-label="Alle lots i hjulet"
+                          checked={LOTS.every((lot) => settings.lots.showInWheel[lot])}
+                          onChange={(e) =>
+                            update((s) => ({
+                              ...s,
+                              lots: {
+                                ...s.lots,
+                                showInWheel: Object.fromEntries(
+                                  LOTS.map((lot) => [lot, e.target.checked]),
+                                ) as typeof s.lots.showInWheel,
+                              },
+                            }))
+                          }
+                        />{" "}
+                        I hjulet
+                      </label>
+                    </th>
                     <th></th>
                   </tr>
                 </thead>

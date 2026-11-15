@@ -23,6 +23,7 @@ import type {
   ProfectionOptions,
   ProfectionReport,
   ResolvedTime,
+  WheelRings,
 } from "./astro";
 
 const inTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -86,6 +87,9 @@ export const api = {
   /** Planetary Condition of a natal chart; `sectOverride` is the manual day/night choice. */
   planetaryCondition: (birth: BirthInput, sectOverride: Sect | null, options: ConditionOptions) =>
     call<ConditionReport>("planetary_condition", { birth, sectOverride, options }),
+
+  /** The decan and bounds rings of the wheel; the same for every chart. */
+  wheelRings: () => call<WheelRings>("wheel_rings"),
 
   eventsList: (chartId: number) => call<LifeEvent[]>("events_list", { chartId }),
   eventSave: (event: LifeEvent) => call<LifeEvent>("event_save", { event }),
