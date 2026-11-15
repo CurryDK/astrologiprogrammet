@@ -5,9 +5,11 @@ import {
   BODIES,
   POINT_GLYPHS,
   POINT_NAMES,
+  RATINGS,
   type LeapDayBirthday,
   type YearStart,
 } from "../astro";
+import { RATING_NAMES } from "../conditionText";
 import { useSettings } from "../settings";
 
 /** Colours and orbs. Every change takes effect at once and is remembered. */
@@ -169,6 +171,86 @@ export function SettingsView() {
           Hvilke transitplaneter, aspektgrupper og Time Lord-filtre der vises, vælges under
           “Visning” i Live Chart. Tidspunkter i Live Chart og for livsbegivenheder gælder
           computerens tidszone.
+        </p>
+      </section>
+
+      <section className="panel">
+        <h2>Planetary Condition</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Afstand til Solen</th>
+              <th>Til og med (grader)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(
+              [
+                ["cazimi", "Cazimi"],
+                ["combust", "Combust"],
+                ["beams", "Under the beams"],
+              ] as const
+            ).map(([key, label]) => (
+              <tr key={key}>
+                <td>{label}</td>
+                <td>
+                  <input
+                    type="number"
+                    min={0}
+                    max={30}
+                    step={0.5}
+                    aria-label={`Grænse for ${label}`}
+                    value={settings.condition[key]}
+                    onChange={(e) => {
+                      const value = e.target.valueAsNumber;
+                      if (!Number.isFinite(value) || value < 0 || value > 30) return;
+                      // The three limits must stay in order.
+                      const next = { ...settings.condition, [key]: value };
+                      if (next.cazimi > next.combust || next.combust > next.beams) return;
+                      update((s) => ({ ...s, condition: { ...s.condition, [key]: value } }));
+                    }}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <table>
+          <thead>
+            <tr>
+              <th>Vurdering</th>
+              <th>Farve</th>
+            </tr>
+          </thead>
+          <tbody>
+            {RATINGS.map((rating) => (
+              <tr key={rating}>
+                <td>{RATING_NAMES[rating]}</td>
+                <td>
+                  <input
+                    type="color"
+                    aria-label={`Farve for ${RATING_NAMES[rating]}`}
+                    value={settings.condition.colors[rating]}
+                    onChange={(e) =>
+                      update((s) => ({
+                        ...s,
+                        condition: {
+                          ...s.condition,
+                          colors: { ...s.condition.colors, [rating]: e.target.value },
+                        },
+                      }))
+                    }
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="muted">
+          Standard er cazimi til og med 1°, combust til og med 8° og under the beams til og med 15°.
+          De tre grænser skal stå i stigende rækkefølge. “Meget understøttende” og “meget
+          udfordrende” vises som udfyldte mærker, de to andre som kontur. Hvilke kategorier der
+          vises, vælges under “Kategorier” ved Planetary Condition.
         </p>
       </section>
 

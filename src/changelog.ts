@@ -13,6 +13,28 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.5.0",
+    date: "2026-11-15",
+    added: [
+      "Planetary Condition for natalhoroskoper: en samlet matrix med de syv traditionelle planeter som kolonner og betingelserne som rækker. Vises under horoskophjulet.",
+      "Detaljer for hver planet, som kan foldes ud hver for sig eller med “Åbn alle” og “Luk alle”. Tryk på en betingelse for at se vurdering, regel og kilde.",
+      "Fire vurderinger: meget understøttende (udfyldt turkis), understøttende (turkis kontur), udfordrende (rød kontur) og meget udfordrende (udfyldt rød). Fakta uden vurdering vises med en grå prik. Der er ingen point og ingen samlet vurdering.",
+      "Sect: sect light, favored og contrary sect med leder, benefic og malefic. Merkur er diurnal som morgenstjerne og nocturnal som aftenstjerne. Sect ændrer ingen farve.",
+      "Essential dignities: domicil, eksaltation, dorotheiske tripliciteter, egyptiske bounds og kaldæiske decaner samt detriment og fall. Herskerne for planetens position vises i detaljerne.",
+      "Forhold til Solen: cazimi, combust, under the beams og chariot. Ved chariot skjules den negative vurdering, mens afstanden til Solen stadig vises.",
+      "Huse: husnummer og hustype samt House: angular, fortunate og unfortunate (11. hus er fortunate), og planeter højst 3° fra en vinkel.",
+      "Joy by hemisphere, joy by sign polarity, joy by solar phase og planetary joys i huse som fire særskilte forhold.",
+      "Co-presence, domicile lord (witness, copresent, aversion), reception efter alle fem værdigheder og overcoming med Upon the Tenth.",
+      "Bonification og maltreatment: overcoming, heltegnstrigon fra benefic, heltegnsopposition fra malefic, engagement, adherence, striking with a ray fra Mars og Saturn samt enclosure ved kroppe og ved stråler. En enclosure, der brydes af en anden planets krop eller stråle, vises som brudt med angivelse af, hvem der bryder den.",
+      "Direkte eller retrograd bevægelse, daglig hastighed og seneste og næste station for Merkur til Saturn.",
+      "De enkelte kategorier kan slås til og fra under “Kategorier”. Valget huskes.",
+      "Indstillinger for grænserne for cazimi, combust og under the beams (standard 1°, 8° og 15°) og for de fire vurderingsfarver.",
+    ],
+    changed: [
+      "Horoskopvisningen har fået panelet Planetary Condition mellem hjulet og profektionerne. Panelet følger et manuelt valgt dag- eller natkort.",
+    ],
+  },
+  {
     version: "0.4.0",
     date: "2026-11-14",
     added: [

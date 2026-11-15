@@ -83,7 +83,7 @@ const places: Place[] = [
   },
 ];
 
-const { devLotsNight, ...computed } = fixture;
+const { devLotsNight, devCondition, ...computed } = fixture;
 
 /** The fixture's lots for the asked sect, cut down to the asked orb. */
 function lotsFor(options: LotOptions): LotReport {
@@ -355,6 +355,13 @@ export async function mockInvoke(command: string, args: Record<string, any>): Pr
         ambiguous: false,
       };
     }
+    case "planetary_condition":
+      // The fixture's own report; the limits and a manual sect are not applied.
+      return {
+        ...devCondition,
+        sect: args.sectOverride ?? devCondition.sect,
+        overridden: args.sectOverride != null,
+      };
     case "events_list":
       return events
         .filter((e) => e.chartId === args.chartId)

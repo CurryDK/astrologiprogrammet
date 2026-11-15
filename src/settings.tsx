@@ -7,13 +7,16 @@ import { api } from "./api";
 import {
   ASPECT_KINDS,
   BODIES,
+  CONDITION_GROUPS,
   LOTS,
   STEP_UNITS,
   type AspectKind,
   type Body,
+  type ConditionGroup,
   type LeapDayBirthday,
   type Lot,
   type Orbs,
+  type Rating,
   type StepUnit,
   type YearStart,
 } from "./astro";
@@ -69,6 +72,17 @@ export type Settings = {
     filters: { yearLord: boolean; monthLord: boolean; profectionSign: boolean };
     /** The step of the time navigation arrows. */
     stepUnit: StepUnit;
+  };
+  /** Planetary Condition (specification §6). */
+  condition: {
+    /** Greatest distance from the Sun, in degrees, for each state; inclusive. */
+    cazimi: number;
+    combust: number;
+    beams: number;
+    /** Colour of each of the four evaluation categories. */
+    colors: Record<Rating, string>;
+    /** Which analysis categories are shown. */
+    groups: Record<ConditionGroup, boolean>;
   };
 };
 
@@ -143,6 +157,25 @@ export const DEFAULT_SETTINGS: Settings = {
     groups: { natal: false, toNatal: true, toTransit: false },
     filters: { yearLord: false, monthLord: false, profectionSign: false },
     stepUnit: "day",
+  },
+  condition: {
+    // Decided 14 November 2026: cazimi within 1°, combust to 8°, under
+    // the beams to 15°, each adjustable.
+    cazimi: 1,
+    combust: 8,
+    beams: 15,
+    // Decided: turquoise for supportive, red for challenging; the "very"
+    // categories are drawn filled, the others as an outline.
+    colors: {
+      verySupportive: "#0e9aa7",
+      supportive: "#0e9aa7",
+      challenging: "#d32f2f",
+      veryChallenging: "#d32f2f",
+    },
+    groups: Object.fromEntries(CONDITION_GROUPS.map((group) => [group, true])) as Record<
+      ConditionGroup,
+      boolean
+    >,
   },
 };
 

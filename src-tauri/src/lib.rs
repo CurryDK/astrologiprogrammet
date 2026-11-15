@@ -4,6 +4,7 @@ use std::sync::Mutex;
 
 use astro_core::aspects::{Aspect, Orbs, find_aspects};
 use astro_core::chart::{Chart, Sect, compute_chart};
+use astro_core::condition::{ConditionOptions, ConditionReport, PlanetStations, condition_report, planet_stations};
 use astro_core::ephemeris;
 use astro_core::lots::{LotReport, lot_report};
 use astro_core::places::{Place, PlaceIndex};
@@ -129,6 +130,17 @@ struct LiveChart {
     profection: Option<ProfectionYear>,
     /// The month (1–12) of that year holding the moment.
     profection_month: Option<u8>,
+}
+
+/// Planetary Condition of a natal chart.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ConditionReply {
+    #[serde(flatten)]
+    report: ConditionReport,
+    /// Last and next station of Mercury to Saturn around the birth, with
+    /// clock readings at the birthplace.
+    stations: Vec<PlanetStations>,
 }
 
 /// What a transit aspect is made to.
@@ -324,6 +336,30 @@ fn live_chart(
     })
 }
 
+/// Planetary Condition of a natal chart. `sect_override` is the manual
+/// day/night choice; `options` holds the adjustable distances from the Sun.
+#[tauri::command]
+fn planetary_condition(
+    birth: BirthInput,
+    sect_override: Option<Sect>,
+    options: ConditionOptions,
+) -> Result<ConditionReply, String> {
+    let limits = [options.cazimi, options.combust, options.beams];
+    if limits.iter().any(|limit| !limit.is_finite() || *limit < 0.0)
+        || options.cazimi > options.combust
+        || options.combust > options.beams
+    {
+        return Err("ugyldige grænser for afstand til Solen".to_string());
+    }
+    let born = resolve_input(&birth)?;
+    let chart = compute_chart(born.utc, birth.latitude, birth.longitude).map_err(|e| e.to_string())?;
+    let zone = parse_birth(&birth)?.zone;
+    Ok(ConditionReply {
+        report: condition_report(&chart, sect_override, &options),
+        stations: planet_stations(born.utc, &zone),
+    })
+}
+
 /// The moments a transit aspect is exact around `at`: several when
 /// retrograde motion makes the transiting body pass more than once.
 #[tauri::command]
@@ -515,6 +551,7 @@ pub fn run() {
             local_resolve,
             live_chart,
             transit_passes,
+            planetary_condition,
             events_list,
             event_save,
             event_delete,

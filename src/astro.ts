@@ -182,6 +182,163 @@ export type ComputedChart = {
   lots: LotReport | null;
 };
 
+/** The seven traditional planets Planetary Condition covers, in display order. */
+export const PLANETS: Body[] = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn"];
+
+export type Rating = "verySupportive" | "supportive" | "challenging" | "veryChallenging";
+
+export const RATINGS: Rating[] = ["verySupportive", "supportive", "challenging", "veryChallenging"];
+
+/** The analysis categories of Planetary Condition; each can be switched off. */
+export type ConditionGroup =
+  | "sect"
+  | "joys"
+  | "dignities"
+  | "sun"
+  | "houses"
+  | "copresence"
+  | "domicileLord"
+  | "reception"
+  | "overcoming"
+  | "bonification"
+  | "maltreatment";
+
+export const CONDITION_GROUPS: ConditionGroup[] = [
+  "sect",
+  "joys",
+  "dignities",
+  "sun",
+  "houses",
+  "copresence",
+  "domicileLord",
+  "reception",
+  "overcoming",
+  "bonification",
+  "maltreatment",
+];
+
+export type ConditionKind =
+  | "sectLight"
+  | "sectFavored"
+  | "sectContrary"
+  | "joyHemisphere"
+  | "joySignPolarity"
+  | "joySolarPhase"
+  | "joyHouse"
+  | "domicile"
+  | "exaltation"
+  | "triplicity"
+  | "bounds"
+  | "decan"
+  | "detriment"
+  | "fall"
+  | "cazimi"
+  | "combust"
+  | "underBeams"
+  | "chariot"
+  | "houseAngular"
+  | "houseFortunate"
+  | "houseUnfortunate"
+  | "nearAngle"
+  | "copresence"
+  | "lordWitness"
+  | "lordCopresent"
+  | "lordAversion"
+  | "reception"
+  | "mutualReception"
+  | "overcomes"
+  | "overcomeBy"
+  | "byOvercoming"
+  | "superiorSextile"
+  | "signTrine"
+  | "signOpposition"
+  | "engagement"
+  | "adherence"
+  | "strikingRay"
+  | "enclosure"
+  | "enclosureBroken";
+
+export type Dignity = "domicile" | "exaltation" | "triplicity" | "bounds" | "decan";
+
+export type AngleName = "ascendant" | "descendant" | "midheaven" | "imumCoeli";
+
+/** One condition of one planet. Fields that do not apply are null or empty. */
+export type Condition = {
+  kind: ConditionKind;
+  group: ConditionGroup;
+  /** Null for a fact that carries no evaluation. */
+  rating: Rating | null;
+  /** The other planets involved. */
+  others: Body[];
+  aspect: AspectKind | null;
+  /** Degrees: from exact aspect, from the Sun, or from an angle. */
+  orb: number | null;
+  /** True applying or exact, false separating, null when not relevant or undetermined. */
+  applying: boolean | null;
+  sectRole: "leader" | "benefic" | "malefic" | null;
+  /** Co-presence: whether the benefic or malefic belongs to the sect in favour. */
+  favored: boolean | null;
+  triplicityRole: "day" | "night" | "participating" | null;
+  angle: AngleName | null;
+  dignities: Dignity[];
+  returnDignities: Dignity[];
+  /** Enclosure: by bodies (true) or by rays (false). */
+  bodily: boolean | null;
+  /** Planets whose body (aspect null) or ray breaks an enclosure. */
+  breakers: { body: Body; aspect: AspectKind | null }[];
+  /** Combust or under the beams whose negative rating the chariot removes. */
+  suppressed: boolean;
+};
+
+export type SolarPhase = "morning" | "evening" | "undetermined";
+
+export type PlanetCondition = {
+  body: Body;
+  sign: Sign;
+  house: number;
+  houseType: "angular" | "succedent" | "cadent";
+  /** Null for Mercury exactly conjunct the Sun. */
+  sect: "diurnal" | "nocturnal" | null;
+  aboveHorizon: boolean;
+  /** Null for the Sun and the Moon. */
+  phase: SolarPhase | null;
+  /** Degrees from the Sun; null for the Sun. */
+  sunDistance: number | null;
+  /** Degrees per day; negative when retrograde. */
+  speed: number;
+  retrograde: boolean;
+  lords: {
+    domicile: Body;
+    exaltation: Body | null;
+    /** Day, night and participating lord. */
+    triplicity: Body[];
+    bounds: Body;
+    decan: Body;
+  };
+  conditions: Condition[];
+};
+
+export type StationMoment = { at: Moment; turns: "retrograde" | "direct" };
+
+export type PlanetStations = {
+  body: Body;
+  previous: StationMoment | null;
+  next: StationMoment | null;
+};
+
+export type ConditionReport = {
+  /** The sect used; may be the manual choice. */
+  sect: Sect;
+  overridden: boolean;
+  sectLight: Body;
+  planets: PlanetCondition[];
+  /** Last and next station of Mercury to Saturn around the birth. */
+  stations: PlanetStations[];
+};
+
+/** The adjustable distances from the Sun, in degrees. */
+export type ConditionOptions = { cazimi: number; combust: number; beams: number };
+
 /** The moment a profection year begins (the specification only says "birthday"). */
 export type YearStart = "birthClockTime" | "midnight" | "solarReturn";
 

@@ -8,6 +8,7 @@ use std::path::PathBuf;
 
 use astro_core::aspects::{Orbs, find_aspects};
 use astro_core::chart::{Sect, compute_chart};
+use astro_core::condition::{ConditionOptions, condition_report, planet_stations};
 use astro_core::ephemeris;
 use astro_core::lots::lot_report;
 use astro_core::time::{ZoneChoice, resolve};
@@ -32,12 +33,19 @@ fn main() {
     // a manual sect change does. The fixture is a day chart.
     let lots_night = lot_report(&chart, Some(Sect::Night), 3.0, 1.0);
 
+    // Planetary Condition with the app's default limits, in the shape of
+    // the `planetary_condition` command's reply.
+    let mut condition =
+        serde_json::to_value(condition_report(&chart, None, &ConditionOptions::default())).unwrap();
+    condition["stations"] = serde_json::to_value(planet_stations(resolved.utc, &zone)).unwrap();
+
     let json = serde_json::json!({
         "chart": chart,
         "aspects": aspects,
         "time": resolved,
         "lots": lots,
         "devLotsNight": lots_night,
+        "devCondition": condition,
     });
     println!("{}", serde_json::to_string_pretty(&json).unwrap());
 }

@@ -477,6 +477,54 @@ check("start screen is rendered", text.includes("Himlen lige nu") && text.includ
 const wheel = await evaluate("document.querySelectorAll('svg.chart-wheel text').length");
 check("the wheel is drawn", wheel > 40, `${wheel} text elements`);
 
+// Planetary Condition: seven planets, the manual sect, and the Sun limits.
+const conditionOptions = { cazimi: 1, combust: 8, beams: 15 };
+const condition = await invoke("planetary_condition", { birth, sectOverride: null, options: conditionOptions });
+check(
+  "planetary_condition covers the seven traditional planets",
+  condition.planets.map((p) => p.body).join() === "sun,moon,mercury,venus,mars,jupiter,saturn",
+);
+check(
+  "planetary_condition: Mercury is in its domicile in Gemini on 1 June 1947",
+  (() => {
+    const mercury = condition.planets.find((p) => p.body === "mercury");
+    return mercury.sign !== "gemini" || mercury.conditions.some((c) => c.kind === "domicile");
+  })(),
+);
+check(
+  "planetary_condition uses the chart's own sect",
+  condition.sect === computed.chart.sect && condition.overridden === false,
+  condition.sect,
+);
+check(
+  "planetary_condition gives stations for Mercury to Saturn",
+  condition.stations.length === 5 && condition.stations.every((s) => s.previous && s.next),
+);
+const otherSect = condition.sect === "day" ? "night" : "day";
+const flipped = await invoke("planetary_condition", { birth, sectOverride: otherSect, options: conditionOptions });
+const rated = (report) =>
+  JSON.stringify(
+    report.planets.map((p) =>
+      p.conditions
+        .filter((c) => c.group === "bonification" || c.group === "maltreatment")
+        .map((c) => [c.kind, c.others, c.rating]),
+    ),
+  );
+check(
+  "planetary_condition: a manual sect is marked and changes no bonification/maltreatment rating",
+  flipped.overridden === true && flipped.sect === otherSect && rated(flipped) === rated(condition),
+);
+const badLimits = await invoke("planetary_condition", {
+  birth,
+  sectOverride: null,
+  options: { cazimi: 9, combust: 8, beams: 15 },
+}).then(
+  () => null,
+  (error) => String(error),
+);
+check("planetary_condition refuses limits out of order", badLimits !== null, badLimits ?? "");
+
 socket.close();
+
 console.log(failures.length === 0 ? "\nAll checks passed." : `\n${failures.length} check(s) failed.`);
 process.exit(failures.length === 0 ? 0 : 1);

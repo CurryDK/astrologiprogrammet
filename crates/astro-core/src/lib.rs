@@ -5,6 +5,7 @@
 
 pub mod aspects;
 pub mod chart;
+pub mod condition;
 pub mod ephemeris;
 mod ffi;
 pub mod lots;

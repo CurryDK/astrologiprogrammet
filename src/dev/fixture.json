@@ -458,6 +458,2593 @@
     "sect": "day",
     "utc": "1962-02-04T13:20:00Z"
   },
+  "devCondition": {
+    "overridden": false,
+    "planets": [
+      {
+        "aboveHorizon": true,
+        "body": "sun",
+        "conditions": [
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sect",
+            "kind": "sectLight",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sect",
+            "kind": "sectFavored",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": "leader",
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "joys",
+            "kind": "joyHemisphere",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "joys",
+            "kind": "joySignPolarity",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "dignities",
+            "kind": "detriment",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "houses",
+            "kind": "houseUnfortunate",
+            "orb": null,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "moon"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "venus"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mars"
+            ],
+            "rating": "veryChallenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "domicileLord",
+            "kind": "lordCopresent",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity",
+              "decan"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity",
+              "bounds"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "domicile",
+              "triplicity"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          }
+        ],
+        "house": 8,
+        "houseType": "succedent",
+        "lords": {
+          "bounds": "jupiter",
+          "decan": "mercury",
+          "domicile": "saturn",
+          "exaltation": null,
+          "triplicity": [
+            "saturn",
+            "mercury",
+            "jupiter"
+          ]
+        },
+        "phase": null,
+        "retrograde": false,
+        "sect": "diurnal",
+        "sign": "aquarius",
+        "speed": 1.014359780058286,
+        "sunDistance": null
+      },
+      {
+        "aboveHorizon": true,
+        "body": "moon",
+        "conditions": [
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sect",
+            "kind": "sectContrary",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": "leader",
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sun",
+            "kind": "combust",
+            "orb": 6.319345397448785,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "houses",
+            "kind": "houseUnfortunate",
+            "orb": null,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "sun"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "venus"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mars"
+            ],
+            "rating": "veryChallenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "domicileLord",
+            "kind": "lordCopresent",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "bounds",
+              "decan"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "venus"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "domicile",
+              "triplicity"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": true,
+            "aspect": "conjunction",
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "bonification",
+            "kind": "adherence",
+            "orb": 8.272592919255544,
+            "others": [
+              "venus"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": true,
+            "aspect": "conjunction",
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "bonification",
+            "kind": "adherence",
+            "orb": 9.57085730383858,
+            "others": [
+              "jupiter"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          }
+        ],
+        "house": 8,
+        "houseType": "succedent",
+        "lords": {
+          "bounds": "venus",
+          "decan": "venus",
+          "domicile": "saturn",
+          "exaltation": null,
+          "triplicity": [
+            "saturn",
+            "mercury",
+            "jupiter"
+          ]
+        },
+        "phase": null,
+        "retrograde": false,
+        "sect": "nocturnal",
+        "sign": "aquarius",
+        "speed": 14.975065748437432,
+        "sunDistance": 6.319345397448785
+      },
+      {
+        "aboveHorizon": true,
+        "body": "mercury",
+        "conditions": [
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sect",
+            "kind": "sectContrary",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "dignities",
+            "kind": "triplicity",
+            "orb": null,
+            "others": [],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": "night"
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "dignities",
+            "kind": "decan",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sun",
+            "kind": "combust",
+            "orb": 2.2044736425107203,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "houses",
+            "kind": "houseUnfortunate",
+            "orb": null,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "sun"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "moon"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "venus"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mars"
+            ],
+            "rating": "veryChallenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "domicileLord",
+            "kind": "lordCopresent",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity",
+              "bounds"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "mutualReception",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": null,
+            "returnDignities": [
+              "triplicity",
+              "decan"
+            ],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "domicile",
+              "triplicity"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "mutualReception",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": null,
+            "returnDignities": [
+              "triplicity",
+              "bounds"
+            ],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": true,
+            "aspect": "conjunction",
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "bonification",
+            "kind": "adherence",
+            "orb": 0.25122612070396144,
+            "others": [
+              "venus"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": true,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "bonification",
+            "kind": "enclosure",
+            "orb": null,
+            "others": [
+              "venus",
+              "jupiter"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          }
+        ],
+        "house": 8,
+        "houseType": "succedent",
+        "lords": {
+          "bounds": "jupiter",
+          "decan": "mercury",
+          "domicile": "saturn",
+          "exaltation": null,
+          "triplicity": [
+            "saturn",
+            "mercury",
+            "jupiter"
+          ]
+        },
+        "phase": "evening",
+        "retrograde": true,
+        "sect": "nocturnal",
+        "sign": "aquarius",
+        "speed": -1.1722542754097875,
+        "sunDistance": 2.2044736425107203
+      },
+      {
+        "aboveHorizon": true,
+        "body": "venus",
+        "conditions": [
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sect",
+            "kind": "sectContrary",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": "benefic",
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "joys",
+            "kind": "joySolarPhase",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sun",
+            "kind": "combust",
+            "orb": 1.9532475218067589,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "houses",
+            "kind": "houseUnfortunate",
+            "orb": null,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "sun"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "moon"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mars"
+            ],
+            "rating": "veryChallenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "domicileLord",
+            "kind": "lordCopresent",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity",
+              "decan"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity",
+              "bounds"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "domicile",
+              "triplicity"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "mutualReception",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": null,
+            "returnDignities": [
+              "decan"
+            ],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": true,
+            "aspect": "conjunction",
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "bonification",
+            "kind": "adherence",
+            "orb": 1.2982643845830353,
+            "others": [
+              "jupiter"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          }
+        ],
+        "house": 8,
+        "houseType": "succedent",
+        "lords": {
+          "bounds": "jupiter",
+          "decan": "mercury",
+          "domicile": "saturn",
+          "exaltation": null,
+          "triplicity": [
+            "saturn",
+            "mercury",
+            "jupiter"
+          ]
+        },
+        "phase": "evening",
+        "retrograde": false,
+        "sect": "nocturnal",
+        "sign": "aquarius",
+        "speed": 1.2551729260880626,
+        "sunDistance": 1.9532475218067589
+      },
+      {
+        "aboveHorizon": true,
+        "body": "mars",
+        "conditions": [
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sect",
+            "kind": "sectContrary",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": "malefic",
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sun",
+            "kind": "underBeams",
+            "orb": 13.241423615162887,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "houses",
+            "kind": "houseUnfortunate",
+            "orb": null,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "sun"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "moon"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "venus"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "domicileLord",
+            "kind": "lordCopresent",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity",
+              "bounds"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "decan"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "venus"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "domicile",
+              "triplicity"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "reception",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": true,
+            "aspect": "conjunction",
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "maltreatment",
+            "kind": "adherence",
+            "orb": 1.7387807501118573,
+            "others": [
+              "saturn"
+            ],
+            "rating": "veryChallenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          }
+        ],
+        "house": 8,
+        "houseType": "succedent",
+        "lords": {
+          "bounds": "mercury",
+          "decan": "venus",
+          "domicile": "saturn",
+          "exaltation": null,
+          "triplicity": [
+            "saturn",
+            "mercury",
+            "jupiter"
+          ]
+        },
+        "phase": "morning",
+        "retrograde": false,
+        "sect": "nocturnal",
+        "sign": "aquarius",
+        "speed": 0.7773150531936374,
+        "sunDistance": 13.241423615162887
+      },
+      {
+        "aboveHorizon": true,
+        "body": "jupiter",
+        "conditions": [
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sect",
+            "kind": "sectFavored",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": "benefic",
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "joys",
+            "kind": "joyHemisphere",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "joys",
+            "kind": "joySignPolarity",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "dignities",
+            "kind": "triplicity",
+            "orb": null,
+            "others": [],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": "participating"
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "dignities",
+            "kind": "bounds",
+            "orb": null,
+            "others": [],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sun",
+            "kind": "combust",
+            "orb": 3.251511906389794,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": true,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "bounds"
+            ],
+            "favored": null,
+            "group": "sun",
+            "kind": "chariot",
+            "orb": null,
+            "others": [],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "houses",
+            "kind": "houseUnfortunate",
+            "orb": null,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "sun"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "moon"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "venus"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mars"
+            ],
+            "rating": "veryChallenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "domicileLord",
+            "kind": "lordCopresent",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity",
+              "decan"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "mutualReception",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [
+              "triplicity",
+              "bounds"
+            ],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "domicile",
+              "triplicity"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "mutualReception",
+            "orb": null,
+            "others": [
+              "saturn"
+            ],
+            "rating": null,
+            "returnDignities": [
+              "triplicity"
+            ],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": true,
+            "aspect": "conjunction",
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "bonification",
+            "kind": "adherence",
+            "orb": 1.2982643845830353,
+            "others": [
+              "venus"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          }
+        ],
+        "house": 8,
+        "houseType": "succedent",
+        "lords": {
+          "bounds": "jupiter",
+          "decan": "mercury",
+          "domicile": "saturn",
+          "exaltation": null,
+          "triplicity": [
+            "saturn",
+            "mercury",
+            "jupiter"
+          ]
+        },
+        "phase": "evening",
+        "retrograde": false,
+        "sect": "diurnal",
+        "sign": "aquarius",
+        "speed": 0.2392523763851194,
+        "sunDistance": 3.251511906389794
+      },
+      {
+        "aboveHorizon": true,
+        "body": "saturn",
+        "conditions": [
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sect",
+            "kind": "sectFavored",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": "malefic",
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "joys",
+            "kind": "joyHemisphere",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "joys",
+            "kind": "joySignPolarity",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "joys",
+            "kind": "joySolarPhase",
+            "orb": null,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "dignities",
+            "kind": "domicile",
+            "orb": null,
+            "others": [],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "dignities",
+            "kind": "triplicity",
+            "orb": null,
+            "others": [],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": "day"
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "sun",
+            "kind": "underBeams",
+            "orb": 11.50264286505103,
+            "others": [],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": true,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "domicile"
+            ],
+            "favored": null,
+            "group": "sun",
+            "kind": "chariot",
+            "orb": null,
+            "others": [],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "houses",
+            "kind": "houseUnfortunate",
+            "orb": null,
+            "others": [],
+            "rating": "challenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "sun"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "moon"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "venus"
+            ],
+            "rating": "supportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": false,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "mars"
+            ],
+            "rating": "veryChallenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": true,
+            "group": "copresence",
+            "kind": "copresence",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": "verySupportive",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity",
+              "bounds"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "mutualReception",
+            "orb": null,
+            "others": [
+              "mercury"
+            ],
+            "rating": null,
+            "returnDignities": [
+              "domicile",
+              "triplicity"
+            ],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "decan"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "mutualReception",
+            "orb": null,
+            "others": [
+              "venus"
+            ],
+            "rating": null,
+            "returnDignities": [
+              "domicile",
+              "triplicity"
+            ],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": null,
+            "aspect": null,
+            "bodily": null,
+            "breakers": [],
+            "dignities": [
+              "triplicity"
+            ],
+            "favored": null,
+            "group": "reception",
+            "kind": "mutualReception",
+            "orb": null,
+            "others": [
+              "jupiter"
+            ],
+            "rating": null,
+            "returnDignities": [
+              "domicile",
+              "triplicity"
+            ],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          },
+          {
+            "angle": null,
+            "applying": true,
+            "aspect": "conjunction",
+            "bodily": null,
+            "breakers": [],
+            "dignities": [],
+            "favored": null,
+            "group": "maltreatment",
+            "kind": "adherence",
+            "orb": 1.7387807501118573,
+            "others": [
+              "mars"
+            ],
+            "rating": "veryChallenging",
+            "returnDignities": [],
+            "sectRole": null,
+            "suppressed": false,
+            "triplicityRole": null
+          }
+        ],
+        "house": 8,
+        "houseType": "succedent",
+        "lords": {
+          "bounds": "mercury",
+          "decan": "venus",
+          "domicile": "saturn",
+          "exaltation": null,
+          "triplicity": [
+            "saturn",
+            "mercury",
+            "jupiter"
+          ]
+        },
+        "phase": "morning",
+        "retrograde": false,
+        "sect": "diurnal",
+        "sign": "aquarius",
+        "speed": 0.11755807030374481,
+        "sunDistance": 11.50264286505103
+      }
+    ],
+    "sect": "day",
+    "sectLight": "sun",
+    "stations": [
+      {
+        "body": "mercury",
+        "next": {
+          "at": {
+            "local": "1962-02-17T22:35:10.546875",
+            "offsetSeconds": 3600,
+            "utc": "1962-02-17T21:35:10.546875Z"
+          },
+          "turns": "direct"
+        },
+        "previous": {
+          "at": {
+            "local": "1962-01-27T16:30:36.328125",
+            "offsetSeconds": 3600,
+            "utc": "1962-01-27T15:30:36.328125Z"
+          },
+          "turns": "retrograde"
+        }
+      },
+      {
+        "body": "venus",
+        "next": {
+          "at": {
+            "local": "1962-10-23T05:14:11.953125",
+            "offsetSeconds": 3600,
+            "utc": "1962-10-23T04:14:11.953125Z"
+          },
+          "turns": "retrograde"
+        },
+        "previous": {
+          "at": {
+            "local": "1961-05-02T05:15:36.328125",
+            "offsetSeconds": 3600,
+            "utc": "1961-05-02T04:15:36.328125Z"
+          },
+          "turns": "direct"
+        }
+      },
+      {
+        "body": "mars",
+        "next": {
+          "at": {
+            "local": "1962-12-26T07:10:55.078125",
+            "offsetSeconds": 3600,
+            "utc": "1962-12-26T06:10:55.078125Z"
+          },
+          "turns": "retrograde"
+        },
+        "previous": {
+          "at": {
+            "local": "1961-02-06T03:50:31.640625",
+            "offsetSeconds": 3600,
+            "utc": "1961-02-06T02:50:31.640625Z"
+          },
+          "turns": "direct"
+        }
+      },
+      {
+        "body": "jupiter",
+        "next": {
+          "at": {
+            "local": "1962-07-02T09:58:15.703125",
+            "offsetSeconds": 3600,
+            "utc": "1962-07-02T08:58:15.703125Z"
+          },
+          "turns": "retrograde"
+        },
+        "previous": {
+          "at": {
+            "local": "1961-09-23T16:27:26.484375",
+            "offsetSeconds": 3600,
+            "utc": "1961-09-23T15:27:26.484375Z"
+          },
+          "turns": "direct"
+        }
+      },
+      {
+        "body": "saturn",
+        "next": {
+          "at": {
+            "local": "1962-05-22T00:22:03.046875",
+            "offsetSeconds": 3600,
+            "utc": "1962-05-21T23:22:03.046875Z"
+          },
+          "turns": "retrograde"
+        },
+        "previous": {
+          "at": {
+            "local": "1961-09-27T20:31:25.546875",
+            "offsetSeconds": 3600,
+            "utc": "1961-09-27T19:31:25.546875Z"
+          },
+          "turns": "direct"
+        }
+      }
+    ]
+  },
   "devLotsNight": {
     "aspects": [
       {

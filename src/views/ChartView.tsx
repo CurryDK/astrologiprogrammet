@@ -18,6 +18,7 @@ import {
 } from "../astro";
 import { AspectTable } from "../components/AspectTable";
 import { ChartWheel } from "../components/ChartWheel";
+import { ConditionPanel } from "../components/ConditionPanel";
 import { LifeEventsPanel } from "../components/LifeEventsPanel";
 import { LotAspectTable } from "../components/LotAspectTable";
 import { LotSymbol, LotsTable } from "../components/LotsTable";
@@ -35,7 +36,7 @@ type Props = {
   onChanged: () => void;
 };
 
-/** A natal chart: wheel, profections, positions, aspect overview and the seven lots. */
+/** A natal chart: wheel, Planetary Condition, profections, positions, aspect overview and the seven lots. */
 export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Props) {
   const { settings, update } = useSettings();
   const [computed, setComputed] = useState<ComputedChart | null>(null);
@@ -138,6 +139,7 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
                 lots={computed.lots?.positions}
               />
             </div>
+            <ConditionPanel record={record} />
             <ProfectionPanel record={record} />
             <LifeEventsPanel record={record} onJump={onLive} jumpLabel="Vis i Live Chart" />
           </div>

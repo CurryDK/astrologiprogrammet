@@ -5,6 +5,9 @@ import type {
   BirthInput,
   ChartRecord,
   ComputedChart,
+  ConditionOptions,
+  ConditionReport,
+  Sect,
   Folder,
   LifeEvent,
   LiveChart,
@@ -79,6 +82,10 @@ export const api = {
     at: string;
     zone: string;
   }) => call<Moment[]>("transit_passes", args),
+
+  /** Planetary Condition of a natal chart; `sectOverride` is the manual day/night choice. */
+  planetaryCondition: (birth: BirthInput, sectOverride: Sect | null, options: ConditionOptions) =>
+    call<ConditionReport>("planetary_condition", { birth, sectOverride, options }),
 
   eventsList: (chartId: number) => call<LifeEvent[]>("events_list", { chartId }),
   eventSave: (event: LifeEvent) => call<LifeEvent>("event_save", { event }),
