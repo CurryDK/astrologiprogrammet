@@ -176,9 +176,7 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
                     <option value="night">Natkort (valgt manuelt)</option>
                   </select>
                 </label>
-                <LotsTable lots={computed.lots.positions} settings={settings} />
-                <p className="muted legend">Symbolerne er midlertidige, indtil de endelige er valgt.</p>
-              </section>
+                <LotsTable lots={computed.lots.positions} settings={settings} />              </section>
             )}
 
             {computed.lots && (
