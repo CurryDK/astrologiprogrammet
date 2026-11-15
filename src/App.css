@@ -367,6 +367,23 @@ button.step-arrow {
   border-top: 1px solid var(--line);
 }
 
+.rectification {
+  margin-bottom: 14px;
+}
+
+.rectify-row {
+  display: flex;
+  align-items: center;
+  gap: 8px 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.rectify-row input[type="time"] {
+  font: inherit;
+  padding: 3px 6px;
+}
+
 .wheel-legend {
   margin: 4px 8px;
   text-align: center;

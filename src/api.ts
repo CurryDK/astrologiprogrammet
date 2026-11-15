@@ -11,10 +11,13 @@ import type {
   Folder,
   LifeEvent,
   LiveChart,
+  AngleMethod,
   AspectKind,
   Body,
   Moment,
   PassOther,
+  PointId,
+  ProgressionOther,
   SkyAt,
   TimeStep,
   LotOptions,
@@ -73,6 +76,8 @@ export const api = {
     zone: string;
     orb: number;
     profections: ProfectionOptions;
+    /** Orb of progression aspects and how the progressed angles are moved. */
+    progression: { orb: number; angleMethod: AngleMethod };
   }) => call<LiveChart>("live_chart", args),
   /** The exact moments of a transit aspect around `at`; several with retrograde passes. */
   transitPasses: (args: {
@@ -83,6 +88,17 @@ export const api = {
     at: string;
     zone: string;
   }) => call<Moment[]>("transit_passes", args),
+
+  /** The moments of life a progression aspect is exact around `at`. */
+  progressionPasses: (args: {
+    birth: BirthInput;
+    progressed: PointId;
+    other: ProgressionOther;
+    kind: AspectKind;
+    at: string;
+    zone: string;
+    angleMethod: AngleMethod;
+  }) => call<Moment[]>("progression_passes", args),
 
   /** Planetary Condition of a natal chart; `sectOverride` is the manual day/night choice. */
   planetaryCondition: (birth: BirthInput, sectOverride: Sect | null, options: ConditionOptions) =>

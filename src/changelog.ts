@@ -13,6 +13,35 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.6.0",
+    date: "2026-11-15",
+    added: [
+      "Sekundære progressioner i Live Chart: natalhoroskopet inderst, progressionerne i midten og transitterne yderst. Progressioner og transitter følger altid samme tidspunkt. Hvert lag kan slås fra under “Visning”.",
+      "Progressionerne beregnes som dag-for-et-år med et tropisk år på 365,2422 dage. Progressiv ASC og MC beregnes med Naibod i rektascension; Naibod i ekliptisk længde kan vælges under Indstillinger.",
+      "Progressionsaspekter: progression → natal og progression → progression, hver for sig til og fra. Standardorb er 1° og kan ændres under Indstillinger. Progressive planeter til natal ASC/MC og progressiv ASC/MC til natale planeter er med.",
+      "“Eksakt” på et progressionsaspekt springer Live Chart til tidspunktet, hvor aspektet er eksakt. Er der flere passager, kan der vælges mellem dem.",
+      "Oversigten “Progressive positioner” med tegn, grad og natalhoroskopets heltegnshus. Hver progressiv planet og akse kan vælges til og fra i hjulet og i aspekter.",
+      "Rektifikation i Live Chart: fødselstiden kan flyttes ±1 minut, ±10 minutter og ±1 time eller indtastes direkte, mens Live Chart-tidspunktet står fast. Natalpositioner, ASC/MC, huse, lots, profektioner, Planetary Condition, progressioner og aspekter regnes om med det samme.",
+      "En justeret fødselstid gemmes med “Gem som nyt horoskop” (forvalgt, livsbegivenhederne følger med) eller “Overskriv”. Den oprindelige fødselstid bevares, indtil der gemmes.",
+      "Ved ukendt fødselstid bruges kl. 12:00 til progressionerne; progressiv ASC/MC, husplaceringer og akseaspekter udelades.",
+      "Horoskophjulet: elementfarver i zodiakringen (ild, jord, luft, vand). Farverne kan ændres og gendannes under Indstillinger.",
+      "Horoskophjulet: ringe med kaldæiske decaner og egyptiske bounds, og moderne decaner som kan slås til. Hver ring viser herskerens symbol. Ringene vælges under Indstillinger og rykker sammen, når en skjules.",
+      "De syv lots har fået deres symboler: ⊗ for Fortune, ⊕ for Spirit og en tynd cirkel om planetens symbol for Eros (Venus), Necessity (Merkur), Courage (Mars), Victory (Jupiter) og Nemesis (Saturn). Alle lots kan slås til og fra i hjulet på én gang.",
+      "Indstilling for aspektlinjer mellem lagene i Live Chart: mellem de eksakte grader inderst i hjulet (standard) eller fra hvert lags egen ring.",
+    ],
+    changed: [
+      "Planeterne i hjulet står nu lodret overalt: symbol, grader, minutter og Rx under hinanden i planetens farve, med en tynd streg til den præcise position. Grader og minutter har samme størrelse.",
+      "Retrograd vises som Rx i hjulet i stedet for R.",
+      "Tekst og symboler i hjulet beholder deres størrelse, når vinduet ændres. Hjulet har en mindste størrelse og kan rulles sidelæns, hvis vinduet er smallere.",
+      "Gradskalaen ligger nu lige inden for den inderste ring, med en kort streg for hver grad og en længere for hver femte.",
+      "Husgrænserne er tynde grå linjer helt ind til centrum, og husnumrene står tæt på centrum.",
+      "Aspektlinjerne ender nu på en cirkel lige inden for planeterne, ved hver planets præcise grad.",
+      "ASC, DSC, MC og IC vises som et punkt med en kort streg og gradangivelse.",
+      "Tal og tekst i hjulet er sat med Verdana.",
+      "Lots er skjult i hjulet som standard. Har du allerede gemte indstillinger, er de fortsat slået til, indtil du slår dem fra.",
+    ],
+  },
+  {
     version: "0.5.1",
     date: "2026-11-15",
     added: [

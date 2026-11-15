@@ -14,6 +14,7 @@ import {
   type Chart,
   type LotPosition,
   type PointId,
+  type ProgressedAspect,
   type RingSegment,
   type TransitAspect,
   type WheelRings,
@@ -53,13 +54,15 @@ const labelHeight = (retrograde: boolean) =>
 /** From the degree scale in to the circle the aspect lines run between. */
 const ASPECT_INSET = TICK_FIVE + LABEL.gap + labelHeight(true) + 7;
 
-/** Room outside the wheel for the angle labels; more with a transit layer. */
+/** Room outside the wheel for the angle labels. */
 const MARGIN = { x: 100, y: 34 };
-const MARGIN_TRANSIT = { x: 172, y: 100 };
-/** The transit layer, in pixels outside the zodiac ring. */
-const TRANSIT = { lineEnd: 17, glyph: 31, reading: 55, angleLabel: 78 };
-/** Closest two transit symbols may sit, in degrees along the wheel. */
-const MIN_TRANSIT_SEPARATION = 7;
+/**
+ * A layer outside the zodiac ring (progressions, transits): how wide its
+ * band is, and where its position line ends, its symbol and its reading sit.
+ */
+const BAND = { width: 62, lineEnd: 16, glyph: 30, reading: 53 };
+/** Closest two symbols of an outer layer may sit, in degrees along the wheel. */
+const MIN_LAYER_SEPARATION = 7;
 
 /**
  * Smallest radius at which the wheel is still readable with every ring
@@ -78,9 +81,20 @@ type Props = {
   /** Largest radius of the wheel in pixels, where the screen gives it less room. */
   maxRadius?: number;
   /**
-   * Live Chart: transiting bodies drawn outside the zodiac ring, with their
-   * aspect lines. Everything is already filtered by the caller. This is the
-   * simple layered display; the dedicated biwheel design is deferred.
+   * Live Chart: secondary progressions, drawn in a band outside the zodiac
+   * ring, inside the transits. Everything is already filtered by the caller.
+   */
+  progression?: {
+    points: LayerPoint[];
+    toNatal: ProgressedAspect[];
+    toProgressed: Aspect[];
+    /** Maximum orb of progression aspects, for the line thickness. */
+    orb: number;
+  };
+  /**
+   * Live Chart: transiting bodies drawn outermost, with their aspect lines.
+   * Everything is already filtered by the caller. This is the simple
+   * layered display; the dedicated biwheel design is deferred.
    */
   transit?: {
     positions: BodyPosition[];
@@ -90,6 +104,17 @@ type Props = {
     orb: number;
   };
 };
+
+/** A body or angle of an outer layer. */
+export type LayerPoint = {
+  id: PointId;
+  longitude: number;
+  degree: number;
+  minute: number;
+  retrograde: boolean;
+};
+
+type LayerName = "natal" | "progression" | "transit";
 
 let ringsRequest: Promise<WheelRings> | null = null;
 
@@ -143,12 +168,38 @@ function useRoom() {
  * of 15 November 2026): whole-sign houses, the Ascendant degree at the left,
  * zodiac running counter-clockwise.
  */
-export function ChartWheel({ chart, aspects, settings, lots = [], maxRadius, transit }: Props) {
+export function ChartWheel({
+  chart,
+  aspects,
+  settings,
+  lots = [],
+  maxRadius,
+  progression,
+  transit,
+}: Props) {
   const { box, room } = useRoom();
   const tables = useWheelRings();
   const ascendant = chart.angles.ascendant.longitude;
 
-  const margin = transit ? MARGIN_TRANSIT : MARGIN;
+  // Natal innermost, progressions in the middle, transits outermost
+  // (decision 9 of 15 November 2026 on progressions).
+  const layers = [
+    progression && {
+      name: "progression" as const,
+      points: progression.points,
+    },
+    transit && {
+      name: "transit" as const,
+      points: transit.positions.map((p) => ({ ...p, id: p.body as PointId })),
+    },
+  ]
+    .filter((layer) => layer !== undefined)
+    .map((layer, index) => ({ ...layer, offset: index * BAND.width }));
+  const bands = layers.length;
+  const margin = {
+    x: MARGIN.x + bands * BAND.width + (bands ? 10 : 0),
+    y: MARGIN.y + bands * BAND.width + (bands ? 4 : 0),
+  };
   // Beside the side column the whole wheel should fit in the window's height.
   const byHeight = room.wide ? (room.height - 190) / 2 - margin.y : Infinity;
   const outer = Math.round(
@@ -258,14 +309,68 @@ export function ChartWheel({ chart, aspects, settings, lots = [], maxRadius, tra
       ? chart.positions.find((p) => p.body === point)!.longitude
       : chart.angles[point].longitude;
 
-  const transitAngles = transit
-    ? spreadAngles(
-        transit.positions.map((p) => p.longitude),
-        MIN_TRANSIT_SEPARATION,
-      )
-    : [];
-  const transitLongitude = (body: PointId) =>
-    transit!.positions.find((p) => p.body === body)?.longitude;
+  const layerOf = (name: LayerName) => layers.find((layer) => layer.name === name);
+  /** Exact longitude of a point in a layer, if that layer shows it. */
+  const layerLongitude = (name: LayerName, point: PointId): number | undefined =>
+    name === "natal"
+      ? longitudeOf(point)
+      : layerOf(name)?.points.find((p) => p.id === point)?.longitude;
+  /**
+   * Where an aspect line of a layer ends. Lines between the layers run
+   * either between the exact degrees on the inner circle, or from each
+   * layer's own ring (a setting; decision 9 allows both readings).
+   */
+  const lineRadius = (name: LayerName) =>
+    name === "natal" || settings.layerLines === "center"
+      ? aspectRadius
+      : outer + (layerOf(name)?.offset ?? 0);
+
+  const layerLines = [
+    ...(progression
+      ? [
+          ...progression.toNatal.map((aspect) => ({
+            key: `pn-${aspect.progressed}-${aspect.natal}`,
+            className: "progression-natal-line",
+            from: ["progression", aspect.progressed] as const,
+            to: ["natal", aspect.natal] as const,
+            aspect,
+            orb: progression.orb,
+            dash: "2 5",
+          })),
+          ...progression.toProgressed.map((aspect) => ({
+            key: `pp-${aspect.a}-${aspect.b}`,
+            className: "progression-progression-line",
+            from: ["progression", aspect.a] as const,
+            to: ["progression", aspect.b] as const,
+            aspect,
+            orb: progression.orb,
+            dash: "10 4 2 4",
+          })),
+        ]
+      : []),
+    ...(transit
+      ? [
+          ...transit.toNatal.map((aspect) => ({
+            key: `tn-${aspect.transit}-${aspect.natal}`,
+            className: "transit-natal-line",
+            from: ["transit", aspect.transit] as const,
+            to: ["natal", aspect.natal] as const,
+            aspect,
+            orb: transit.orb,
+            dash: undefined,
+          })),
+          ...transit.toTransit.map((aspect) => ({
+            key: `tt-${aspect.a}-${aspect.b}`,
+            className: "transit-transit-line",
+            from: ["transit", aspect.a] as const,
+            to: ["transit", aspect.b] as const,
+            aspect,
+            orb: transit.orb,
+            dash: "7 6",
+          })),
+        ]
+      : []),
+  ];
 
   const angles = [
     { label: "ASC", angle: chart.angles.ascendant },
@@ -391,52 +496,34 @@ export function ChartWheel({ chart, aspects, settings, lots = [], maxRadius, tra
                 stroke={settings.colors.aspects[aspect.kind]}
                 strokeWidth={aspectLineWidth(aspect.orb, settings.orbs[aspect.kind])}
                 strokeLinecap="round"
-                // In a Live Chart the natal aspects step back behind the transits.
-                opacity={transit ? 0.3 : 1}
+                // In a Live Chart the natal aspects step back behind the other layers.
+                opacity={bands ? 0.3 : 1}
               />
             );
           })}
 
-        {/* Transit aspect lines: solid to natal points, dashed among transits */}
-        {transit &&
-          [
-            ...transit.toNatal.map((aspect) => ({
-              key: `tn-${aspect.transit}-${aspect.natal}`,
-              from: transitLongitude(aspect.transit),
-              to: longitudeOf(aspect.natal),
-              aspect,
-              dashed: false,
-            })),
-            ...transit.toTransit.map((aspect) => ({
-              key: `tt-${aspect.a}-${aspect.b}`,
-              from: transitLongitude(aspect.a),
-              to: transitLongitude(aspect.b),
-              aspect,
-              dashed: true,
-            })),
-          ]
-            .filter(
-              (item) =>
-                item.aspect.kind !== "conjunction" && item.from !== undefined && item.to !== undefined,
-            )
-            .map((item) => {
-              const a = at(item.from!, aspectRadius);
-              const b = at(item.to!, aspectRadius);
-              return (
-                <line
-                  key={item.key}
-                  className={item.dashed ? "transit-transit-line" : "transit-natal-line"}
-                  x1={a.x}
-                  y1={a.y}
-                  x2={b.x}
-                  y2={b.y}
-                  stroke={settings.colors.aspects[item.aspect.kind]}
-                  strokeWidth={aspectLineWidth(item.aspect.orb, transit.orb)}
-                  strokeDasharray={item.dashed ? "7 6" : undefined}
-                  strokeLinecap="round"
-                />
-              );
-            })}
+        {/* Aspect lines of the outer layers: transits solid to natal points and dashed among themselves, progressions dotted */}
+        {layerLines.map((item) => {
+          const from = layerLongitude(item.from[0], item.from[1]);
+          const to = layerLongitude(item.to[0], item.to[1]);
+          if (item.aspect.kind === "conjunction" || from === undefined || to === undefined) return null;
+          const a = at(from, lineRadius(item.from[0]));
+          const b = at(to, lineRadius(item.to[0]));
+          return (
+            <line
+              key={item.key}
+              className={item.className}
+              x1={a.x}
+              y1={a.y}
+              x2={b.x}
+              y2={b.y}
+              stroke={settings.colors.aspects[item.aspect.kind]}
+              strokeWidth={aspectLineWidth(item.aspect.orb, item.orb)}
+              strokeDasharray={item.dash}
+              strokeLinecap="round"
+            />
+          );
+        })}
 
         {/* Whole-sign house numbers, close to the centre */}
         {chart.houses.map((house) => {
@@ -542,28 +629,62 @@ export function ChartWheel({ chart, aspects, settings, lots = [], maxRadius, tra
           );
         })}
 
-        {/* Transiting bodies, outside the zodiac ring */}
-        {transit?.positions.map((position, index) => {
-          const color = settings.colors.bodies[position.body];
-          const display = transitAngles[index];
-          const exact = at(position.longitude, outer);
-          const lineEnd = at(display, outer + TRANSIT.lineEnd);
-          const glyph = at(display, outer + TRANSIT.glyph);
-          const reading = at(display, outer + TRANSIT.reading);
-          const marker = at(position.longitude, aspectRadius);
-          const text = { fill: color, ...centered };
+        {/* Outer layers: progressions next to the zodiac ring, transits outermost */}
+        {layers.map((layer) => {
+          const base = outer + layer.offset;
+          const shownAngles = spreadAngles(
+            layer.points.map((p) => p.longitude),
+            MIN_LAYER_SEPARATION,
+          );
           return (
-            <g key={position.body} className="wheel-transit">
-              <line x1={exact.x} y1={exact.y} x2={lineEnd.x} y2={lineEnd.y} stroke={color} strokeWidth={0.8} />
-              <circle cx={exact.x} cy={exact.y} r={1.6} fill={color} />
-              <circle cx={marker.x} cy={marker.y} r={2.4} fill="#fff" stroke={color} strokeWidth={1.2} />
-              <text x={glyph.x} y={glyph.y} fontFamily={SYMBOL_FONT} fontSize={20} {...text}>
-                {POINT_GLYPHS[position.body]}
-              </text>
-              <text x={reading.x} y={reading.y} fontFamily="inherit" fontSize={9.5} {...text}>
-                {formatDegree(position)}
-                {position.retrograde ? " Rx" : ""}
-              </text>
+            <g key={layer.name} className={`wheel-layer wheel-layer-${layer.name}`}>
+              {layer.offset > 0 && (
+                <circle cx={center.x} cy={center.y} r={base} fill="none" stroke={FAINT} strokeWidth={0.8} />
+              )}
+              {layer.points.map((point, index) => {
+                const color = isBody(point.id) ? settings.colors.bodies[point.id] : INK;
+                const display = shownAngles[index];
+                const exact = at(point.longitude, base);
+                const lineEnd = at(display, base + BAND.lineEnd);
+                const glyph = at(display, base + BAND.glyph);
+                const reading = at(display, base + BAND.reading);
+                const marker = at(point.longitude, aspectRadius);
+                const text = { fill: color, ...centered };
+                return (
+                  <g key={point.id} className={`wheel-${layer.name}`}>
+                    <line x1={exact.x} y1={exact.y} x2={lineEnd.x} y2={lineEnd.y} stroke={color} strokeWidth={0.8} />
+                    <circle cx={exact.x} cy={exact.y} r={1.6} fill={color} />
+                    {settings.layerLines === "center" &&
+                      (layer.name === "transit" ? (
+                        <circle cx={marker.x} cy={marker.y} r={2.4} fill="#fff" stroke={color} strokeWidth={1.2} />
+                      ) : (
+                        <rect
+                          x={marker.x - 2.4}
+                          y={marker.y - 2.4}
+                          width={4.8}
+                          height={4.8}
+                          transform={`rotate(45 ${marker.x} ${marker.y})`}
+                          fill="#fff"
+                          stroke={color}
+                          strokeWidth={1.2}
+                        />
+                      ))}
+                    {isBody(point.id) ? (
+                      <text x={glyph.x} y={glyph.y} fontFamily={SYMBOL_FONT} fontSize={20} {...text}>
+                        {POINT_GLYPHS[point.id]}
+                      </text>
+                    ) : (
+                      <text x={glyph.x} y={glyph.y} fontSize={10} fontWeight={700} {...text}>
+                        {POINT_GLYPHS[point.id]}
+                      </text>
+                    )}
+                    <text x={reading.x} y={reading.y} fontFamily="inherit" fontSize={9.5} {...text}>
+                      {formatDegree(point)}
+                      {point.retrograde ? " Rx" : ""}
+                    </text>
+                  </g>
+                );
+              })}
             </g>
           );
         })}
@@ -571,7 +692,7 @@ export function ChartWheel({ chart, aspects, settings, lots = [], maxRadius, tra
         {/* Angles: a point with a short stroke and its degree, no line through the wheel */}
         {angles.map(({ label, angle }) => {
           const point = at(angle.longitude, outer);
-          const text = at(angle.longitude, outer + (transit ? TRANSIT.angleLabel : 16));
+          const text = at(angle.longitude, outer + bands * BAND.width + 16);
           const theta = normalize(screenAngle(angle.longitude));
           const horizontal = Math.cos((theta * Math.PI) / 180);
           const vertical = Math.sin((theta * Math.PI) / 180);

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { api } from "../api";
 import {
   ASPECT_GLYPHS,
   ASPECT_NAMES,
@@ -9,17 +8,17 @@ import {
   formatOrb,
   isBody,
   type AspectKind,
-  type BirthInput,
-  type Body,
   type Moment,
-  type PassOther,
   type PointId,
 } from "../astro";
 import type { Settings } from "../settings";
 
-/** One row: a transiting body's aspect to a natal point or to another transiting body. */
-export type TransitRow = {
-  transit: Body;
+/**
+ * One row: the aspect of a moving point (a transiting or progressed body,
+ * or a progressed angle) to a natal point or to another point of its layer.
+ */
+export type LayerRow = {
+  moving: PointId;
   other: PointId;
   kind: AspectKind;
   orb: number;
@@ -28,43 +27,35 @@ export type TransitRow = {
 };
 
 type Props = {
-  rows: TransitRow[];
-  /** What the second column is: natal points or transiting bodies. */
-  target: "natal" | "transit";
+  rows: LayerRow[];
+  /** Headings of the two point columns, e.g. "Transit" and "Natal". */
+  labels: [string, string];
   settings: Settings;
-  birth: BirthInput;
-  /** The shown moment, from which the exact passes are searched. */
+  /** The shown moment; a pass at exactly this moment is marked. */
   at: string;
-  zone: string;
+  /** The moments the aspect of a row is exact, around the shown moment. */
+  findPasses: (row: LayerRow) => Promise<Moment[]>;
   onGoTo: (utc: string) => void;
 };
 
 type Passes = { key: string; moments: Moment[] } | { key: string; error: string };
 
 /**
- * A transit aspect overview. "Eksakt" on a row jumps to the moment the
- * aspect is exact; when retrograde motion makes it exact several times, the
- * passes are listed to choose from (specification §8).
+ * An aspect overview of a Live Chart layer. "Eksakt" on a row jumps to the
+ * moment the aspect is exact; when retrograde motion makes it exact several
+ * times, the passes are listed to choose from (specification §8; decision 8
+ * of 15 November 2026 for progressions).
  */
-export function TransitAspectTable({ rows, target, settings, birth, at, zone, onGoTo }: Props) {
+export function TransitAspectTable({ rows, labels, settings, at, findPasses, onGoTo }: Props) {
   const [passes, setPasses] = useState<Passes | null>(null);
   if (rows.length === 0) return <p className="muted">Ingen aspekter inden for orb.</p>;
 
-  const keyOf = (row: TransitRow) => `${row.transit}-${row.kind}-${row.other}`;
+  const keyOf = (row: LayerRow) => `${row.moving}-${row.kind}-${row.other}`;
 
-  async function findExact(row: TransitRow) {
+  async function findExact(row: LayerRow) {
     const key = keyOf(row);
-    const other: PassOther =
-      target === "natal" ? { natal: row.other } : { transit: row.other as Body };
     try {
-      const moments = await api.transitPasses({
-        birth,
-        transit: row.transit,
-        other,
-        kind: row.kind,
-        at,
-        zone,
-      });
+      const moments = await findPasses(row);
       setPasses({ key, moments });
       // A single pass needs no choice.
       if (moments.length === 1) onGoTo(moments[0].utc);
@@ -87,9 +78,9 @@ export function TransitAspectTable({ rows, target, settings, birth, at, zone, on
     <table className="aspect-table transit-table">
       <thead>
         <tr>
-          <th>Transit</th>
+          <th>{labels[0]}</th>
           <th></th>
-          <th>{target === "natal" ? "Natal" : "Transit"}</th>
+          <th>{labels[1]}</th>
           <th>Orb</th>
           <th colSpan={3}></th>
         </tr>
@@ -100,7 +91,7 @@ export function TransitAspectTable({ rows, target, settings, birth, at, zone, on
           const open = passes?.key === key ? passes : null;
           return [
             <tr key={key}>
-              <td>{glyph(row.transit)}</td>
+              <td>{glyph(row.moving)}</td>
               <td
                 className="glyph"
                 style={{ color: settings.colors.aspects[row.kind] }}
@@ -120,7 +111,7 @@ export function TransitAspectTable({ rows, target, settings, birth, at, zone, on
                 <button
                   className="small"
                   onClick={() => findExact(row)}
-                  aria-label={`Gå til eksakt ${POINT_NAMES[row.transit]} ${ASPECT_NAMES[row.kind]} ${POINT_NAMES[row.other]}`}
+                  aria-label={`Gå til eksakt ${labels[0]} ${POINT_NAMES[row.moving]} ${ASPECT_NAMES[row.kind]} ${POINT_NAMES[row.other]}`}
                 >
                   Eksakt
                 </button>

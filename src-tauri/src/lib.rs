@@ -14,6 +14,9 @@ use astro_core::profections::{
 use astro_core::aspects::{AspectKind, ChartPoint, AngleId};
 use astro_core::chart::BodyPosition;
 use astro_core::profections::Moment;
+use astro_core::progressions::{
+    AngleMethod, ProgressedTarget, ProgressionOptions, Progressions, progressed_passes, progressions,
+};
 use astro_core::rings::{WheelRings, wheel_rings as core_wheel_rings};
 use astro_core::time::{ResolvedTime, StepUnit, ZoneChoice, resolve, step};
 use astro_core::transits::{PassTarget, TransitAspect, exact_passes, transit_aspects};
@@ -131,6 +134,29 @@ struct LiveChart {
     profection: Option<ProfectionYear>,
     /// The month (1–12) of that year holding the moment.
     profection_month: Option<u8>,
+    /// Secondary progressions for the same moment; absent before the birth.
+    progressions: Option<Progressions>,
+    /// True when the birth time is unknown and 12:00 was used.
+    time_assumed: bool,
+}
+
+/// How the progression layer of a Live Chart is calculated.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ProgressionInput {
+    /// Maximum orb of progression aspects, in degrees.
+    orb: f64,
+    angle_method: AngleMethod,
+}
+
+/// What a progression aspect is made to.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum ProgressionOther {
+    /// A point of the natal chart.
+    Natal(ChartPoint),
+    /// Another progressed body.
+    Progressed(Body),
 }
 
 /// Planetary Condition of a natal chart.
@@ -283,8 +309,9 @@ fn local_resolve(date: String, time: Option<String>, zone: String) -> Result<Res
     })
 }
 
-/// The transits to a natal chart at a moment (now when absent), optionally
-/// moved one navigation step. `orb` is the maximum orb of transit aspects.
+/// The transits and secondary progressions to a natal chart at a moment
+/// (now when absent), optionally moved one navigation step. Both layers
+/// always share that moment. `orb` is the maximum orb of transit aspects.
 #[tauri::command]
 fn live_chart(
     birth: BirthInput,
@@ -293,9 +320,13 @@ fn live_chart(
     zone: String,
     orb: f64,
     profections: ProfectionOptions,
+    progression: ProgressionInput,
 ) -> Result<LiveChart, String> {
     if !orb.is_finite() || orb < 0.0 {
         return Err("ugyldig orb for transitter".to_string());
+    }
+    if !progression.orb.is_finite() || progression.orb < 0.0 {
+        return Err("ugyldig orb for progressioner".to_string());
     }
     let at = moment_for(at, step, &named_zone(&zone))?;
     let born = resolve_input(&birth)?;
@@ -326,6 +357,19 @@ fn live_chart(
         .and_then(|age| compute_profection_year(&birth_data, rising_sign, &profections, age).ok());
     let profection_month = profection.as_ref().and_then(|year| month_at(year, at.utc));
 
+    // Like the profections, the progressions are extra here.
+    let progressions = progressions(
+        &natal,
+        at.utc,
+        &ProgressionOptions {
+            orb: progression.orb,
+            angle_method: progression.angle_method,
+            birth_time_known: !born.time_assumed,
+        },
+    )
+    .ok()
+    .flatten();
+
     Ok(LiveChart {
         at,
         positions,
@@ -334,6 +378,8 @@ fn live_chart(
         age,
         profection,
         profection_month,
+        progressions,
+        time_assumed: born.time_assumed,
     })
 }
 
@@ -359,6 +405,36 @@ fn planetary_condition(
         report: condition_report(&chart, sect_override, &options),
         stations: planet_stations(born.utc, &zone),
     })
+}
+
+/// The moments of life at which a progression aspect is exact around `at`:
+/// several when retrograde motion makes the progressed body pass more than once.
+#[tauri::command]
+fn progression_passes(
+    birth: BirthInput,
+    progressed: ChartPoint,
+    other: ProgressionOther,
+    kind: AspectKind,
+    at: DateTime<Utc>,
+    zone: String,
+    angle_method: AngleMethod,
+) -> Result<Vec<Moment>, String> {
+    let born = resolve_input(&birth)?;
+    let natal = compute_chart(born.utc, birth.latitude, birth.longitude).map_err(|e| e.to_string())?;
+    let target = match other {
+        ProgressionOther::Progressed(body) => ProgressedTarget::Progressed(body),
+        ProgressionOther::Natal(point) => ProgressedTarget::Natal(match point {
+            ChartPoint::Body(body) => natal.position(body).point.longitude,
+            ChartPoint::Angle(AngleId::Ascendant) => natal.angles.ascendant.point.longitude,
+            ChartPoint::Angle(AngleId::Midheaven) => natal.angles.midheaven.point.longitude,
+        }),
+    };
+    let zone = named_zone(&zone);
+    progressed_passes(&natal, progressed, target, kind, at, angle_method)
+        .map_err(|e| e.to_string())?
+        .into_iter()
+        .map(|utc| Moment::in_zone(utc, &zone).map_err(|e| e.to_string()))
+        .collect()
 }
 
 /// The decan and bounds rings of the wheel: fixed tables, the same for every chart.
@@ -558,6 +634,7 @@ pub fn run() {
             local_resolve,
             live_chart,
             transit_passes,
+            progression_passes,
             planetary_condition,
             wheel_rings,
             events_list,

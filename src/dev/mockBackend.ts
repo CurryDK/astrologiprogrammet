@@ -20,6 +20,8 @@ import type {
   LifeEvent,
   LiveChart,
   PointId,
+  ProgressedAspect,
+  Progressions,
   TimeStep,
   TransitAspect,
 } from "../astro";
@@ -288,7 +290,110 @@ function liveChartFor(args: Record<string, any>): LiveChart {
       profection.months.find((m) => Date.parse(m.start.utc) <= ms && ms < Date.parse(m.end.utc))
         ?.number ?? null;
   }
-  return { at: moment(ms), positions, toNatal, toTransit, age, profection, profectionMonth };
+  return {
+    at: moment(ms),
+    positions,
+    toNatal,
+    toTransit,
+    age,
+    profection,
+    profectionMonth,
+    progressions: progressionsFor(ms, args.progression.orb, birth.time !== null),
+    timeAssumed: birth.time === null,
+  };
+}
+
+const TROPICAL_YEAR = 365.2422;
+const birthMs = Date.parse(computed.chart.utc);
+
+/** Progressed Ascendant and Midheaven of the stand-in: a degree a year, evenly. */
+function progressedAngle(point: "ascendant" | "midheaven", ageYears: number): number {
+  return mod360(computed.chart.angles[point].longitude + ageYears * (360 / TROPICAL_YEAR));
+}
+
+function zodiacPoint(longitude: number) {
+  const minutes = Math.floor((longitude % 30) * 60);
+  return {
+    longitude,
+    sign: SIGNS[Math.floor(longitude / 30)],
+    degree: Math.floor(minutes / 60),
+    minute: minutes % 60,
+  };
+}
+
+/** Progressions with the evenly moving stand-in sky: a day after the birth for each year. */
+function progressionsFor(ms: number, orb: number, timeKnown: boolean): Progressions | null {
+  const ageYears = (ms - birthMs) / 86_400_000 / TROPICAL_YEAR;
+  if (ageYears < 0 || ageYears > 150) return null;
+  const progressedMs = birthMs + ageYears * 86_400_000;
+  const positions = positionsAt(progressedMs).map(({ latitude: _latitude, ...p }) => ({
+    ...p,
+    house: timeKnown ? p.house : null,
+  }));
+  const houseOf = (sign: Sign) => fixtureHouses.find((h) => h.sign === sign)!.number;
+  const angle = (point: "ascendant" | "midheaven") => {
+    const at = zodiacPoint(progressedAngle(point, ageYears));
+    return { ...at, house: houseOf(at.sign) };
+  };
+  const angles = timeKnown ? { ascendant: angle("ascendant"), midheaven: angle("midheaven") } : null;
+
+  const natalBodies: PointId[] = fixturePositions.map((p) => p.body);
+  const natalPoints: PointId[] = timeKnown ? [...natalBodies, "ascendant", "midheaven"] : natalBodies;
+  const toNatal: ProgressedAspect[] = [];
+  const toProgressed: Aspect[] = [];
+  positions.forEach((p, i) => {
+    for (const natal of natalPoints) {
+      const found = aspectOf(p.longitude, natalLongitude(natal), p.speed, 0, orb);
+      if (found) toNatal.push({ progressed: p.body, natal, ...found });
+    }
+    for (const other of positions.slice(i + 1)) {
+      if (p.body.endsWith("Node") && other.body.endsWith("Node")) continue;
+      const found = aspectOf(p.longitude, other.longitude, p.speed, other.speed, orb);
+      if (found) toProgressed.push({ a: p.body, b: other.body, ...found });
+    }
+  });
+  if (angles) {
+    for (const point of ["ascendant", "midheaven"] as const) {
+      for (const natal of natalBodies) {
+        const found = aspectOf(angles[point].longitude, natalLongitude(natal), 1, 0, orb);
+        if (found) toNatal.push({ progressed: point, natal, ...found });
+      }
+    }
+  }
+  return {
+    utc: new Date(progressedMs).toISOString(),
+    ageYears,
+    positions,
+    angles,
+    toNatal,
+    toProgressed,
+  };
+}
+
+/** Exact moments of a progression aspect with the stand-in sky; Mercury pretends to pass three times. */
+function progressionPassesFor(args: Record<string, any>): Moment[] {
+  const ms = Date.parse(args.at);
+  const ageYears = (ms - birthMs) / 86_400_000 / TROPICAL_YEAR;
+  const sky = positionsAt(birthMs + ageYears * 86_400_000);
+  const isAngle = args.progressed === "ascendant" || args.progressed === "midheaven";
+  const moving = isAngle
+    ? { longitude: progressedAngle(args.progressed, ageYears), speed: 360 / TROPICAL_YEAR }
+    : sky.find((p) => p.body === args.progressed)!;
+  const other = "natal" in args.other ? null : sky.find((p) => p.body === args.other.progressed)!;
+  const target = other ? other.longitude : natalLongitude(args.other.natal);
+  const angle = ASPECT_ANGLES.find(([kind]) => kind === args.kind)![1];
+  let arc = mod360(moving.longitude - target);
+  if (arc > 180) arc -= 360;
+  let distance = mod360(moving.longitude - target - (arc >= 0 ? angle : -angle));
+  if (distance > 180) distance -= 360;
+  // Degrees per year of life: a day of the stand-in sky is a year.
+  const rate = moving.speed - (other ? other.speed : 0);
+  const exactAge = ageYears - distance / rate;
+  const years = args.progressed === "mercury" ? [0, 3, 7] : [0];
+  return years
+    .map((y) => exactAge + y)
+    .filter((age) => age >= 0 && age <= 150)
+    .map((age) => moment(birthMs + age * TROPICAL_YEAR * 86_400_000));
 }
 
 /** Exact moments with the evenly moving stand-in sky; Mercury pretends to pass three times. */
@@ -343,6 +448,8 @@ export async function mockInvoke(command: string, args: Record<string, any>): Pr
     }
     case "live_chart":
       return liveChartFor(args);
+    case "progression_passes":
+      return progressionPassesFor(args);
     case "transit_passes":
       return passesFor(args);
     case "local_resolve": {

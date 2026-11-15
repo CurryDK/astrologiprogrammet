@@ -9,7 +9,9 @@ import {
   BODIES,
   CONDITION_GROUPS,
   LOTS,
+  POINTS,
   STEP_UNITS,
+  type AngleMethod,
   type AspectKind,
   type Body,
   type ConditionGroup,
@@ -17,6 +19,7 @@ import {
   type LeapDayBirthday,
   type Lot,
   type Orbs,
+  type PointId,
   type Rating,
   type StepUnit,
   type YearStart,
@@ -82,7 +85,26 @@ export type Settings = {
     filters: { yearLord: boolean; monthLord: boolean; profectionSign: boolean };
     /** The step of the time navigation arrows. */
     stepUnit: StepUnit;
+    /** Whether the transit layer is shown in Live Chart at all. */
+    show: boolean;
   };
+  /** Secondary progressions (decision supplement of 15 November 2026). */
+  progressions: {
+    /** Whether the progression layer is shown in Live Chart at all. */
+    show: boolean;
+    /** Maximum orb of progression aspects, in degrees. */
+    orb: number;
+    /** How the progressed Ascendant and Midheaven are moved forward. */
+    angleMethod: AngleMethod;
+    /** Which progressed bodies and angles are drawn in the wheel. */
+    showInWheel: Record<PointId, boolean>;
+    /** Which progressed bodies and angles take part in progression aspects. */
+    inAspects: Record<PointId, boolean>;
+    /** The aspect groups shown, each switched on its own. */
+    groups: { toNatal: boolean; toProgressed: boolean };
+  };
+  /** Where aspect lines between the layers of a Live Chart are drawn. */
+  layerLines: LayerLines;
   /** Planetary Condition (specification §6). */
   condition: {
     /** Greatest distance from the Sun, in degrees, for each state; inclusive. */
@@ -98,6 +120,13 @@ export type Settings = {
 
 export type ModernDecanRulers = "modern" | "traditional";
 const MODERN_DECAN_RULERS: ModernDecanRulers[] = ["modern", "traditional"];
+
+export type LayerLines = "center" | "rings";
+const LAYER_LINES: LayerLines[] = ["center", "rings"];
+const ANGLE_METHODS: AngleMethod[] = ["naibodRightAscension", "naibodLongitude"];
+
+const everyPoint = <T,>(value: (point: PointId) => T) =>
+  Object.fromEntries(POINTS.map((point) => [point, value(point)])) as Record<PointId, T>;
 
 const everyBody = <T,>(value: (body: Body) => T) =>
   Object.fromEntries(BODIES.map((body) => [body, value(body)])) as Record<Body, T>;
@@ -187,7 +216,23 @@ export const DEFAULT_SETTINGS: Settings = {
     groups: { natal: false, toNatal: true, toTransit: false },
     filters: { yearLord: false, monthLord: false, profectionSign: false },
     stepUnit: "day",
+    show: true,
   },
+  progressions: {
+    show: true,
+    // Decided: 1° for progression → natal and progression → progression.
+    orb: 1,
+    // Decided: Naibod in right ascension; in ecliptic longitude selectable.
+    angleMethod: "naibodRightAscension",
+    showInWheel: everyPoint((point) => point !== "southNode"),
+    inAspects: everyPoint((point) => point !== "southNode"),
+    groups: { toNatal: true, toProgressed: false },
+  },
+  // Decision 9 says lines go "directly from planet to planet". Two readings
+  // are offered: between the exact degrees on the inner circle, as natal and
+  // transit lines have been drawn so far (default), or from each layer's
+  // own ring.
+  layerLines: "center",
   condition: {
     // Decided 14 November 2026: cazimi within 1°, combust to 8°, under
     // the beams to 15°, each adjustable.
@@ -267,11 +312,23 @@ export function settingsFromStored(stored: unknown): Settings {
   if (!STEP_UNITS.includes(transits.stepUnit)) {
     transits.stepUnit = DEFAULT_SETTINGS.transits.stepUnit;
   }
+  const progressions = { ...settings.progressions };
+  if (!ANGLE_METHODS.includes(progressions.angleMethod)) {
+    progressions.angleMethod = DEFAULT_SETTINGS.progressions.angleMethod;
+  }
+  const layerLines = LAYER_LINES.includes(settings.layerLines)
+    ? settings.layerLines
+    : DEFAULT_SETTINGS.layerLines;
   const wheel = { ...settings.wheel };
   if (!MODERN_DECAN_RULERS.includes(wheel.modernDecanRulers)) {
     wheel.modernDecanRulers = DEFAULT_SETTINGS.wheel.modernDecanRulers;
   }
-  return { ...settings, colors: { ...settings.colors, aspects }, profections, transits, wheel };
+  return { ...settings, colors: { ...settings.colors, aspects }, profections,
+    transits,
+    progressions,
+    layerLines,
+    wheel,
+  };
 }
 
 type SettingsContextValue = {

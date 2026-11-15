@@ -421,7 +421,51 @@ export type LiveChart = {
   age: number | null;
   profection: ProfectionYear | null;
   profectionMonth: number | null;
+  /** Secondary progressions for the same moment; null before the birth. */
+  progressions: Progressions | null;
+  /** True when the birth time is unknown and 12:00 was used. */
+  timeAssumed: boolean;
 };
+
+/** How the progressed angles are moved forward (decision of 14 November 2026). */
+export type AngleMethod = "naibodRightAscension" | "naibodLongitude";
+
+/** A progressed body; `house` is the natal whole-sign house, null without a birth time. */
+export type ProgressedPosition = ZodiacPoint & {
+  body: Body;
+  speed: number;
+  retrograde: boolean;
+  house: number | null;
+};
+
+/** An aspect from a progressed body or angle to a point of the natal chart. */
+export type ProgressedAspect = {
+  progressed: PointId;
+  natal: PointId;
+  kind: AspectKind;
+  orb: number;
+  applying: boolean;
+  outOfSign: boolean;
+};
+
+/** The secondary progression layer of a Live Chart at one moment. */
+export type Progressions = {
+  /** The moment after the birth whose sky is the progressed chart. */
+  utc: string;
+  /** Age in tropical years, with decimals. */
+  ageYears: number;
+  positions: ProgressedPosition[];
+  /** Progressed Ascendant and Midheaven; null when the birth time is unknown. */
+  angles: { ascendant: Angle; midheaven: Angle } | null;
+  toNatal: ProgressedAspect[];
+  toProgressed: Aspect[];
+};
+
+/** What a progression aspect is made to: a natal point or another progressed body. */
+export type ProgressionOther = { natal: PointId } | { progressed: Body };
+
+/** Bodies, then the Ascendant and Midheaven: every point a layer can show. */
+export const POINTS: PointId[] = [...BODIES, "ascendant", "midheaven"];
 
 export type SkyAt = { at: Moment; computed: ComputedChart };
 

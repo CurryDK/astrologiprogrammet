@@ -8,6 +8,7 @@ import {
   type BodyPosition,
   type PointId,
   type ProfectionYear,
+  type ProgressedAspect,
   type TransitAspect,
 } from "./astro";
 import type { Settings } from "./settings";
@@ -92,4 +93,37 @@ export function transitToTransitForView(
       (planets === null || ends.some((body) => planets.transit.has(body)))
     );
   });
+}
+
+const progressedPointOn = (point: PointId, settings: Settings, view: "wheel" | "table") =>
+  settings.progressions.inAspects[point] &&
+  (view === "table" || settings.progressions.showInWheel[point]);
+
+/**
+ * Progression → natal aspects to show in one view. The Time Lord filters do
+ * not apply to progressions (decision 10 of 15 November 2026).
+ */
+export function progressionToNatalForView(
+  aspects: ProgressedAspect[],
+  settings: Settings,
+  view: "wheel" | "table",
+): ProgressedAspect[] {
+  if (!settings.progressions.groups.toNatal) return [];
+  return aspects.filter(
+    (aspect) =>
+      progressedPointOn(aspect.progressed, settings, view) &&
+      natalPointOn(aspect.natal, settings, view),
+  );
+}
+
+/** Progression → progression aspects to show in one view. */
+export function progressionToProgressedForView(
+  aspects: Aspect[],
+  settings: Settings,
+  view: "wheel" | "table",
+): Aspect[] {
+  if (!settings.progressions.groups.toProgressed) return [];
+  return aspects.filter((aspect) =>
+    [aspect.a, aspect.b].every((point) => progressedPointOn(point, settings, view)),
+  );
 }

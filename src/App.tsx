@@ -136,6 +136,11 @@ function App() {
             record={current}
             initialAt={view.at}
             onBack={() => setView({ name: "chart", id: view.id })}
+            onRectified={async (saved, at) => {
+              await reload();
+              // Stay on the same moment, with the saved chart.
+              setView({ name: "live", id: saved.id!, at });
+            }}
           />
         )}
 

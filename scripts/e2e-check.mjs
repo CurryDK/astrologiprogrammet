@@ -244,7 +244,14 @@ check("an age beyond the limit is rejected", tooOld !== null, tooOld ?? "no erro
 
 // Transits and Live Chart. Times are shown and stepped in a named zone.
 const zone = "Europe/Copenhagen";
-const liveArgs = { birth, zone, orb: 3, profections: profectionOptions, step: null };
+const liveArgs = {
+  birth,
+  zone,
+  orb: 3,
+  profections: profectionOptions,
+  step: null,
+  progression: { orb: 1, angleMethod: "naibodRightAscension" },
+};
 const atBirth = await invoke("live_chart", { ...liveArgs, at: "1947-06-01T10:00:00Z" });
 check(
   "live_chart at the birth moment: every body is conjunct itself",
@@ -523,6 +530,95 @@ const badLimits = await invoke("planetary_condition", {
   (error) => String(error),
 );
 check("planetary_condition refuses limits out of order", badLimits !== null, badLimits ?? "");
+
+// Secondary progressions share the Live Chart moment.
+const apart = (x, y) => Math.abs(((x - y + 540) % 360) - 180);
+const progressedAtBirth = atBirth.progressions;
+check(
+  "progressions at the birth moment are the natal chart",
+  progressedAtBirth.positions.every(
+    (p, i) => apart(p.longitude, computed.chart.positions[i].longitude) < 1e-6,
+  ) &&
+    apart(progressedAtBirth.angles.ascendant.longitude, computed.chart.angles.ascendant.longitude) < 1e-5 &&
+    apart(progressedAtBirth.angles.midheaven.longitude, computed.chart.angles.midheaven.longitude) < 1e-5,
+  `age ${progressedAtBirth.ageYears}`,
+);
+const progressed = live.progressions;
+const natalSun = computed.chart.positions.find((p) => p.body === "sun").longitude;
+const progressedSun = progressed.positions.find((p) => p.body === "sun");
+check(
+  "a day for a year: the progressed Sun has moved about a degree per year of age",
+  Math.abs(progressed.ageYears - 53.6) < 0.2 &&
+    Math.abs(apart(progressedSun.longitude, natalSun) - progressed.ageYears) < 3 &&
+    Math.abs((Date.parse(progressed.utc) - Date.parse(computed.chart.utc)) / 86_400_000 - progressed.ageYears) < 1e-6,
+  `age ${progressed.ageYears.toFixed(3)}, Sun moved ${apart(progressedSun.longitude, natalSun).toFixed(2)}°`,
+);
+check(
+  "progressed bodies carry the natal whole-sign house; aspects stay within 1°",
+  progressed.positions.every((p) => computed.chart.houses[p.house - 1].sign === p.sign) &&
+    progressed.toNatal.every((x) => x.orb <= 1) &&
+    progressed.toProgressed.every((x) => x.orb <= 1 && x.a !== "ascendant" && x.b !== "midheaven") &&
+    progressed.toNatal.every((x) => !(["ascendant", "midheaven"].includes(x.progressed) && ["ascendant", "midheaven"].includes(x.natal))),
+  `${progressed.toNatal.length} to natal, ${progressed.toProgressed.length} among themselves`,
+);
+const byLongitude = await invoke("live_chart", {
+  ...liveArgs,
+  at,
+  progression: { orb: 1, angleMethod: "naibodLongitude" },
+});
+const naibodArc = (progressed.ageYears * 360) / 365.2422;
+check(
+  "Naibod in longitude moves the Midheaven evenly; in right ascension it differs slightly",
+  Math.abs(
+    apart(byLongitude.progressions.angles.midheaven.longitude, computed.chart.angles.midheaven.longitude) - naibodArc,
+  ) < 1e-4 &&
+    apart(byLongitude.progressions.angles.midheaven.longitude, progressed.angles.midheaven.longitude) > 0.01 &&
+    apart(byLongitude.progressions.angles.midheaven.longitude, progressed.angles.midheaven.longitude) < 6,
+  `MC ${progressed.angles.midheaven.longitude.toFixed(3)} / ${byLongitude.progressions.angles.midheaven.longitude.toFixed(3)}`,
+);
+const untimed = await invoke("live_chart", { ...liveArgs, at, birth: { ...birth, time: null } });
+check(
+  "unknown birth time: no progressed angles, houses or angle aspects",
+  untimed.timeAssumed === true &&
+    untimed.progressions.angles === null &&
+    untimed.progressions.positions.length === 12 &&
+    untimed.progressions.positions.every((p) => p.house === null) &&
+    untimed.progressions.toNatal.every(
+      (x) => !["ascendant", "midheaven"].includes(x.progressed) && !["ascendant", "midheaven"].includes(x.natal),
+    ),
+);
+const beforeBirth = await invoke("live_chart", { ...liveArgs, at: "1940-01-01T00:00:00Z" });
+check("no progressions before the birth", beforeBirth.progressions === null && live.timeAssumed === false);
+
+const wideOrb = await invoke("live_chart", { ...liveArgs, at, progression: { orb: 5, angleMethod: "naibodRightAscension" } });
+const moonAspect = wideOrb.progressions.toNatal.find((x) => x.progressed === "moon");
+const anglePass = wideOrb.progressions.toNatal.find((x) => x.progressed === "midheaven" || x.progressed === "ascendant");
+for (const [label, aspect] of [["progressed Moon", moonAspect], ["progressed angle", anglePass]]) {
+  if (!aspect) {
+    check(`progression_passes: an aspect of the ${label} to test with`, false);
+    continue;
+  }
+  const passes = await invoke("progression_passes", {
+    birth,
+    progressed: aspect.progressed,
+    other: { natal: aspect.natal },
+    kind: aspect.kind,
+    at,
+    zone,
+    angleMethod: "naibodRightAscension",
+  });
+  const there = passes.length
+    ? await invoke("live_chart", { ...liveArgs, at: passes[0].utc, progression: { orb: 5, angleMethod: "naibodRightAscension" } })
+    : null;
+  const exact = there?.progressions.toNatal.find(
+    (x) => x.progressed === aspect.progressed && x.natal === aspect.natal && x.kind === aspect.kind,
+  );
+  check(
+    `progression_passes: the ${label} aspect is exact at the moment found`,
+    passes.length >= 1 && exact !== undefined && exact.orb < 1e-3,
+    `${aspect.progressed} ${aspect.kind} ${aspect.natal}: ${passes.map((m) => m.local).join(", ")}; orb there ${exact?.orb}`,
+  );
+}
 
 const rings = await invoke("wheel_rings");
 check(

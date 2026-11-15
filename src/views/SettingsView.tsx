@@ -8,11 +8,12 @@ import {
   POINT_GLYPHS,
   POINT_NAMES,
   RATINGS,
+  type AngleMethod,
   type LeapDayBirthday,
   type YearStart,
 } from "../astro";
 import { RATING_NAMES } from "../conditionText";
-import { DEFAULT_SETTINGS, useSettings, type ModernDecanRulers } from "../settings";
+import { DEFAULT_SETTINGS, useSettings, type LayerLines, type ModernDecanRulers } from "../settings";
 
 /** Colours and orbs. Every change takes effect at once and is remembered. */
 export function SettingsView() {
@@ -173,6 +174,70 @@ export function SettingsView() {
           Hvilke transitplaneter, aspektgrupper og Time Lord-filtre der vises, vælges under
           “Visning” i Live Chart. Tidspunkter i Live Chart og for livsbegivenheder gælder
           computerens tidszone.
+        </p>
+      </section>
+
+      <section className="panel">
+        <h2>Sekundære progressioner</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td>Orb for progressionsaspekter (grader)</td>
+              <td>
+                <input
+                  type="number"
+                  min={0}
+                  max={15}
+                  step={0.5}
+                  aria-label="Orb for progressionsaspekter"
+                  value={settings.progressions.orb}
+                  onChange={(e) => {
+                    const value = e.target.valueAsNumber;
+                    if (!Number.isFinite(value) || value < 0 || value > 15) return;
+                    update((s) => ({ ...s, progressions: { ...s.progressions, orb: value } }));
+                  }}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>Progressiv ASC/MC</td>
+              <td>
+                <select
+                  aria-label="Metode for progressiv ASC/MC"
+                  value={settings.progressions.angleMethod}
+                  onChange={(e) =>
+                    update((s) => ({
+                      ...s,
+                      progressions: { ...s.progressions, angleMethod: e.target.value as AngleMethod },
+                    }))
+                  }
+                >
+                  <option value="naibodRightAscension">Naibod i rektascension</option>
+                  <option value="naibodLongitude">Naibod i ekliptisk længde</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Aspektlinjer mellem lagene i Live Chart</td>
+              <td>
+                <select
+                  aria-label="Aspektlinjer mellem lagene"
+                  value={settings.layerLines}
+                  onChange={(e) =>
+                    update((s) => ({ ...s, layerLines: e.target.value as LayerLines }))
+                  }
+                >
+                  <option value="center">Mellem de eksakte grader inderst i hjulet</option>
+                  <option value="rings">Fra hvert lags egen ring</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="muted">
+          Standard er 1° orb for både progression → natal og progression → progression, og Naibod
+          i rektascension for de progressive akser. Én dag efter fødslen svarer til ét tropisk år
+          (365,2422 dage). Progressioner og transitter følger altid samme tidspunkt i Live Chart.
         </p>
       </section>
 
