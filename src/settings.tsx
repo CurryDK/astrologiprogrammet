@@ -130,8 +130,12 @@ export type Settings = {
   };
   /** Aspect timing report (decision of 18 November 2026, point 10). */
   timing: { groups: AspectGroups };
-  /** Where aspect lines between the layers of a Live Chart are drawn. */
-  layerLines: LayerLines;
+  /**
+   * Where aspect lines between the layers of a Live Chart are drawn. The key
+   * was `layerLines` up to version 0.10.0; it was renamed so the new default
+   * reaches settings that were saved as a whole.
+   */
+  layerLineEnds: LayerLines;
   /** Planetary Condition (specification §6). */
   condition: {
     /** Greatest distance from the Sun, in degrees, for each state; inclusive. */
@@ -166,8 +170,8 @@ const MODERN_DECAN_RULERS: ModernDecanRulers[] = ["modern", "traditional"];
 export type WheelOrientation = "ascendant" | "risingSign";
 const WHEEL_ORIENTATIONS: WheelOrientation[] = ["ascendant", "risingSign"];
 
-export type LayerLines = "center" | "rings";
-const LAYER_LINES: LayerLines[] = ["center", "rings"];
+export type LayerLines = "planets" | "center" | "rings";
+const LAYER_LINES: LayerLines[] = ["planets", "center", "rings"];
 const ANGLE_METHODS: AngleMethod[] = ["naibodRightAscension", "naibodLongitude"];
 
 const everyPoint = <T,>(value: (point: PointId) => T) =>
@@ -305,11 +309,12 @@ export const DEFAULT_SETTINGS: Settings = {
   timing: {
     groups: { transitToNatal: true, transitToTransit: false, progressedToNatal: true, progressedToProgressed: false },
   },
-  // Decision 9 says lines go "directly from planet to planet". Two readings
-  // are offered: between the exact degrees on the inner circle, as natal and
-  // transit lines have been drawn so far (default), or from each layer's
-  // own ring.
-  layerLines: "center",
+  // Decision 9 says lines go "directly from planet to planet". Feedback of
+  // 18 November 2026 with a reference picture: the line runs from the natal
+  // planet out to the transiting or progressed planet outside the circle
+  // (default). Still offered: between the exact degrees on the inner
+  // circle, or from each layer's own ring.
+  layerLineEnds: "planets",
   condition: {
     // Decided 14 November 2026: cazimi within 1°, combust to 8°, under
     // the beams to 15°, each adjustable.
@@ -439,9 +444,9 @@ export function settingsFromStored(stored: unknown): Settings {
   if (!ANGLE_METHODS.includes(progressions.angleMethod)) {
     progressions.angleMethod = DEFAULT_SETTINGS.progressions.angleMethod;
   }
-  const layerLines = LAYER_LINES.includes(settings.layerLines)
-    ? settings.layerLines
-    : DEFAULT_SETTINGS.layerLines;
+  const layerLineEnds = LAYER_LINES.includes(settings.layerLineEnds)
+    ? settings.layerLineEnds
+    : DEFAULT_SETTINGS.layerLineEnds;
   const wheel = { ...settings.wheel };
   if (!MODERN_DECAN_RULERS.includes(wheel.modernDecanRulers)) {
     wheel.modernDecanRulers = DEFAULT_SETTINGS.wheel.modernDecanRulers;
@@ -452,7 +457,7 @@ export function settingsFromStored(stored: unknown): Settings {
   return { ...settings, colors: { ...settings.colors, aspects }, profections,
     transits,
     progressions,
-    layerLines,
+    layerLineEnds,
     wheel,
   };
 }

@@ -13,6 +13,16 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.10.1",
+    date: "2026-11-18",
+    added: [
+      "Indstillinger: “Aspektlinjer mellem lagene i Live Chart” har fået valget “Fra natalplaneten ud til planeten uden for cirklen”, som nu er standard. De to tidligere tegnemåder kan stadig vælges.",
+    ],
+    changed: [
+      "Live Chart: aspektlinjen går nu fra natalplaneten ud til transitplaneten – eller den progressive planet – uden for cirklen, i stedet for at ende inde i cirklen. Linjer mellem to transitter eller to progressioner går på samme måde mellem planeterne uden for cirklen.",
+    ],
+  },
+  {
     version: "0.10.0",
     date: "2026-11-18",
     added: [

@@ -224,7 +224,15 @@ export function ChartWheel({
     },
   ]
     .filter((layer) => layer !== undefined)
-    .map((layer, index) => ({ ...layer, offset: index * BAND.width }));
+    .map((layer, index) => ({
+      ...layer,
+      offset: index * BAND.width,
+      // Where each symbol stands along the wheel once crowded ones are spread.
+      shownAngles: spreadAngles(
+        layer.points.map((p) => p.longitude),
+        MIN_LAYER_SEPARATION,
+      ),
+    }));
   const bands = layers.length;
   const margin = {
     x: MARGIN.x + bands * BAND.width + (bands ? 10 : 0),
@@ -387,14 +395,19 @@ export function ChartWheel({
       ? longitudeOf(point)
       : layerOf(name)?.points.find((p) => p.id === point)?.longitude;
   /**
-   * Where an aspect line of a layer ends. Lines between the layers run
-   * either between the exact degrees on the inner circle, or from each
-   * layer's own ring (a setting; decision 9 allows both readings).
+   * Where an aspect line of an outer layer's point ends (a setting): at the
+   * planet itself outside the circle, just inside its symbol (feedback of
+   * 18 November 2026 with a reference picture; default), at the exact
+   * degree on the inner circle, or at the exact degree on the layer's own
+   * ring.
    */
-  const lineRadius = (name: LayerName) =>
-    name === "natal" || settings.layerLines === "center"
-      ? aspectRadius
-      : outer + (layerOf(name)?.offset ?? 0);
+  const layerLineEnd = (name: LayerName, point: PointId, longitude: number) => {
+    const layer = layerOf(name);
+    if (!layer || settings.layerLineEnds === "center") return at(longitude, aspectRadius);
+    if (settings.layerLineEnds === "rings") return at(longitude, outer + layer.offset);
+    const index = layer.points.findIndex((p) => p.id === point);
+    return at(layer.shownAngles[index] ?? longitude, outer + layer.offset + BAND.lineEnd + 3);
+  };
 
   const layerLines = [
     ...(progression
@@ -609,7 +622,7 @@ export function ChartWheel({
         {/* Aspect lines of the outer layers: transits solid to natal points and dashed among themselves, progressions dotted */}
         {drawnLayerLines.map((item) => {
           const end = ([layer, point]: readonly [LayerName, PointId], longitude: number) =>
-            layer === "natal" ? natalLineEnd(point) : at(longitude, lineRadius(layer));
+            layer === "natal" ? natalLineEnd(point) : layerLineEnd(layer, point, longitude);
           const a = end(item.from, item.fromLongitude);
           const b = end(item.to, item.toLongitude);
           return (
@@ -763,10 +776,7 @@ export function ChartWheel({
         {/* Outer layers: progressions next to the zodiac ring, transits outermost */}
         {layers.map((layer) => {
           const base = outer + layer.offset;
-          const shownAngles = spreadAngles(
-            layer.points.map((p) => p.longitude),
-            MIN_LAYER_SEPARATION,
-          );
+          const shownAngles = layer.shownAngles;
           return (
             <g key={layer.name} className={`wheel-layer wheel-layer-${layer.name}`}>
               {layer.offset > 0 && (
@@ -793,7 +803,7 @@ export function ChartWheel({
                     />
                     <line x1={exact.x} y1={exact.y} x2={lineEnd.x} y2={lineEnd.y} stroke={color} strokeWidth={0.8} />
                     <circle cx={exact.x} cy={exact.y} r={1.6} fill={color} />
-                    {settings.layerLines === "center" &&
+                    {settings.layerLineEnds === "center" &&
                       (layer.name === "transit" ? (
                         <circle cx={marker.x} cy={marker.y} r={2.4} fill="#fff" stroke={color} strokeWidth={1.2} />
                       ) : (

@@ -223,11 +223,12 @@ export function SettingsView() {
               <td>
                 <select
                   aria-label="Aspektlinjer mellem lagene"
-                  value={settings.layerLines}
+                  value={settings.layerLineEnds}
                   onChange={(e) =>
-                    update((s) => ({ ...s, layerLines: e.target.value as LayerLines }))
+                    update((s) => ({ ...s, layerLineEnds: e.target.value as LayerLines }))
                   }
                 >
+                  <option value="planets">Fra natalplaneten ud til planeten uden for cirklen</option>
                   <option value="center">Mellem de eksakte grader inderst i hjulet</option>
                   <option value="rings">Fra hvert lags egen ring</option>
                 </select>
