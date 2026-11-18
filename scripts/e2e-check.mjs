@@ -465,6 +465,87 @@ check(
 await invoke("event_delete", { id: yearOnly.id });
 check("event_delete removes one event", (await invoke("events_list", { chartId: saved.id })).length === 2);
 
+// Import from Solar Fire: a file built here in its layout (see
+// crates/astro-core/src/solarfire.rs), with one chart and one life event.
+function solarFireFile() {
+  const bytes = [];
+  const text = (value, length) => bytes.push(...Buffer.from(value.padEnd(length, " "), "latin1"));
+  const number = (kind, value) => {
+    const buffer = Buffer.alloc(kind === "i16" ? 2 : 4);
+    if (kind === "f32") buffer.writeFloatLE(value);
+    else if (kind === "u32") buffer.writeUInt32LE(value);
+    else buffer.writeInt16LE(value);
+    bytes.push(...buffer);
+  };
+  const moment = (name, [year, month, day, hour, minute], hoursWest) => {
+    text(name, 50);
+    text("Hillerød", 20);
+    text("Denmark", 20);
+    number("f32", -12.3167);
+    number("f32", 55.9333);
+    number("i16", year);
+    bytes.push(month, day, hour, minute, 0);
+    number("f32", hoursWest);
+    text("CET", 5);
+  };
+  bytes.push(3, 0);
+  text("e2e", 80);
+  number("u32", 1);
+  bytes.push(1, 1);
+  moment("e2e-solarfire", [1967, 8, 20, 13, 15], -1);
+  bytes.push(0, 2);
+  text("AA", 2);
+  text("", 30);
+  bytes.push(...new Array(142).fill(0));
+  number("u32", 1);
+  moment("e2e separeret", [2012, 6, 21, 10, 30], 0);
+  bytes.push(0);
+  number("u32", 0);
+  number("u32", 0);
+  return bytes;
+}
+const sfBytes = solarFireFile();
+const sfFile = await invoke("solar_fire_read", { bytes: sfBytes });
+const sfChart = sfFile.charts[0];
+check(
+  "solar_fire_read shows the chart as it would be imported",
+  sfFile.charts.length === 1 &&
+    sfChart.name === "e2e-solarfire" &&
+    sfChart.birthDate === "1967-08-20" &&
+    sfChart.birthTime === "13:15" &&
+    sfChart.placeName === "Hillerød" &&
+    sfChart.zone === "Europe/Copenhagen" &&
+    sfChart.offsetSeconds === null &&
+    sfChart.problem === null &&
+    sfChart.inArchive === false,
+  JSON.stringify({ ...sfChart, events: sfChart.events.length }),
+);
+const sfSummary = await invoke("solar_fire_import", {
+  bytes: sfBytes,
+  folder: "E2E-test-mappe",
+  selected: [0],
+});
+const sfSaved = (await invoke("charts_list")).find((c) => c.name === "e2e-solarfire");
+const sfEvents = sfSaved ? await invoke("events_list", { chartId: sfSaved.id }) : [];
+check(
+  "solar_fire_import saves the chart in the existing folder with its life event",
+  sfSummary.charts === 1 &&
+    sfSummary.events === 1 &&
+    sfSummary.folderId === folder.id &&
+    sfSaved?.folderId === folder.id &&
+    sfSaved?.countryCode === "DK" &&
+    sfEvents.length === 1 &&
+    // 10:30 UT read on the Copenhagen clock.
+    sfEvents[0].time === "12:30" &&
+    sfEvents[0].zone === "Europe/Copenhagen",
+  JSON.stringify(sfEvents),
+);
+check(
+  "an imported chart is recognised the next time the file is read",
+  (await invoke("solar_fire_read", { bytes: sfBytes })).charts[0].inArchive === true,
+);
+if (sfSaved) await invoke("chart_delete", { id: sfSaved.id });
+
 await invoke("folder_delete", { id: folder.id });
 const afterFolderDelete = (await invoke("charts_list")).find((c) => c.id === saved.id);
 check("deleting the folder keeps the chart", afterFolderDelete?.folderId === null);

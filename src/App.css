@@ -1237,6 +1237,82 @@ span.ca-words {
   font-weight: 600;
 }
 
+/* Import from Solar Fire */
+
+.sf-import {
+  margin-bottom: 12px;
+}
+
+.sf-import label.button {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--card);
+  cursor: pointer;
+}
+
+.sf-import label.button:hover {
+  border-color: var(--accent);
+}
+
+.sf-import-panel {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.sf-import-panel h2 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+}
+
+.sf-file header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0 6px;
+}
+
+.sf-file h3 {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.sf-charts {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.sf-charts td {
+  padding: 5px 10px 5px 0;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.sf-charts .name {
+  font-weight: 600;
+}
+
+.sf-charts .remarks {
+  color: #8a5a00;
+}
+
+.sf-charts tr.unusable td {
+  opacity: 0.6;
+}
+
+.sf-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
 /* Birth data form */
 
 .chart-form {

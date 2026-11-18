@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { api } from "../api";
 import { countryName, formatBirthDate, type ChartRecord, type Folder } from "../astro";
+import { SolarFireImport } from "./SolarFireImport";
 
 /** "all", "none" (charts without a folder) or a folder id. */
 export type FolderFilter = "all" | "none" | number;
@@ -158,6 +159,11 @@ export function ArchiveView({ charts, folders, filter, onFilter, onOpen, onNew, 
           ))}
 
         {error && <p className="error">{error}</p>}
+
+        <SolarFireImport
+          reload={reload}
+          onDone={(folderId) => onFilter(folderId ?? "all")}
+        />
 
         <input
           className="search"

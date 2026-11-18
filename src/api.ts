@@ -9,6 +9,7 @@ import type {
   ConditionReport,
   Sect,
   Folder,
+  ImportSummary,
   LifeEvent,
   LiveChart,
   AngleMethod,
@@ -19,6 +20,7 @@ import type {
   PointId,
   ProgressionOther,
   SkyAt,
+  SolarFireFile,
   TimeStep,
   LotOptions,
   Orbs,
@@ -121,6 +123,12 @@ export const api = {
   folderCreate: (name: string) => call<Folder>("folder_create", { name }),
   folderRename: (id: number, name: string) => call<void>("folder_rename", { id, name }),
   folderDelete: (id: number) => call<void>("folder_delete", { id }),
+
+  /** What a Solar Fire chart file holds, as it would be imported. */
+  solarFireRead: (bytes: number[]) => call<SolarFireFile>("solar_fire_read", { bytes }),
+  /** Saves the chosen charts of a Solar Fire file, with their life events, in a folder. */
+  solarFireImport: (bytes: number[], folder: string, selected: number[]) =>
+    call<ImportSummary>("solar_fire_import", { bytes, folder, selected }),
 
   settingGet: (key: string) => call<string | null>("setting_get", { key }),
   settingSet: (key: string, value: string) => call<void>("setting_set", { key, value }),

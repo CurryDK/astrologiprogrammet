@@ -378,6 +378,42 @@ pub fn delete_folder(connection: &Connection, id: i64) -> rusqlite::Result<()> {
     Ok(())
 }
 
+/// Saves charts with their life events (their `chart_id` is filled in here)
+/// in a folder called `folder_name`, which is created unless one of that name
+/// exists; an empty name means no folder. Everything is saved or nothing is.
+/// Returns the folder's id.
+pub fn import_charts(
+    connection: &Connection,
+    folder_name: &str,
+    charts: &[(ChartRecord, Vec<LifeEvent>)],
+) -> rusqlite::Result<Option<i64>> {
+    let transaction = connection.unchecked_transaction()?;
+    let folder_name = folder_name.trim();
+    let folder_id = if folder_name.is_empty() {
+        None
+    } else {
+        let existing: Option<i64> = transaction
+            .query_row(
+                "SELECT id FROM folders WHERE name = ?1 COLLATE NOCASE ORDER BY id LIMIT 1",
+                [folder_name],
+                |row| row.get(0),
+            )
+            .optional()?;
+        Some(match existing {
+            Some(id) => id,
+            None => create_folder(&transaction, folder_name)?.id,
+        })
+    };
+    for (chart, events) in charts {
+        let chart_id = save_chart(&transaction, &ChartRecord { id: None, folder_id, ..chart.clone() })?;
+        for event in events {
+            save_event(&transaction, &LifeEvent { id: None, chart_id, ..event.clone() })?;
+        }
+    }
+    transaction.commit()?;
+    Ok(folder_id)
+}
+
 pub fn get_setting(connection: &Connection, key: &str) -> rusqlite::Result<Option<String>> {
     connection
         .query_row("SELECT value FROM settings WHERE key = ?1", [key], |row| row.get(0))
@@ -605,6 +641,44 @@ mod tests {
         delete_folder(&db, folder.id).unwrap();
         assert!(list_folders(&db).unwrap().is_empty());
         assert_eq!(get_chart(&db, id).unwrap().unwrap().folder_id, None);
+    }
+
+    #[test]
+    fn imported_charts_land_in_one_folder_with_their_events() {
+        let db = memory();
+        let batch = vec![
+            (sample("Anna"), vec![event(0, "Bryllup", 1975, Some(6), Some(14))]),
+            (sample("Bo"), vec![]),
+        ];
+        let folder = import_charts(&db, " Familie ", &batch).unwrap().unwrap();
+        // A second file into the same folder name reuses the folder.
+        assert_eq!(import_charts(&db, "familie", &[(sample("Carl"), vec![])]).unwrap(), Some(folder));
+        assert_eq!(import_charts(&db, "", &[(sample("Dea"), vec![])]).unwrap(), None);
+
+        assert_eq!(list_folders(&db).unwrap().len(), 1);
+        let charts = list_charts(&db).unwrap();
+        let folders: Vec<_> = charts.iter().map(|c| (c.name.as_str(), c.folder_id)).collect();
+        assert_eq!(
+            folders,
+            [("Anna", Some(folder)), ("Bo", Some(folder)), ("Carl", Some(folder)), ("Dea", None)]
+        );
+        let events = list_events(&db, charts[0].id.unwrap()).unwrap();
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0].title, "Bryllup");
+    }
+
+    #[test]
+    fn a_failed_import_saves_nothing() {
+        let db = memory();
+        db.execute_batch(
+            "CREATE TRIGGER refuse BEFORE INSERT ON life_events
+             BEGIN SELECT RAISE(ABORT, 'nej'); END;",
+        )
+        .unwrap();
+        let batch = vec![(sample("Anna"), vec![event(0, "Bryllup", 1975, None, None)])];
+        assert!(import_charts(&db, "Familie", &batch).is_err());
+        assert!(list_charts(&db).unwrap().is_empty());
+        assert!(list_folders(&db).unwrap().is_empty());
     }
 
     #[test]

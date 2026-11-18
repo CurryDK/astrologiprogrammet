@@ -18,6 +18,7 @@ use astro_core::progressions::{
     AngleMethod, ProgressedTarget, ProgressionOptions, Progressions, progressed_passes, progressions,
 };
 use astro_core::rings::{WheelRings, wheel_rings as core_wheel_rings};
+use astro_core::solarfire::{self, ImportedChart};
 use astro_core::time::{ResolvedTime, StepUnit, ZoneChoice, resolve, step};
 use astro_core::transits::{PassTarget, TransitAspect, exact_passes, transit_aspects};
 use astro_core::zodiac::{Body, whole_sign_house};
@@ -580,6 +581,135 @@ fn folder_delete(db: State<'_, Database>, id: i64) -> Result<(), String> {
     db.with(|c| db::delete_folder(c, id))
 }
 
+/// A chart of a Solar Fire file with whether the archive already has it.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SolarFireChart {
+    #[serde(flatten)]
+    chart: ImportedChart,
+    /// A chart with the same name, birth date and birth time is in the archive.
+    in_archive: bool,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SolarFireFile {
+    /// The title the file carries; often Solar Fire's "New Chart File".
+    title: String,
+    charts: Vec<SolarFireChart>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ImportSummary {
+    folder_id: Option<i64>,
+    charts: usize,
+    events: usize,
+}
+
+fn solar_fire_charts(
+    places: &Option<PlaceIndex>,
+    bytes: &[u8],
+) -> Result<(String, Vec<ImportedChart>), String> {
+    let file = solarfire::parse(bytes)?;
+    // Without the place list the charts keep the offsets of the file.
+    let empty;
+    let index = match places {
+        Some(index) => index,
+        None => {
+            empty = PlaceIndex::parse("")?;
+            &empty
+        }
+    };
+    let charts = solarfire::convert(&file, index);
+    Ok((file.title, charts))
+}
+
+/// What a Solar Fire chart file (`.SFcht`) holds, as it would be imported.
+#[tauri::command]
+fn solar_fire_read(
+    db: State<'_, Database>,
+    places: State<'_, Option<PlaceIndex>>,
+    bytes: Vec<u8>,
+) -> Result<SolarFireFile, String> {
+    let (title, charts) = solar_fire_charts(places.inner(), &bytes)?;
+    let archive = db.with(db::list_charts)?;
+    let same = |a: &str, b: &str| a.trim().to_lowercase() == b.trim().to_lowercase();
+    let charts = charts
+        .into_iter()
+        .map(|chart| {
+            let in_archive = archive.iter().any(|stored| {
+                same(&stored.name, &chart.name)
+                    && stored.birth_date == chart.birth_date
+                    && stored.birth_time == chart.birth_time
+            });
+            SolarFireChart { chart, in_archive }
+        })
+        .collect();
+    Ok(SolarFireFile { title, charts })
+}
+
+/// Saves the charts at the positions `selected` of a Solar Fire file, with
+/// their life events, in the folder called `folder` (created when missing;
+/// empty for no folder).
+#[tauri::command]
+fn solar_fire_import(
+    db: State<'_, Database>,
+    places: State<'_, Option<PlaceIndex>>,
+    bytes: Vec<u8>,
+    folder: String,
+    selected: Vec<usize>,
+) -> Result<ImportSummary, String> {
+    let (_, charts) = solar_fire_charts(places.inner(), &bytes)?;
+    let mut batch = Vec::new();
+    for index in selected {
+        let chart = charts.get(index).ok_or("horoskopet findes ikke i filen")?;
+        if let Some(problem) = &chart.problem {
+            return Err(format!("{}: {problem}", chart.name));
+        }
+        let record = ChartRecord {
+            id: None,
+            name: chart.name.clone(),
+            folder_id: None,
+            birth_date: chart.birth_date.clone(),
+            birth_time: chart.birth_time.clone(),
+            place_name: chart.place_name.clone(),
+            country_code: chart.country_code.clone(),
+            latitude: chart.latitude,
+            longitude: chart.longitude,
+            zone: chart.zone.clone(),
+            offset_seconds: chart.offset_seconds,
+            featured: false,
+            sect_override: None,
+        };
+        let events = chart
+            .events
+            .iter()
+            .map(|event| {
+                let event = LifeEvent {
+                    id: None,
+                    chart_id: 0,
+                    title: event.title.clone(),
+                    year: event.year,
+                    month: Some(event.month),
+                    day: Some(event.day),
+                    time: Some(event.time.clone()),
+                    zone: event.zone.clone(),
+                    note: event.note.clone(),
+                };
+                event.validate().map(|()| event)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        batch.push((record, events));
+    }
+    let folder_id = db.with(|c| db::import_charts(c, &folder, &batch))?;
+    Ok(ImportSummary {
+        folder_id,
+        charts: batch.len(),
+        events: batch.iter().map(|(_, events)| events.len()).sum(),
+    })
+}
+
 #[tauri::command]
 fn setting_get(db: State<'_, Database>, key: String) -> Result<Option<String>, String> {
     db.with(|c| db::get_setting(c, &key))
@@ -648,6 +778,8 @@ pub fn run() {
             folder_create,
             folder_rename,
             folder_delete,
+            solar_fire_read,
+            solar_fire_import,
             setting_get,
             setting_set,
         ])

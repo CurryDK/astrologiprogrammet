@@ -13,6 +13,19 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.9.0",
+    date: "2026-11-18",
+    added: [
+      "Arkiv: “Importér fra Solar Fire …” henter horoskoper fra Solar Fires horoskopfiler (.SFcht). Vælg en eller flere filer, se hvad de indeholder, sæt hak ved de horoskoper, der skal med, og importér. Hver fil lægges i en mappe med filens navn; navnet kan ændres inden importen.",
+      "Livsbegivenheder i Solar Fire-filen følger med deres horoskop, med dato, klokkeslæt og note.",
+      "Horoskoper, der allerede findes i arkivet med samme navn, fødselsdato og klokkeslæt, er markeret og fravalgt på forhånd, så de ikke kommer ind to gange.",
+    ],
+    changed: [
+      "Ved import fra Solar Fire får hvert horoskop tidszonen for sit sted. Hvor Solar Fires UTC-forskel afviger fra tidszonens, bevares Solar Fires som manuel UTC-forskel, så horoskopet er uændret; det står ved horoskopet i listen.",
+      "Klokkeslæt gemmes i hele minutter, så sekunder fra Solar Fire falder bort. Et horoskop, som Solar Fire har markeret med ukendt fødselstid (X) og kl. 12:00, importeres uden klokkeslæt. Solar Fires kilde, vurdering og noter til et horoskop kommer ikke med.",
+    ],
+  },
+  {
     version: "0.8.0",
     date: "2026-11-18",
     added: [

@@ -549,6 +549,46 @@ export type BirthInput = {
   offsetSeconds: number | null;
 };
 
+/** A life event of a Solar Fire chart, as it would be imported. */
+export type SolarFireEvent = {
+  title: string;
+  year: number;
+  month: number;
+  day: number;
+  time: string;
+  zone: string | null;
+  note: string;
+};
+
+/** A chart of a Solar Fire file (`.SFcht`), as it would be imported. */
+export type SolarFireChart = {
+  name: string;
+  birthDate: string;
+  /** Null when the file marks the birth time as unknown. */
+  birthTime: string | null;
+  placeName: string;
+  countryCode: string | null;
+  latitude: number;
+  longitude: number;
+  zone: string | null;
+  /** The file's UTC offset, kept only where the zone's rules give another (or no zone was found). */
+  offsetSeconds: number | null;
+  fileOffsetSeconds: number;
+  /** Rodden rating of the birth time in the file; may be empty. */
+  rating: string;
+  events: SolarFireEvent[];
+  /** Events left out because their date cannot be used. */
+  eventsSkipped: number;
+  /** Why the chart cannot be imported; null when it can. */
+  problem: string | null;
+  /** A chart with the same name, birth date and birth time is already in the archive. */
+  inArchive: boolean;
+};
+
+export type SolarFireFile = { title: string; charts: SolarFireChart[] };
+
+export type ImportSummary = { folderId: number | null; charts: number; events: number };
+
 export type ChartRecord = {
   id: number | null;
   name: string;

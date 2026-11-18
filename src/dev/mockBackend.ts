@@ -21,6 +21,7 @@ import type {
   LiveChart,
   PointId,
   ProgressedAspect,
+  SolarFireChart,
   Progressions,
   TimeStep,
   TransitAspect,
@@ -420,6 +421,42 @@ const events: LifeEvent[] = [
   { id: 2, chartId: 1, title: "Flyttede til Aarhus", year: 1995, month: null, day: null, time: null, zone: "Europe/Copenhagen", note: "" },
 ];
 
+/** A made-up Solar Fire file: whatever file is chosen, these charts are in it. */
+function mockSolarFire(): SolarFireChart[] {
+  const base = {
+    placeName: "Copenhagen",
+    countryCode: "DK",
+    latitude: 55.6667,
+    longitude: 12.5833,
+    zone: "Europe/Copenhagen",
+    offsetSeconds: null,
+    fileOffsetSeconds: 3600,
+    rating: "AA",
+    events: [],
+    eventsSkipped: 0,
+    problem: null,
+  };
+  const known = (name: string, birthDate: string, birthTime: string | null) =>
+    charts.some((c) => c.name === name && c.birthDate === birthDate && c.birthTime === birthTime);
+  const list: Omit<SolarFireChart, "inArchive">[] = [
+    {
+      ...base,
+      name: "Importeret Ida",
+      birthDate: "1967-08-20",
+      birthTime: "13:15",
+      events: [
+        { title: "Flyttede hjemmefra", year: 1986, month: 9, day: 1, time: "10:30", zone: "Europe/Copenhagen", note: "" },
+        { title: "Gift", year: 2000, month: 5, day: 30, time: "14:00", zone: "Europe/Copenhagen", note: "cirka" },
+      ],
+    },
+    { ...base, name: "Importeret uden tid", birthDate: "1948-04-01", birthTime: null, rating: "X" },
+    { ...base, name: "Forkert sommertid", birthDate: "2026-04-23", birthTime: "13:49", offsetSeconds: 3600, rating: "" },
+    { ...base, name: "Testhoroskop 1962", birthDate: "1962-02-04", birthTime: "14:20" },
+    { ...base, name: "For gammel", birthDate: "1500-01-01", birthTime: "12:00", problem: "årstallet 1500 er uden for programmets område" },
+  ];
+  return list.map((chart) => ({ ...chart, inArchive: known(chart.name, chart.birthDate, chart.birthTime) }));
+}
+
 export async function mockInvoke(command: string, args: Record<string, any>): Promise<unknown> {
   switch (command) {
     case "app_info":
@@ -524,6 +561,43 @@ export async function mockInvoke(command: string, args: Record<string, any>): Pr
       folders.splice(folders.findIndex((f) => f.id === args.id), 1);
       for (const chart of charts) if (chart.folderId === args.id) chart.folderId = null;
       return null;
+    case "solar_fire_read":
+      return { title: "New Chart File", charts: mockSolarFire() };
+    case "solar_fire_import": {
+      const name = String(args.folder).trim();
+      let folder = folders.find((f) => f.name.toLowerCase() === name.toLowerCase());
+      if (!folder && name) {
+        folder = { id: nextId++, name };
+        folders.push(folder);
+      }
+      const chosen = (args.selected as number[]).map((index) => mockSolarFire()[index]);
+      for (const chart of chosen) {
+        const id = nextId++;
+        charts.push({
+          id,
+          name: chart.name,
+          folderId: folder?.id ?? null,
+          birthDate: chart.birthDate,
+          birthTime: chart.birthTime,
+          placeName: chart.placeName,
+          countryCode: chart.countryCode,
+          latitude: chart.latitude,
+          longitude: chart.longitude,
+          zone: chart.zone,
+          offsetSeconds: chart.offsetSeconds,
+          featured: false,
+          sectOverride: null,
+        });
+        for (const event of chart.events) {
+          events.push({ id: nextEventId++, chartId: id, ...event });
+        }
+      }
+      return {
+        folderId: folder?.id ?? null,
+        charts: chosen.length,
+        events: chosen.reduce((sum, chart) => sum + chart.events.length, 0),
+      };
+    }
     case "setting_get":
       return settings.get(String(args.key)) ?? null;
     case "setting_set":

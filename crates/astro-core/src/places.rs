@@ -112,6 +112,37 @@ impl PlaceIndex {
             .map(|index| &self.places[index])
             .collect()
     }
+
+    /// The listed place that coordinates given without a time zone most
+    /// likely belong to: within `max_km`, the nearest place called `name`,
+    /// or, when none is, the nearest place.
+    pub fn nearest(&self, latitude: f64, longitude: f64, name: &str, max_km: f64) -> Option<&Place> {
+        const KM_PER_DEGREE: f64 = 111.195;
+        let name = fold(name);
+        let east_scale = latitude.to_radians().cos();
+        let mut best: Option<(bool, f64, usize)> = None;
+        for (index, place) in self.places.iter().enumerate() {
+            let north = place.latitude - latitude;
+            if north.abs() * KM_PER_DEGREE > max_km {
+                continue;
+            }
+            // Across the date line the short way round.
+            let east = ((place.longitude - longitude + 540.0).rem_euclid(360.0) - 180.0) * east_scale;
+            let km = north.hypot(east) * KM_PER_DEGREE;
+            if km > max_km {
+                continue;
+            }
+            let named = !name.is_empty() && self.keys[index].split('|').any(|key| key == name);
+            let better = match best {
+                None => true,
+                Some((best_named, best_km, _)) => (named, -km) > (best_named, -best_km),
+            };
+            if better {
+                best = Some((named, km, index));
+            }
+        }
+        best.map(|(_, _, index)| &self.places[index])
+    }
 }
 
 /// Lower-case, strip accents and punctuation. Must match `fold` in
@@ -206,6 +237,17 @@ Paris\tparis\tUS\tTexas\t33.6609\t-95.5555\tAmerica/Chicago\t24782
         let index = index();
         assert!(index.search("  ", 10).is_empty());
         assert_eq!(index.search("paris", 1).len(), 1);
+    }
+
+    #[test]
+    fn nearest_prefers_the_named_place_and_respects_the_distance() {
+        let index = index();
+        // Between Aarhus and Aars, a little closer to Aarhus.
+        assert_eq!(index.nearest(56.4, 10.0, "", 100.0).unwrap().name, "Aarhus");
+        assert_eq!(index.nearest(56.4, 10.0, "Aars", 100.0).unwrap().name, "Aars");
+        assert_eq!(index.nearest(56.4, 10.0, "Ukendt", 100.0).unwrap().name, "Aarhus");
+        assert!(index.nearest(56.4, 10.0, "Paris", 20.0).is_none());
+        assert_eq!(index.nearest(33.7, -95.5, "paris", 100.0).unwrap().country_code, "US");
     }
 
     #[test]
