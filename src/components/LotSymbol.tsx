@@ -69,8 +69,27 @@ export function LotGlyph({
   );
 }
 
-/** A lot's symbol for use in running text and tables. */
-export function LotSymbol({ lot }: { lot: Lot }) {
+/**
+ * A lot's symbol for use in running text and tables. With `wheelSize` it is
+ * drawn exactly as in the wheel, at the same size.
+ */
+export function LotSymbol({ lot, wheelSize = false }: { lot: Lot; wheelSize?: boolean }) {
+  if (wheelSize) {
+    const size = WHEEL_LOT_SIZE;
+    return (
+      <svg
+        className="lot-symbol wheel-size"
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        role="img"
+        aria-label={LOT_NAMES[lot]}
+      >
+        <title>{LOT_NAMES[lot]}</title>
+        <LotGlyph lot={lot} x={size / 2} y={size / 2} size={size} color="currentColor" />
+      </svg>
+    );
+  }
   return (
     <svg className="lot-symbol" viewBox="0 0 24 24" role="img" aria-label={LOT_NAMES[lot]}>
       <title>{LOT_NAMES[lot]}</title>

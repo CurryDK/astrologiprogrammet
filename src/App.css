@@ -27,6 +27,12 @@
   box-sizing: border-box;
 }
 
+/* The room for the scrollbar is always kept, so that a page growing or
+   shrinking as boxes open and close never changes the width of the wheel. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
 }
@@ -48,7 +54,7 @@ p {
 }
 
 main {
-  padding: 20px 24px 40px;
+  padding: 12px 24px 40px;
 }
 
 .muted {
@@ -87,6 +93,12 @@ main {
   height: 1.5em;
   color: var(--ink);
   vertical-align: middle;
+}
+
+/* Drawn as in the wheel, at the wheel's size. */
+.lot-symbol.wheel-size {
+  width: 19px;
+  height: 19px;
 }
 
 .center {
@@ -284,21 +296,107 @@ label.check {
   justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
-.chart-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 400px;
-  gap: 20px;
-  align-items: start;
-}
-
-.main-column {
+/* Name and birth data on one line, to leave the height to the wheel. */
+.chart-title {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 14px;
   min-width: 0;
+}
+
+.chart-title h1,
+.chart-title p {
+  margin: 0;
+}
+
+.chart-title .notice {
+  flex-basis: 100%;
+}
+
+.chart-header .actions {
+  flex: none;
+  flex-wrap: nowrap;
+}
+
+/* The wheel with its information boxes around it. PanelBoard places the
+   boxes; the wheel stays at the top left. */
+
+.panel-board {
+  position: relative;
+}
+
+.board-wheel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: 100%;
+}
+
+.panel-board > .box {
+  position: absolute;
+}
+
+.box-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.box-head h2 {
+  margin: 0;
+}
+
+.box.closed {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.box.closed .box-head {
+  margin-bottom: 0;
+}
+
+button.box-toggle {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-weight: 600;
+  text-align: left;
+}
+
+.box-arrow {
+  width: 0.9em;
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.box :is(.positions-table, .aspect-table, .lots-table, .display-table) {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.box :is(.positions-table, .aspect-table, .lots-table, .display-table) :is(td, th) {
+  padding: 2px 6px;
+}
+
+.box :is(.positions-table, .aspect-table, .lots-table, .display-table) thead th {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.box .lots-table {
+  margin-top: 10px;
 }
 
 /* Live Chart, transits and life events */
@@ -325,7 +423,13 @@ button.small.selected {
 }
 
 .time-panel {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.time-note {
+  font-size: 0.9rem;
 }
 
 .time-navigator {
@@ -380,26 +484,17 @@ button.step-arrow {
   border-top: 1px solid var(--line);
 }
 
-.rectification {
-  margin-bottom: 14px;
-}
-
 .rectify-row {
   display: flex;
   align-items: center;
   gap: 8px 10px;
   flex-wrap: wrap;
-  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .rectify-row input[type="time"] {
   font: inherit;
   padding: 3px 6px;
-}
-
-.wheel-legend {
-  margin: 4px 8px;
-  text-align: center;
 }
 
 .transit-table thead th {
@@ -618,29 +713,6 @@ button.step-arrow {
   border-radius: 8px;
 }
 
-.side-column {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.side-column table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.side-column td,
-.side-column th {
-  padding: 2px 6px;
-}
-
-.side-column thead th {
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-align: left;
-}
-
 .positions-table .angles tr:first-child td {
   padding-top: 8px;
   border-top: 1px solid var(--line);
@@ -677,6 +749,49 @@ button.step-arrow {
   white-space: nowrap;
 }
 
+/* The aspect overview: one line per point, its aspects side by side. */
+
+.aspect-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 2px 0;
+  border-top: 1px solid var(--line);
+}
+
+.aspect-row:first-child {
+  border-top: none;
+}
+
+.aspect-of {
+  flex: none;
+  width: 34px;
+  text-align: center;
+}
+
+.aspect-row ul {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 0 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aspect-row li {
+  display: grid;
+  grid-template-columns: 22px 28px 44px auto;
+  align-items: baseline;
+  justify-content: start;
+  gap: 0 3px;
+  white-space: nowrap;
+}
+
+.aspect-row li .muted {
+  font-size: 0.8rem;
+}
+
 .sect-choice {
   display: flex;
   align-items: center;
@@ -689,12 +804,8 @@ button.step-arrow {
   min-width: 0;
 }
 
-details.panel summary {
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.display-table {
+.display-table + .display-table,
+.legend + .display-table {
   margin-top: 10px;
 }
 
@@ -1204,11 +1315,19 @@ span.ca-words {
 
 /* Settings */
 
-.settings {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 560px;
+.settings > .muted {
+  margin-bottom: 14px;
+}
+
+/* The boxes fill the width in as many columns as there is room for. */
+.settings-boxes {
+  columns: 430px;
+  column-gap: 16px;
+}
+
+.settings-boxes .panel {
+  margin-bottom: 16px;
+  break-inside: avoid;
 }
 
 .settings table {
@@ -1293,7 +1412,6 @@ span.ca-words {
 /* Narrow windows: stack the columns instead of squeezing the wheel. */
 @media (max-width: 1000px) {
   .start,
-  .chart-body,
   .archive {
     grid-template-columns: minmax(0, 1fr);
   }

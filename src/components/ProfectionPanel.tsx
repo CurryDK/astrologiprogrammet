@@ -12,6 +12,7 @@ import {
   type ProfectionReport,
 } from "../astro";
 import { useSettings } from "../settings";
+import { Box } from "./PanelBoard";
 
 /** Highest age the backend calculates a profection year for. */
 const MAX_AGE = 150;
@@ -61,11 +62,10 @@ export function ProfectionPanel({ record }: { record: ChartRecord }) {
 
   if (error) {
     return (
-      <section className="panel profections">
-        <h2>Profektioner</h2>
+      <Box id="profections" title="Profektioner" span="wide" className="profections">
         <p className="error">Profektionerne kunne ikke beregnes: {error}</p>
         {age !== null && <button onClick={() => setAge(null)}>Gå til i dag</button>}
-      </section>
+      </Box>
     );
   }
   if (!report) return null;
@@ -79,9 +79,12 @@ export function ProfectionPanel({ record }: { record: ChartRecord }) {
   const bodyColor = (month: Pick<ProfectionMonth, "ruler">) => settings.colors.bodies[month.ruler];
 
   return (
-    <section className="panel profections">
-      <div className="profection-head">
-        <h2>Profektioner</h2>
+    <Box
+      id="profections"
+      title="Profektioner"
+      span="wide"
+      className="profections"
+      actions={
         <div className="profection-nav">
           <button
             onClick={() => setAge(year.age - 1)}
@@ -105,7 +108,8 @@ export function ProfectionPanel({ record }: { record: ChartRecord }) {
             <button onClick={() => setAge(null)}>Gå til i dag</button>
           )}
         </div>
-      </div>
+      }
+    >
 
       <div className="time-lord">
         <span className="time-lord-glyph glyph" style={{ color: settings.colors.bodies[year.timeLord] }}>
@@ -201,6 +205,6 @@ export function ProfectionPanel({ record }: { record: ChartRecord }) {
           falder i.
         </p>
       )}
-    </section>
+    </Box>
   );
 }

@@ -73,6 +73,12 @@ const MIN_LAYER_SEPARATION = 7;
  * shown. Provisional: the specification leaves the figure to testing.
  */
 const MIN_RADIUS = 270;
+/**
+ * Where the view sizes the wheel so that the whole of it is visible without
+ * scrolling (change specification of 16 November 2026), it may go this far
+ * below the figure above before it stops shrinking. Provisional as well.
+ */
+const MIN_RADIUS_TO_FIT = 230;
 const MAX_RADIUS = 440;
 
 type Props = {
@@ -84,6 +90,11 @@ type Props = {
   lots?: LotPosition[];
   /** Largest radius of the wheel in pixels, where the screen gives it less room. */
   maxRadius?: number;
+  /**
+   * The room the whole wheel may take, in pixels, where the view decides it
+   * (`PanelBoard`). Without it the wheel measures the element it sits in.
+   */
+  room?: { width: number; height: number };
   /**
    * Live Chart: secondary progressions, drawn in a band outside the zodiac
    * ring, inside the transits. Everything is already filtered by the caller.
@@ -180,6 +191,7 @@ export function ChartWheel({
   settings,
   lots = [],
   maxRadius,
+  room: givenRoom,
   progression,
   transit,
 }: Props) {
@@ -211,11 +223,16 @@ export function ChartWheel({
     y: MARGIN.y + bands * BAND.width + (bands ? 4 : 0),
   };
   // Beside the side column the whole wheel should fit in the window's height.
-  const byHeight = room.wide ? (room.height - 190) / 2 - margin.y : Infinity;
+  const byHeight = givenRoom
+    ? givenRoom.height / 2 - margin.y
+    : room.wide
+      ? (room.height - 190) / 2 - margin.y
+      : Infinity;
+  const byWidth = (givenRoom?.width ?? room.width) / 2 - margin.x;
   const outer = Math.round(
     Math.max(
-      MIN_RADIUS,
-      Math.min(room.width / 2 - margin.x, byHeight, maxRadius ?? MAX_RADIUS, MAX_RADIUS),
+      givenRoom ? MIN_RADIUS_TO_FIT : MIN_RADIUS,
+      Math.min(byWidth, byHeight, maxRadius ?? MAX_RADIUS, MAX_RADIUS),
     ),
   );
   const center = { x: outer + margin.x, y: outer + margin.y };

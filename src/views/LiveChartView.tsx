@@ -25,8 +25,9 @@ import {
 import { ChartWheel, type LayerPoint } from "../components/ChartWheel";
 import { ChartAnalysisPanel } from "../components/ChartAnalysisPanel";
 import { ConditionPanel } from "../components/ConditionPanel";
-import { LifeEventsPanel } from "../components/LifeEventsPanel";
+import { LifeEventsPanel, type EventPrefill } from "../components/LifeEventsPanel";
 import { LotsTable } from "../components/LotsTable";
+import { Box, PanelBoard, ResetLayoutButton } from "../components/PanelBoard";
 import { PositionsTable } from "../components/PositionsTable";
 import { TimeNavigator } from "../components/TimeNavigator";
 import { TransitAspectTable } from "../components/TransitAspectTable";
@@ -90,6 +91,8 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
   const [adjusted, setAdjusted] = useState<BirthClock | null>(null);
   const [saveAs, setSaveAs] = useState<"new" | "overwrite">("new");
   const [saving, setSaving] = useState(false);
+  // "Gem som livsbegivenhed": the shown moment, handed to the life event form.
+  const [eventPrefill, setEventPrefill] = useState<EventPrefill | null>(null);
   const original: BirthClock = useMemo(
     () => ({ date: record.birthDate, time: record.birthTime ?? "12:00" }),
     [record.birthDate, record.birthTime],
@@ -225,10 +228,26 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
 
   const birth = birthInputOf(working);
 
+  /**
+   * Opens the life event form with the moment the Live Chart shows, not the
+   * computer's present time: the date and clock time as shown, in the time
+   * zone they are shown in, which the event stores.
+   */
+  function saveAsEvent() {
+    if (!live) return;
+    update((s) => ({ ...s, layout: { ...s.layout, live: { ...s.layout.live, events: true } } }));
+    setEventPrefill({
+      key: Date.now(),
+      date: live.at.local.slice(0, 10),
+      time: live.at.local.slice(11, 16),
+      zone,
+    });
+  }
+
   return (
     <div className="chart-view live-chart">
       <header className="chart-header">
-        <div>
+        <div className="chart-title">
           <h1>Live Chart · {record.name}</h1>
           <p className="muted">
             Født {formatBirthDate(working.birthDate)}
@@ -240,14 +259,51 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
           </p>
         </div>
         <div className="actions">
+          <ResetLayoutButton view="live" />
           <button onClick={onBack}>Tilbage til horoskopet</button>
         </div>
       </header>
 
       {error && <p className="error">Beregningen mislykkedes: {error}</p>}
 
-      {live && (
-        <section className="panel time-panel">
+      {live && natal && (
+        <PanelBoard
+          view="live"
+          wheel={(room) => (
+              <ChartWheel
+                chart={natal.chart}
+                aspects={groups.natal ? aspectsForView(natal.aspects, settings, "wheel") : []}
+                settings={settings}
+                lots={natal.lots?.positions}
+                room={room}
+                progression={
+                  progressed
+                    ? {
+                        points: progressedPoints,
+                        toNatal: progressionToNatalForView(progressed.toNatal, settings, "wheel"),
+                        toProgressed: progressionToProgressedForView(
+                          progressed.toProgressed,
+                          settings,
+                          "wheel",
+                        ),
+                        orb: progressionOrb,
+                      }
+                    : undefined
+                }
+                transit={
+                  showTransits
+                    ? {
+                        positions: live.positions.filter((p) => settings.transits.showInWheel[p.body]),
+                        toNatal: transitToNatalForView(live.toNatal, settings, "wheel", planets),
+                        toTransit: transitToTransitForView(live.toTransit, settings, "wheel", planets),
+                        orb,
+                      }
+                    : undefined
+                }
+              />
+          )}
+        >
+            <Box id="time" title="Tidspunkt" span="side" fixed pinned className="time-box">
           <TimeNavigator
             at={live.at}
             zone={zone}
@@ -258,6 +314,16 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
             }
             onNow={() => load(null, null)}
             onGoTo={goTo}
+            extra={
+              record.id !== null && (
+                <button
+                  onClick={saveAsEvent}
+                  title="Opretter en livsbegivenhed med det viste tidspunkt; navn, dato og klokkeslæt kan rettes, før den gemmes"
+                >
+                  Gem som livsbegivenhed
+                </button>
+              )
+            }
           />
           <div className="live-profection">
             {live.age === null || !live.profection ? (
@@ -303,12 +369,14 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
               </>
             )}
           </div>
-        </section>
-      )}
+            </Box>
 
-      {live && (
-        <details className="panel rectification" open={changed || undefined}>
-          <summary>Rektifikation{changed ? ` · ${formatShift(shift)}` : ""}</summary>
+            <Box
+              id="rectification"
+              title={`Rektifikation${changed ? ` · ${formatShift(shift)}` : ""}`}
+              span="side"
+              className="rectification"
+            >
           <div className="rectify-row">
             <span>Fødselstid</span>
             {RECTIFY_STEPS.slice(0, 3).map(([label, minutes]) => (
@@ -381,63 +449,15 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
             det samme; transitplaneternes positioner ændres ikke. Den oprindelige fødselstid
             bevares, indtil der gemmes.
           </p>
-        </details>
-      )}
+            </Box>
 
-      {live && natal && (
-        <div className="chart-body">
-          <div className="main-column">
-            <div className="wheel-column">
-              <ChartWheel
-                chart={natal.chart}
-                aspects={groups.natal ? aspectsForView(natal.aspects, settings, "wheel") : []}
-                settings={settings}
-                lots={natal.lots?.positions}
-                progression={
-                  progressed
-                    ? {
-                        points: progressedPoints,
-                        toNatal: progressionToNatalForView(progressed.toNatal, settings, "wheel"),
-                        toProgressed: progressionToProgressedForView(
-                          progressed.toProgressed,
-                          settings,
-                          "wheel",
-                        ),
-                        orb: progressionOrb,
-                      }
-                    : undefined
-                }
-                transit={
-                  showTransits
-                    ? {
-                        positions: live.positions.filter((p) => settings.transits.showInWheel[p.body]),
-                        toNatal: transitToNatalForView(live.toNatal, settings, "wheel", planets),
-                        toTransit: transitToTransitForView(live.toTransit, settings, "wheel", planets),
-                        orb,
-                      }
-                    : undefined
-                }
-              />
-              <p className="muted legend wheel-legend">
+            <Box id="display" title="Visning">
+              <p className="muted legend">
                 Inderst natalhoroskopet, i midten de sekundære progressioner, yderst transitterne.
                 Fuldt optrukne linjer: transit → natal. Stiplede: transit → transit. Prikkede:
                 progression → natal. Streg-prik: progression → progression. Svage: natale
                 aspekter.
               </p>
-            </div>
-            <details className="panel">
-              <summary>Natalhoroskopet med den viste fødselstid</summary>
-              <PositionsTable chart={natal.chart} settings={settings} />
-              {natal.lots && <LotsTable lots={natal.lots.positions} settings={settings} />}
-            </details>
-            {changed && <ChartAnalysisPanel record={working} />}
-            {changed && <ConditionPanel record={working} />}
-            <LifeEventsPanel record={record} onJump={goTo} jumpLabel="Gå til" />
-          </div>
-
-          <div className="side-column">
-            <details className="panel" open>
-              <summary>Visning</summary>
               <table className="display-table">
                 <thead>
                   <tr>
@@ -658,18 +678,16 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
                 transitaspekter ({orb}°) og progressionsaspekter ({progressionOrb}°) ændres under
                 Indstillinger.
               </p>
-            </details>
+            </Box>
 
             {settings.progressions.show && !live.progressions && (
-              <section className="panel">
-                <h2>Sekundære progressioner</h2>
+              <Box id="noProgressions" title="Sekundære progressioner" fixed>
                 <p className="muted">Tidspunktet ligger før fødslen; ingen progressioner.</p>
-              </section>
+              </Box>
             )}
 
             {progressed && settings.progressions.groups.toNatal && (
-              <section className="panel">
-                <h2>Progression → natal</h2>
+              <Box id="progressionToNatal" title="Progression → natal">
                 <TransitAspectTable
                   rows={progressionToNatalForView(progressed.toNatal, settings, "table").map((a) => ({
                     ...a,
@@ -692,12 +710,11 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
                   }
                   onGoTo={goTo}
                 />
-              </section>
+              </Box>
             )}
 
             {progressed && settings.progressions.groups.toProgressed && (
-              <section className="panel">
-                <h2>Progression → progression</h2>
+              <Box id="progressionToProgressed" title="Progression → progression">
                 <TransitAspectTable
                   rows={progressionToProgressedForView(progressed.toProgressed, settings, "table").map(
                     (a) => ({ ...a, moving: a.a, other: a.b }),
@@ -718,12 +735,11 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
                   }
                   onGoTo={goTo}
                 />
-              </section>
+              </Box>
             )}
 
             {showTransits && groups.toNatal && (
-              <section className="panel">
-                <h2>Transit → natal</h2>
+              <Box id="transitToNatal" title="Transit → natal">
                 <TransitAspectTable
                   rows={transitToNatalForView(live.toNatal, settings, "table", planets).map((a) => ({
                     ...a,
@@ -745,12 +761,11 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
                   }
                   onGoTo={goTo}
                 />
-              </section>
+              </Box>
             )}
 
             {showTransits && groups.toTransit && (
-              <section className="panel">
-                <h2>Transit → transit</h2>
+              <Box id="transitToTransit" title="Transit → transit">
                 <TransitAspectTable
                   rows={transitToTransitForView(live.toTransit, settings, "table", planets).map(
                     (a) => ({ ...a, moving: a.a, other: a.b }),
@@ -770,12 +785,11 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
                   }
                   onGoTo={goTo}
                 />
-              </section>
+              </Box>
             )}
 
             {progressed && (
-              <section className="panel">
-                <h2>Progressive positioner</h2>
+              <Box id="progressedPositions" title="Progressive positioner">
                 <table className="positions-table">
                   <thead>
                     <tr>
@@ -823,12 +837,11 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
                           : "Naibod i ekliptisk længde"
                       }.`}
                 </p>
-              </section>
+              </Box>
             )}
 
             {showTransits && (
-              <section className="panel">
-                <h2>Transitpositioner</h2>
+              <Box id="transitPositions" title="Transitpositioner">
                 <table className="positions-table">
                   <thead>
                     <tr>
@@ -856,10 +869,17 @@ export function LiveChartView({ record, initialAt, onBack, onRectified }: Props)
                     ))}
                   </tbody>
                 </table>
-              </section>
+              </Box>
             )}
-          </div>
-        </div>
+
+            <Box id="natal" title="Natalhoroskopet med den viste fødselstid">
+              <PositionsTable chart={natal.chart} settings={settings} />
+              {natal.lots && <LotsTable lots={natal.lots.positions} settings={settings} />}
+            </Box>
+            {changed && <ChartAnalysisPanel record={working} />}
+            {changed && <ConditionPanel record={working} />}
+            <LifeEventsPanel record={record} onJump={goTo} jumpLabel="Gå til" prefill={eventPrefill} />
+        </PanelBoard>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import {
   eventDate,
@@ -9,6 +9,7 @@ import {
   type EventPrecision,
   type LifeEvent,
 } from "../astro";
+import { Box } from "./PanelBoard";
 
 type Props = {
   record: ChartRecord;
@@ -16,7 +17,16 @@ type Props = {
   onJump: (utc: string) => void;
   /** Text of the jump button, e.g. "Vis i Live Chart" or "Gå til". */
   jumpLabel: string;
+  /**
+   * A moment to register as a new event ("Gem som livsbegivenhed" in Live
+   * Chart): the form opens with it filled in, to be named and adjusted
+   * before it is saved. A new `key` asks again.
+   */
+  prefill?: EventPrefill | null;
 };
+
+/** A date and clock time in a time zone, as Live Chart shows its moment. */
+export type EventPrefill = { key: number; date: string; time: string; zone: string };
 
 type Draft = {
   id: number | null;
@@ -29,6 +39,8 @@ type Draft = {
   month: string;
   year: string;
   note: string;
+  /** The time zone the date and time were read in, when it is not the computer's own. */
+  zone?: string;
 };
 
 const PRECISION_NAMES: Record<EventPrecision, string> = {
@@ -103,7 +115,7 @@ function dateBounds(event: LifeEvent): { min: string; max: string } {
  * when its clock time is unknown); one without must first be given a date
  * by the user, and that date is not stored with the event.
  */
-export function LifeEventsPanel({ record, onJump, jumpLabel }: Props) {
+export function LifeEventsPanel({ record, onJump, jumpLabel, prefill }: Props) {
   const chartId = record.id;
   const [events, setEvents] = useState<LifeEvent[]>([]);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -125,12 +137,28 @@ export function LifeEventsPanel({ record, onJump, jumpLabel }: Props) {
     reload();
   }, [reload]);
 
+  const form = useRef<HTMLDivElement>(null);
+  const prefillKey = prefill?.key;
+  useEffect(() => {
+    if (!prefill) return;
+    setDraft({ ...draftOf(null), precision: "datetime", date: prefill.date, time: prefill.time, zone: prefill.zone });
+    setError(null);
+    // The box may stand below the window; bring the form into view once it is placed.
+    const timer = window.setTimeout(
+      () => form.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }),
+      80,
+    );
+    return () => window.clearTimeout(timer);
+    // Only a new request fills the form in again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillKey]);
+
   if (chartId === null) return null;
 
   async function save() {
     if (!draft || chartId === null) return;
     const existing = events.find((e) => e.id === draft.id);
-    const event = eventOf(draft, chartId, existing?.zone ?? localZone());
+    const event = eventOf(draft, chartId, existing?.zone ?? draft.zone ?? localZone());
     if (typeof event === "string") {
       setError(event);
       return;
@@ -164,16 +192,17 @@ export function LifeEventsPanel({ record, onJump, jumpLabel }: Props) {
   const set = (change: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...change } : d));
 
   return (
-    <section className="panel life-events">
-      <div className="panel-head">
-        <h2>Livsbegivenheder</h2>
-        {!draft && <button onClick={() => setDraft(draftOf(null))}>Ny begivenhed</button>}
-      </div>
+    <Box
+      id="events"
+      title="Livsbegivenheder"
+      className="life-events"
+      actions={!draft && <button onClick={() => setDraft(draftOf(null))}>Ny begivenhed</button>}
+    >
 
       {error && <p className="error">{error}</p>}
 
       {draft && (
-        <div className="event-form">
+        <div className="event-form" ref={form}>
           <label>
             Titel
             <input
@@ -335,6 +364,6 @@ export function LifeEventsPanel({ record, onJump, jumpLabel }: Props) {
           );
         })}
       </ul>
-    </section>
+    </Box>
   );
 }

@@ -24,6 +24,7 @@ export function SettingsView() {
       <h1>Indstillinger</h1>
       <p className="muted">Ændringer gælder med det samme og huskes til næste gang.</p>
 
+      <div className="settings-boxes">
       <section className="panel">
         <h2>Aspekter</h2>
         <table>
@@ -549,6 +550,7 @@ export function SettingsView() {
           Symbolet og dets positionsstreg i hjulet har altid samme farve.
         </p>
       </section>
+      </div>
     </div>
   );
 }

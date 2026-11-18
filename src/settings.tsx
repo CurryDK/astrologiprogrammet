@@ -120,7 +120,15 @@ export type Settings = {
     /** Whether Chart Analysis also lists the facts that carry no rating. */
     analysisNeutral: boolean;
   };
+  /**
+   * Which information boxes are open, per view type and not per chart
+   * (change specification of 16 November 2026). A box not listed is open.
+   */
+  layout: Record<LayoutView, Record<string, boolean>>;
 };
+
+/** The view types that each remember their own open and closed boxes. */
+export type LayoutView = "natal" | "transit" | "live";
 
 export type ModernDecanRulers = "modern" | "traditional";
 const MODERN_DECAN_RULERS: ModernDecanRulers[] = ["modern", "traditional"];
@@ -274,6 +282,38 @@ export const DEFAULT_SETTINGS: Settings = {
     // included (specification of 15 November 2026, section 6). They make
     // the lists long, so they can be hidden. Proposed default: shown.
     analysisNeutral: true,
+  },
+  // Every box is listed, so that "Nulstil layout" and settings stored by an
+  // earlier version get the same start. Open unless it was closed before
+  // the boxes could be folded: "Visning" at a natal chart, and in Live Chart
+  // the rectification and the natal chart with the shown birth time.
+  layout: {
+    natal: {
+      positions: true,
+      aspects: true,
+      lots: true,
+      lotAspects: true,
+      display: false,
+      analysis: true,
+      condition: true,
+      profections: true,
+      events: true,
+    },
+    transit: { positions: true, aspects: true },
+    live: {
+      rectification: false,
+      display: true,
+      progressionToNatal: true,
+      progressionToProgressed: true,
+      transitToNatal: true,
+      transitToTransit: true,
+      progressedPositions: true,
+      transitPositions: true,
+      natal: false,
+      analysis: true,
+      condition: true,
+      events: true,
+    },
   },
 };
 

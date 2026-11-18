@@ -30,6 +30,7 @@ import {
 } from "../conditionText";
 import { useSettings, type Settings } from "../settings";
 import { useConditionReport } from "../useConditionReport";
+import { Box } from "./PanelBoard";
 
 /** The mark of a condition: filled for "very", an outline otherwise, a grey dot for a plain fact. */
 function Mark({ rating, colors }: { rating: Rating | null; colors: Settings["condition"]["colors"] }) {
@@ -77,10 +78,9 @@ export function ConditionPanel({ record }: Props) {
 
   if (error) {
     return (
-      <section className="panel">
-        <h2>Planetary Condition</h2>
+      <Box id="condition" title="Planetary Condition" span="wide">
         <p className="error">Beregningen mislykkedes: {error}</p>
-      </section>
+      </Box>
     );
   }
   if (!report) return null;
@@ -108,14 +108,18 @@ export function ConditionPanel({ record }: Props) {
   };
 
   return (
-    <section className="panel condition-panel">
-      <div className="panel-head">
-        <h2>Planetary Condition</h2>
+    <Box
+      id="condition"
+      title="Planetary Condition"
+      span="wide"
+      className="condition-panel"
+      actions={
         <div className="actions">
           <button onClick={() => setAll(true)}>Åbn alle</button>
           <button onClick={() => setAll(false)}>Luk alle</button>
         </div>
-      </div>
+      }
+    >
       <p className="muted">
         {SECT_NAMES[report.sect]}
         {report.overridden && " (valgt manuelt)"} · Sect light: {POINT_NAMES[report.sectLight]}
@@ -326,6 +330,6 @@ export function ConditionPanel({ record }: Props) {
         Kun de syv traditionelle planeter indgår. Der er ingen point eller samlet vurdering; hver
         betingelse står for sig. Tryk på en betingelse for regel og kilde.
       </p>
-    </section>
+    </Box>
   );
 }

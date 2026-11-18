@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { api } from "../api";
 import { STEP_NAMES, STEP_UNITS, formatMomentLong, formatOffset, type Moment, type StepUnit } from "../astro";
 
@@ -17,13 +18,17 @@ type Props = {
   onNow: () => void;
   /** Jump to an exact UTC instant. */
   onGoTo: (utc: string) => void;
+  /** Text shown on the line of the date, after it. */
+  note?: string;
+  /** Further controls at the end of the row. */
+  extra?: ReactNode;
 };
 
 /**
  * Manual time navigation (specification §8): one click is one step, a held
  * arrow repeats, and an exact date and time can be entered. No autoplay.
  */
-export function TimeNavigator({ at, zone, unit, onUnit, onStep, onNow, onGoTo }: Props) {
+export function TimeNavigator({ at, zone, unit, onUnit, onStep, onNow, onGoTo, note, extra }: Props) {
   const [date, setDate] = useState(at.local.slice(0, 10));
   const [time, setTime] = useState(at.local.slice(11, 16));
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +96,10 @@ export function TimeNavigator({ at, zone, unit, onUnit, onStep, onNow, onGoTo }:
   return (
     <div className="time-navigator">
       <div className="time-now">
-        <strong>{formatMomentLong(at)}</strong>
+        <span>
+          <strong>{formatMomentLong(at)}</strong>
+          {note && <span className="muted time-note"> · {note}</span>}
+        </span>
         <span className="muted">
           {zone} · UTC{formatOffset(at.offsetSeconds)}
         </span>
@@ -128,6 +136,7 @@ export function TimeNavigator({ at, zone, unit, onUnit, onStep, onNow, onGoTo }:
           />
           <button onClick={goTo}>Gå til</button>
         </span>
+        {extra}
       </div>
       {error && <p className="error">{error}</p>}
     </div>

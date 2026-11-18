@@ -23,6 +23,7 @@ import { ConditionPanel } from "../components/ConditionPanel";
 import { LifeEventsPanel } from "../components/LifeEventsPanel";
 import { LotAspectTable } from "../components/LotAspectTable";
 import { LotSymbol, LotsTable } from "../components/LotsTable";
+import { Box, PanelBoard, ResetLayoutButton } from "../components/PanelBoard";
 import { PositionsTable } from "../components/PositionsTable";
 import { ProfectionPanel } from "../components/ProfectionPanel";
 import { useSettings } from "../settings";
@@ -86,7 +87,7 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
   return (
     <div className="chart-view">
       <header className="chart-header">
-        <div>
+        <div className="chart-title">
           <h1>{record.name}</h1>
           <p className="muted">
             {formatBirthDate(record.birthDate)}
@@ -114,6 +115,7 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
             Live Chart
           </button>
           <button onClick={onEdit}>Rediger</button>
+          <ResetLayoutButton view="natal" />
           {confirmingDelete ? (
             <>
               <button className="danger" onClick={remove}>
@@ -130,38 +132,31 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
       {error && <p className="error">Beregningen mislykkedes: {error}</p>}
 
       {computed && (
-        <div className="chart-body">
-          <div className="main-column">
-            <div className="wheel-column">
-              <ChartWheel
-                chart={computed.chart}
-                aspects={aspectsForView(computed.aspects, settings, "wheel")}
-                settings={settings}
-                lots={computed.lots?.positions}
-              />
-            </div>
-            <ChartAnalysisPanel record={record} />
-            <ConditionPanel record={record} />
-            <ProfectionPanel record={record} />
-            <LifeEventsPanel record={record} onJump={onLive} jumpLabel="Vis i Live Chart" />
-          </div>
-          <div className="side-column">
-            <section className="panel">
-              <h2>Positioner</h2>
+        <PanelBoard
+          view="natal"
+          wheel={(room) => (
+            <ChartWheel
+              chart={computed.chart}
+              aspects={aspectsForView(computed.aspects, settings, "wheel")}
+              settings={settings}
+              lots={computed.lots?.positions}
+              room={room}
+            />
+          )}
+        >
+            <Box id="positions" title="Positioner">
               <PositionsTable chart={computed.chart} settings={settings} />
-            </section>
+            </Box>
 
-            <section className="panel">
-              <h2>Aspekter</h2>
+            <Box id="aspects" title="Aspekter">
               <AspectTable
                 aspects={aspectsForView(computed.aspects, settings, "table")}
                 settings={settings}
               />
-            </section>
+            </Box>
 
             {computed.lots && (
-              <section className="panel">
-                <h2>Lots</h2>
+              <Box id="lots" title="Lots">
                 <label className="sect-choice">
                   Sect
                   <select
@@ -176,21 +171,20 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
                     <option value="night">Natkort (valgt manuelt)</option>
                   </select>
                 </label>
-                <LotsTable lots={computed.lots.positions} settings={settings} />              </section>
+                <LotsTable lots={computed.lots.positions} settings={settings} />
+              </Box>
             )}
 
             {computed.lots && (
-              <section className="panel">
-                <h2>Lot-aspekter</h2>
+              <Box id="lotAspects" title="Lot-aspekter">
                 <LotAspectTable
                   aspects={lotAspectsForView(computed.lots.aspects, settings)}
                   settings={settings}
                 />
-              </section>
+              </Box>
             )}
 
-            <details className="panel">
-              <summary>Visning</summary>
+            <Box id="display" title="Visning">
               <table className="display-table">
                 <thead>
                   <tr>
@@ -270,7 +264,7 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
                   {LOTS.map((lot) => (
                     <tr key={lot}>
                       <td>
-                        <LotSymbol lot={lot} /> {LOT_NAMES[lot]}
+                        <LotSymbol lot={lot} wheelSize /> {LOT_NAMES[lot]}
                       </td>
                       <td>
                         <input
@@ -366,9 +360,13 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
                   ))}
                 </tbody>
               </table>
-            </details>
-          </div>
-        </div>
+            </Box>
+
+            <ChartAnalysisPanel record={record} />
+            <ConditionPanel record={record} />
+            <ProfectionPanel record={record} />
+            <LifeEventsPanel record={record} onJump={onLive} jumpLabel="Vis i Live Chart" />
+        </PanelBoard>
       )}
     </div>
   );

@@ -20,6 +20,10 @@ type Props = {
  * The aspect overview (specification §5): symbols, orb, "a" for applying or
  * "s" for separating, and "oos" for out-of-sign aspects. Each aspect is
  * listed once, under the point that comes first in the standard order.
+ *
+ * One line per point, its aspects side by side and wrapping, so the
+ * overview uses the width it has and stays low (change specification of
+ * 16 November 2026, which leaves the exact arrangement open: a proposal).
  */
 export function AspectTable({ aspects, settings }: Props) {
   if (aspects.length === 0) return <p className="muted">Ingen aspekter inden for orb.</p>;
@@ -42,34 +46,32 @@ export function AspectTable({ aspects, settings }: Props) {
   );
 
   return (
-    <table className="aspect-table">
+    <div className="aspect-rows">
       {groups.map((group) => (
-        <tbody key={group.point}>
-          <tr className="group">
-            <th colSpan={6}>{POINT_NAMES[group.point]}</th>
-          </tr>
-          {group.aspects.map((aspect) => (
-            <tr key={`${aspect.a}-${aspect.b}`}>
-              <td>{glyph(aspect.a)}</td>
-              <td
-                className="glyph"
-                style={{ color: settings.colors.aspects[aspect.kind] }}
-                title={ASPECT_NAMES[aspect.kind]}
+        <div className="aspect-row" key={group.point}>
+          <span className="aspect-of">{glyph(group.point)}</span>
+          <ul>
+            {group.aspects.map((aspect) => (
+              <li
+                key={`${aspect.a}-${aspect.b}`}
+                title={`${POINT_NAMES[aspect.a]} ${ASPECT_NAMES[aspect.kind].toLowerCase()} ${POINT_NAMES[aspect.b]}, orb ${formatOrb(aspect.orb)}, ${
+                  aspect.applying ? "applicerende" : "separerende"
+                }${aspect.outOfSign ? ", out of sign" : ""}`}
               >
-                {ASPECT_GLYPHS[aspect.kind]}
-              </td>
-              <td>{glyph(aspect.b)}</td>
-              <td className="number">{formatOrb(aspect.orb)}</td>
-              <td title={aspect.applying ? "Applicerende" : "Separerende"}>
-                {aspect.applying ? "a" : "s"}
-              </td>
-              <td className="muted" title={aspect.outOfSign ? "Out of sign" : undefined}>
-                {aspect.outOfSign ? "oos" : ""}
-              </td>
-            </tr>
-          ))}
-        </tbody>
+                <span className="glyph" style={{ color: settings.colors.aspects[aspect.kind] }}>
+                  {ASPECT_GLYPHS[aspect.kind]}
+                </span>
+                {glyph(aspect.b)}
+                <span className="number">{formatOrb(aspect.orb)}</span>
+                <span>
+                  {aspect.applying ? "a" : "s"}
+                  {aspect.outOfSign && <span className="muted"> oos</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       ))}
-    </table>
+    </div>
   );
 }

@@ -13,6 +13,24 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.8.0",
+    date: "2026-11-18",
+    added: [
+      "Alle informationskasser ved natalhoroskopet, i Live Chart og under Transitter kan nu klappes sammen og åbnes hver for sig med et tryk på overskriften. Programmet husker, hvilke kasser der er åbne, særskilt for natalhoroskop, Transitter og Live Chart – ikke for hvert enkelt horoskop.",
+      "Når en kasse åbnes eller lukkes, flytter de øvrige kasser sig, så pladsen ved siden af og under hjulet udnyttes, og der ikke står store tomme områder.",
+      "“Nulstil layout” øverst i hver af de tre visninger åbner og lukker kasserne som fra start. Horoskopdata, beregninger, farver og øvrige indstillinger ændres ikke.",
+      "Live Chart: “Gem som livsbegivenhed” åbner en ny livsbegivenhed med den dato og det klokkeslæt, Live Chart står på – ikke computerens aktuelle tid. Giv den et navn, ret eventuelt dato og tid, og gem. “Ny begivenhed” virker som før.",
+    ],
+    changed: [
+      "Horoskophjulet står altid øverst til venstre og beholder sin størrelse og plads, når kasser åbnes og lukkes. Det følger kun programvinduets størrelse og er tilpasset, så hele hjulet kan ses uden at rulle ved normal vinduesstørrelse.",
+      "Live Chart: dato, tidsnavigation, alder, årets og månedens Time Lord og rektifikation står nu til højre for hjulet i stedet for over det. Forklaringen af linjetyperne er flyttet ind i “Visning”.",
+      "Transitter: “Himlen på et valgt tidspunkt” står på samme linje som datoen, så hjulet rykker op.",
+      "Aspektoversigten ved natalhoroskopet og under Transitter er mere kompakt: én linje for hver planet med dens aspekter ved siden af hinanden. Opstillingen er et forslag og kan ændres.",
+      "Lots-symbolerne i “Visning” har samme størrelse som i hjulet.",
+      "Indstillinger: kasserne er fordelt i flere kolonner over hele vinduets bredde.",
+    ],
+  },
+  {
     version: "0.7.1",
     date: "2026-11-15",
     added: [

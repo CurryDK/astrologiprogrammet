@@ -70,6 +70,24 @@ describe("settingsFromStored", () => {
   });
 });
 
+describe("layout settings", () => {
+  it("are filled in for settings saved before boxes could be folded", () => {
+    const settings = settingsFromStored({ orbs: { square: 5 } });
+    expect(settings.layout).toEqual(DEFAULT_SETTINGS.layout);
+    expect(settings.layout.natal.display).toBe(false);
+    expect(settings.layout.live.display).toBe(true);
+  });
+
+  it("remember a box per view type", () => {
+    const settings = settingsFromStored({ layout: { natal: { aspects: false }, live: { events: false } } });
+    expect(settings.layout.natal.aspects).toBe(false);
+    expect(settings.layout.natal.positions).toBe(true);
+    expect(settings.layout.transit.aspects).toBe(true);
+    expect(settings.layout.live.events).toBe(false);
+    expect(settings.layout.live.analysis).toBe(true);
+  });
+});
+
 describe("lot settings", () => {
   it("are filled in for settings saved before lots existed", () => {
     const stored = { orbs: { square: 5 }, showInWheel: { sun: false } };

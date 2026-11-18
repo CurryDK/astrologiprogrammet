@@ -27,6 +27,7 @@ import {
 import { RATING_NAMES } from "../conditionText";
 import { useSettings, type Settings } from "../settings";
 import { useConditionReport } from "../useConditionReport";
+import { Box } from "./PanelBoard";
 
 /** The bar beside a line: filled for "very", an outline otherwise, grey for a neutral fact. */
 function Bar({ rating, colors }: { rating: Rating | null; colors: Settings["condition"]["colors"] }) {
@@ -56,10 +57,9 @@ export function ChartAnalysisPanel({ record }: Props) {
 
   if (error) {
     return (
-      <section className="panel">
-        <h2>Chart Analysis</h2>
+      <Box id="analysis" title="Chart Analysis" span="wide">
         <p className="error">Beregningen mislykkedes: {error}</p>
-      </section>
+      </Box>
     );
   }
   if (!report) return null;
@@ -154,9 +154,12 @@ export function ChartAnalysisPanel({ record }: Props) {
   ];
 
   return (
-    <section className="panel chart-analysis">
-      <div className="panel-head">
-        <h2>Chart Analysis</h2>
+    <Box
+      id="analysis"
+      title="Chart Analysis"
+      span="wide"
+      className="chart-analysis"
+      actions={
         <label className="check">
           <input
             type="checkbox"
@@ -167,7 +170,8 @@ export function ChartAnalysisPanel({ record }: Props) {
           />
           Vis neutrale fakta
         </label>
-      </div>
+      }
+    >
       <p className="muted">
         {SECT_NAMES[report.sect]}
         {report.overridden && " (valgt manuelt)"}
@@ -257,6 +261,6 @@ export function ChartAnalysisPanel({ record }: Props) {
         foldes ud. Der er ingen point eller samlet vurdering. Kategorierne vælges under “Kategorier”
         ved Planetary Condition.
       </p>
-    </section>
+    </Box>
   );
 }
