@@ -341,6 +341,133 @@ export type ConditionReport = {
 /** The adjustable distances from the Sun, in degrees. */
 export type ConditionOptions = { cazimi: number; combust: number; beams: number };
 
+/** Which chart a point belongs to in a search or a report. */
+export type Layer = "transit" | "progressed" | "natal";
+
+export type LayerPoint = { layer: Layer; point: PointId };
+
+/** One exact event of a search, with its clock reading. */
+export type SearchEvent = {
+  at: Moment;
+  utc: string;
+  /** Where the moving point stands (the Moon of a lunation). */
+  position: ZodiacPoint;
+  /** The birth time is unknown and the event depends on it. */
+  uncertain: boolean;
+} & (
+  | { type: "aspect"; a: LayerPoint; b: LayerPoint; kind: AspectKind }
+  | { type: "signChange"; point: LayerPoint; sign: Sign; retrograde: boolean }
+  | { type: "station"; point: LayerPoint; turns: "retrograde" | "direct" }
+  | { type: "moonHouse"; house: number; sign: Sign }
+  /** 0 new Moon, 2 first quarter, 4 full Moon, 6 last quarter; odd numbers the phases between. */
+  | { type: "lunation"; phase: number }
+  | { type: "boundChange"; point: LayerPoint; lord: Body; retrograde: boolean }
+  | { type: "decanChange"; point: LayerPoint; lord: Body; retrograde: boolean }
+);
+
+/** The four decided aspect combinations; there is no transit → progression. */
+export type AspectGroups = {
+  transitToNatal: boolean;
+  transitToTransit: boolean;
+  progressedToNatal: boolean;
+  progressedToProgressed: boolean;
+};
+
+/** What an event search looks for; an empty list switches its part off. */
+export type SearchOptions = AspectGroups & {
+  start: string;
+  end: string;
+  transitBodies: Body[];
+  progressedPoints: PointId[];
+  natalPoints: PointId[];
+  aspectKinds: AspectKind[];
+  transitSignChanges: boolean;
+  transitStations: boolean;
+  progressedSignChanges: boolean;
+  progressedStations: boolean;
+  progressedMoonHouses: boolean;
+  progressedAngleSigns: boolean;
+  lunationsMajor: boolean;
+  lunationsMinor: boolean;
+  progressedBounds: boolean;
+  progressedDecans: boolean;
+  angleMethod: AngleMethod;
+  /** Set by the backend from the birth data. */
+  birthTimeKnown: boolean;
+};
+
+export type SearchResult = { events: SearchEvent[]; truncated: boolean };
+
+/** Which aspects are followed through their orb, and when. */
+export type CourseOptions = AspectGroups & {
+  /** The reference moment positions, orb and applying/separating are given for. */
+  at: string;
+  /** The period; the same moment twice gives the aspects in orb at that moment. */
+  start: string;
+  end: string;
+  transitBodies: Body[];
+  progressedPoints: PointId[];
+  natalPoints: PointId[];
+  aspectKinds: AspectKind[];
+  transitOrb: number;
+  progressedOrb: number;
+  angleMethod: AngleMethod;
+  birthTimeKnown: boolean;
+};
+
+/** An aspect from its first entry into the orb to its last exit. */
+export type AspectCourse = {
+  a: LayerPoint;
+  b: LayerPoint;
+  kind: AspectKind;
+  /** The two points at the reference moment. */
+  positionA: ZodiacPoint;
+  positionB: ZodiacPoint;
+  /** Distance from exact at the reference moment; null when outside the orb then. */
+  orb: number | null;
+  applying: boolean | null;
+  /** The stays within the orb; a null end lies outside the time the aspect is followed for. */
+  periods: { enter: Moment | null; leave: Moment | null }[];
+  /** Every exact pass; empty when the aspect turns back before exactness. */
+  exact: Moment[];
+  /** Days within orb, the periods with both ends added up. */
+  daysInOrb: number;
+  uncertain: boolean;
+};
+
+export type CourseResult = {
+  courses: AspectCourse[];
+  truncated: boolean;
+  /** The reference moment and the period, with their clock readings. */
+  at: Moment;
+  start: Moment;
+  end: Moment;
+};
+
+export type SynodicKind = "conjunction" | "superiorConjunction" | "inferiorConjunction" | "opposition";
+
+export type SynodicEvent = {
+  kind: SynodicKind;
+  at: Moment;
+  position: ZodiacPoint;
+  /** Days from the reference moment; negative before it. */
+  days: number;
+};
+
+/** A planet's latest and next meeting with the Sun around a reference moment. */
+export type SynodicCycle = {
+  body: Body;
+  position: ZodiacPoint;
+  retrograde: boolean;
+  lastConjunction: SynodicEvent | null;
+  nextConjunction: SynodicEvent | null;
+  /** Null for Mercury and Venus, which never stand opposite the Sun. */
+  lastOpposition: SynodicEvent | null;
+  nextOpposition: SynodicEvent | null;
+};
+
+export type SynodicReply = { at: Moment; cycles: SynodicCycle[] };
+
 /** A moment and place a chart is cast for without a birth form: a Solar Return. */
 export type CastInput = {
   utc: string;

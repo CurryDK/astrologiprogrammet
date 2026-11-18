@@ -556,6 +556,105 @@ export async function mockInvoke(command: string, args: Record<string, any>): Pr
     case "solar_return_set":
       returnChoices.set(`${args.chartId}:${args.age}`, args.choice);
       return null;
+    case "event_search": {
+      // Not a real search: a handful of made-up events spread over the period.
+      const from = Date.parse(args.options.start);
+      const span = Date.parse(args.options.end) - from;
+      const point = (layer: string, body: string) => ({ layer, point: body });
+      const kinds = [
+        { type: "aspect", a: point("transit", "mars"), b: point("natal", "sun"), kind: "square" },
+        { type: "signChange", point: point("transit", "venus"), sign: "aries", retrograde: false },
+        { type: "station", point: point("transit", "mercury"), turns: "retrograde" },
+        { type: "aspect", a: point("progressed", "moon"), b: point("natal", "venus"), kind: "trine" },
+        { type: "moonHouse", house: 5, sign: "scorpio" },
+        { type: "lunation", phase: 2 },
+        { type: "boundChange", point: point("progressed", "venus"), lord: "jupiter", retrograde: false },
+        { type: "decanChange", point: point("progressed", "sun"), lord: "mars", retrograde: false },
+      ];
+      return {
+        truncated: false,
+        events: kinds.map((kind, index) => {
+          const ms = from + (span * (index + 1)) / (kinds.length + 1);
+          return {
+            ...kind,
+            at: moment(ms),
+            utc: new Date(ms).toISOString(),
+            position: zodiacPoint(40 * index + 12.5),
+            uncertain: false,
+          };
+        }),
+      };
+    }
+    case "aspect_courses": {
+      // Not real courses: two made-up ones around the reference moment.
+      const at = Date.parse(args.options.at);
+      const day = 86_400_000;
+      const point = (layer: string, body: string) => ({ layer, point: body });
+      return {
+        truncated: false,
+        at: moment(at),
+        start: moment(Date.parse(args.options.start)),
+        end: moment(Date.parse(args.options.end)),
+        courses: [
+          {
+            a: point("transit", "sun"),
+            b: point("natal", "jupiter"),
+            kind: "trine",
+            positionA: zodiacPoint(215.4),
+            positionB: zodiacPoint(338.5),
+            orb: 3.1,
+            applying: true,
+            periods: [{ enter: moment(at - 4 * day), leave: moment(at + 10 * day) }],
+            exact: [moment(at + 3 * day)],
+            daysInOrb: 14,
+            uncertain: false,
+          },
+          {
+            a: point("transit", "mercury"),
+            b: point("natal", "venus"),
+            kind: "conjunction",
+            positionA: zodiacPoint(318.2),
+            positionB: zodiacPoint(317.2),
+            orb: 1.0,
+            applying: false,
+            periods: [
+              { enter: moment(at - 20 * day), leave: moment(at + 2 * day) },
+              { enter: moment(at + 15 * day), leave: moment(at + 24 * day) },
+            ],
+            exact: [moment(at - 12 * day), moment(at - 1 * day), moment(at + 19 * day)],
+            daysInOrb: 31,
+            uncertain: false,
+          },
+        ],
+      };
+    }
+    case "synodic_cycles": {
+      // Not real cycles: every planet gets the same made-up distances in days.
+      const at = args.at ? Date.parse(args.at) : Date.now();
+      const day = 86_400_000;
+      const event = (kind: string, days: number, longitude: number) => ({
+        kind,
+        at: moment(at + days * day),
+        position: zodiacPoint(longitude),
+        days,
+      });
+      const bodies = ["mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"];
+      return {
+        at: moment(at),
+        cycles: bodies.map((body, index) => {
+          const inner = index < 2;
+          return {
+            body,
+            position: zodiacPoint(33 * index + 5),
+            retrograde: index % 3 === 0,
+            lastConjunction: event(inner ? "inferiorConjunction" : "conjunction", -40 - 20 * index, 30 * index),
+            nextConjunction: event(inner ? "superiorConjunction" : "conjunction", 60 + 30 * index, 30 * index + 90),
+            lastOpposition: inner ? null : event("opposition", -200, 30 * index + 180),
+            nextOpposition: inner ? null : event("opposition", 180, 30 * index + 200),
+          };
+        }),
+      };
+    }
     case "wheel_rings":
       return devRings;
     case "events_list":

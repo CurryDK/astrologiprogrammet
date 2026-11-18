@@ -1,8 +1,11 @@
 //! Safe wrapper around Swiss Ephemeris.
 //!
-//! The C library keeps global state and is not thread-safe, so every call
-//! goes through one process-wide lock.
+//! The C library is not thread-safe, so every call goes through one
+//! process-wide lock. It also keeps its state, the folder of the data files
+//! included, per thread; each thread that calculates is therefore pointed
+//! at the folder once, the first time it asks for something.
 
+use std::cell::Cell;
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::os::raw::c_char;
@@ -19,7 +22,13 @@ pub const MAX_YEAR: i32 = 2399;
 
 const REQUIRED_FILES: [&str; 2] = ["sepl_18.se1", "semo_18.se1"];
 
-static STATE: Mutex<bool> = Mutex::new(false);
+/// The folder of the data files once `init` has run.
+static STATE: Mutex<Option<CString>> = Mutex::new(None);
+
+thread_local! {
+    /// Whether this thread's copy of the library knows the folder.
+    static PATH_SET: Cell<bool> = const { Cell::new(false) };
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum EphemerisError {
@@ -65,9 +74,10 @@ pub fn init(ephemeris_dir: &Path) -> Result<(), EphemerisError> {
         }
     }
     let c_path = path_for_c(ephemeris_dir)?;
-    let mut initialized = STATE.lock().unwrap_or_else(|e| e.into_inner());
+    let mut state = STATE.lock().unwrap_or_else(|e| e.into_inner());
     unsafe { ffi::swe_set_ephe_path(c_path.as_ptr()) };
-    *initialized = true;
+    *state = Some(c_path);
+    PATH_SET.with(|set| set.set(true));
     Ok(())
 }
 
@@ -168,13 +178,17 @@ pub fn sidereal_time(jd_ut: f64) -> Result<f64, EphemerisError> {
     Ok(unsafe { ffi::swe_sidtime(jd_ut) })
 }
 
-fn lock_initialized() -> Result<std::sync::MutexGuard<'static, bool>, EphemerisError> {
+fn lock_initialized() -> Result<std::sync::MutexGuard<'static, Option<CString>>, EphemerisError> {
     let guard = STATE.lock().unwrap_or_else(|e| e.into_inner());
-    if *guard {
-        Ok(guard)
-    } else {
-        Err(EphemerisError::NotInitialized)
+    let Some(path) = guard.as_ref() else {
+        return Err(EphemerisError::NotInitialized);
+    };
+    // A thread other than the one that called `init` would otherwise look
+    // for the data files in the library's built-in default folder.
+    if !PATH_SET.with(|set| set.replace(true)) {
+        unsafe { ffi::swe_set_ephe_path(path.as_ptr()) };
     }
+    Ok(guard)
 }
 
 fn message(serr: &[c_char]) -> String {

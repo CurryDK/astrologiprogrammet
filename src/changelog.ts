@@ -13,6 +13,27 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.10.0",
+    date: "2026-11-18",
+    added: [
+      "Solar Return: knappen “Solar Return” ved natalhoroskopet åbner et selvstændigt Solar Return med eget hjul, positioner, aspekter, lots, Chart Analysis og Planetary Condition, alt beregnet ud fra Solar Return-horoskopet selv. Det beregnes til det eksakte øjeblik, hvor Solen igen står på sin natale længde.",
+      "Solar Return åbner på det aktive Solar Return – det senest indtrufne – og der kan bladres frem og tilbage mellem årene. “Aktuelt” går tilbage til det aktive.",
+      "Stedet for et Solar Return er fødestedet, men kan ændres under “Sted”. Ændringen gælder kun det viste år i det viste horoskop, og “Nulstil til fødested” fjerner den. Akser og huse genberegnes for det valgte sted.",
+      "Solar Return har sin egen sect, beregnet ud fra Solen over eller under horisonten, og den kan vælges manuelt uden at ændre natalhoroskopets sect. Årets Time Lord fra natalprofektionen er markeret ved planetens navn i Chart Analysis og Planetary Condition.",
+      "Lots i Solar Return-hjulet slås til og fra for sig og huskes særskilt fra natalhoroskopet; alle syv er skjult fra start.",
+      "Ukendt fødselstid: Solar Return vises begrænset, beregnet med kl. 12:00, med planetpositioner og aspekter og en tydelig advarsel om usikkerheden. Akser, huse, lots, sect og Planetary Condition udelades.",
+      "Synodiske cyklusser (i menuen og ved natalhoroskopet): for Merkur til Pluto seneste og næste konjunktion med Solen og, hvor det er relevant, opposition, med dato, klokkeslæt, position, antal dage før eller efter og planetens retning. Merkur og Venus skelner mellem øvre og nedre konjunktion. Referencetidspunktet er nu, en valgt dato og tid, natalhoroskopets tidspunkt eller det aktive Solar Return.",
+      "Søgning efter eksakte begivenheder (“Søgning” ved natalhoroskopet): eksakte aspekter transit til natal, transit til transit, progression til natal og progression til progression, planetære tegnskift og stationeringer samt progressive begivenheder – tegnskift, stationeringer, Månens skift af natalhus, ASC og MC’s tegnskift, lunationsfaser, skift af egyptisk bound og af dekan. Hver type vælges for sig, og der afgrænses efter periode, planeter/punkter og aspekttyper. Resultaterne står kronologisk og kan åbnes i Live Chart.",
+      "Aspekttidsrapport (“Aspekttid” ved natalhoroskopet): for hvert aspekt vises planetpar og positioner, aktuel orb og A/S, hvornår det går ind i orb, alle eksakte passager, hvornår det går ud af orb, og den samlede tid inden for orb med afbrudte perioder for sig. Der vælges mellem aspekter aktive på et tidspunkt, en uge, en måned, tre og seks måneder, et år, det aktuelle profektionsår eller en valgfri periode.",
+      "Årsherskerrapport (“Årshersker” ved natalhoroskopet): årets profektion og Lord of the Year, årsherskerens natale placering, aspekter, Planetary Condition og husherskerskaber, planeterne i det aktiverede hus, årsherskeren i Solar Return, eksakte transitter til og fra årsherskeren i profektionsåret og de 12 månedlige profektioner. Der kan bladres mellem årene. Ingen point og ingen samlet vurdering.",
+    ],
+    changed: [
+      "Der søges og rapporteres aldrig aspekter mellem transitter og progressioner. Progressive akser sammenlignes kun med natale planeter, som i Live Chart.",
+      "Ved ukendt fødselstid er progressive begivenheder og aspekter til natal Måne markeret med ≈ i søgning og rapporter, fordi deres tidspunkt kan ligge langt fra det viste; progressive akser og Månens husskift udelades.",
+      "Tidspunkter i søgning og rapporter vises i computerens tidszone. En søgning i transitter kan højst dække 10 år, en aspekttidsrapport med transitter højst 2 år; progressioner kan følges gennem hele livet.",
+    ],
+  },
+  {
     version: "0.9.0",
     date: "2026-11-18",
     added: [

@@ -11,11 +11,17 @@ import { LiveChartView } from "./views/LiveChartView";
 import { TransitView } from "./views/TransitView";
 import { SettingsView } from "./views/SettingsView";
 import { SolarReturnView } from "./views/SolarReturnView";
+import { AspectTimingView } from "./views/AspectTimingView";
+import { EventSearchView } from "./views/EventSearchView";
+import { SynodicView } from "./views/SynodicView";
+import { YearLordView } from "./views/YearLordView";
 import { StartView } from "./views/StartView";
 import "./App.css";
 
 type View =
-  | { name: "start" | "archive" | "transit" | "settings" | "changelog" }
+  | { name: "start" | "archive" | "transit" | "synodic" | "settings" | "changelog" }
+  /** A report or search of a natal chart. */
+  | { name: "report"; kind: ReportKind; id: number }
   | { name: "chart"; id: number }
   /** Solar Return of a natal chart. */
   | { name: "solarReturn"; id: number }
@@ -23,6 +29,8 @@ type View =
   | { name: "live"; id: number; at: string | null }
   /** `id` null means a new chart. */
   | { name: "form"; id: number | null };
+
+export type ReportKind = "yearLord" | "timing" | "search" | "synodic";
 
 function App() {
   const [view, setView] = useState<View>({ name: "start" });
@@ -49,13 +57,13 @@ function App() {
   }, [reload]);
 
   const openChart = (id: number) => setView({ name: "chart", id });
-  const current = view.name === "chart" || view.name === "form" || view.name === "live" || view.name === "solarReturn"
+  const current = view.name === "chart" || view.name === "form" || view.name === "live" || view.name === "solarReturn" || view.name === "report"
     ? charts.find((chart) => chart.id === view.id) ?? null
     : null;
 
-  const tab = (name: "start" | "archive" | "transit" | "settings", label: string) => (
+  const tab = (name: "start" | "archive" | "transit" | "synodic" | "settings", label: string) => (
     <button
-      className={view.name === name || (name === "archive" && (view.name === "chart" || view.name === "form" || view.name === "live" || view.name === "solarReturn")) ? "selected" : ""}
+      className={view.name === name || (name === "archive" && (view.name === "chart" || view.name === "form" || view.name === "live" || view.name === "solarReturn" || view.name === "report")) ? "selected" : ""}
       onClick={() => setView({ name })}
     >
       {label}
@@ -70,6 +78,7 @@ function App() {
         {tab("start", "Start")}
         {tab("archive", "Arkiv")}
         {tab("transit", "Transitter")}
+        {tab("synodic", "Synodiske cyklusser")}
         {tab("settings", "Indstillinger")}
         <button
           className={`version${view.name === "changelog" ? " selected" : ""}`}
@@ -109,6 +118,7 @@ function App() {
             onEdit={() => setView({ name: "form", id: view.id })}
             onLive={(at) => setView({ name: "live", id: view.id, at })}
             onSolarReturn={() => setView({ name: "solarReturn", id: view.id })}
+            onReport={(kind) => setView({ name: "report", kind, id: view.id })}
             onChanged={reload}
             onDeleted={async () => {
               await reload();
@@ -155,6 +165,36 @@ function App() {
             onBack={() => setView({ name: "chart", id: view.id })}
           />
         )}
+
+        {view.name === "report" && current && view.kind === "yearLord" && (
+          <YearLordView
+            key={view.id}
+            record={current}
+            onBack={() => setView({ name: "chart", id: view.id })}
+            onLive={(at) => setView({ name: "live", id: view.id, at })}
+          />
+        )}
+        {view.name === "report" && current && view.kind === "timing" && (
+          <AspectTimingView
+            key={view.id}
+            record={current}
+            onBack={() => setView({ name: "chart", id: view.id })}
+            onLive={(at) => setView({ name: "live", id: view.id, at })}
+          />
+        )}
+        {view.name === "report" && current && view.kind === "search" && (
+          <EventSearchView
+            key={view.id}
+            record={current}
+            onBack={() => setView({ name: "chart", id: view.id })}
+            onLive={(at) => setView({ name: "live", id: view.id, at })}
+          />
+        )}
+        {view.name === "report" && current && view.kind === "synodic" && (
+          <SynodicView key={view.id} record={current} onBack={() => setView({ name: "chart", id: view.id })} />
+        )}
+
+        {view.name === "synodic" && <SynodicView />}
 
         {view.name === "transit" && <TransitView />}
 

@@ -54,6 +54,19 @@ const HORIZONS: [(&str, [(Body, f64); 10]); 2] = [
     ),
 ];
 
+/// The app shell initializes on one thread and calculates on others.
+#[test]
+fn a_thread_that_did_not_initialize_uses_the_data_files_too() {
+    init();
+    let utc: DateTime<Utc> = "2000-01-01T12:00:00Z".parse().unwrap();
+    let here = compute_chart(utc, 55.6761, 12.5683).unwrap();
+    let there = std::thread::spawn(move || compute_chart(utc, 55.6761, 12.5683))
+        .join()
+        .unwrap()
+        .expect("the data files are found from another thread");
+    assert_eq!(here.position(Body::Sun).point.longitude, there.position(Body::Sun).point.longitude);
+}
+
 #[test]
 fn planet_longitudes_match_jpl_horizons() {
     init();

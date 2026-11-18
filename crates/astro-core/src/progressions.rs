@@ -28,7 +28,7 @@ pub const TROPICAL_YEAR_DAYS: f64 = 365.2422;
 pub const NAIBOD_DEGREES_PER_YEAR: f64 = 360.0 / TROPICAL_YEAR_DAYS;
 
 /// Progressions are not followed past this age.
-const MAX_AGE_YEARS: f64 = 150.0;
+pub(crate) const MAX_AGE_YEARS: f64 = 150.0;
 
 /// How the progressed angles are moved forward.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -172,7 +172,7 @@ fn angle_longitudes(
     ))
 }
 
-fn angle_longitude(
+pub(crate) fn angle_longitude(
     natal: &Chart,
     angle: AngleId,
     age_years: f64,

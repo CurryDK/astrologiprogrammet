@@ -6,6 +6,11 @@ use astro_core::aspects::{Aspect, Orbs, find_aspects};
 use astro_core::chart::{Chart, Sect, compute_chart};
 use astro_core::condition::{ConditionOptions, ConditionReport, PlanetStations, condition_report, planet_stations};
 use astro_core::ephemeris;
+use astro_core::events::{
+    AspectCourse, CourseOptions, Event, LayerPoint, SearchOptions, courses as core_courses, search as core_search,
+};
+use astro_core::synodic::{SynodicEvent, SynodicKind, synodic_cycles as core_synodic_cycles};
+use astro_core::zodiac::ZodiacPoint;
 use astro_core::lots::{LotReport, lot_report};
 use astro_core::places::{Place, PlaceIndex};
 use astro_core::profections::{
@@ -561,6 +566,221 @@ fn solar_return(
     })
 }
 
+/// An exact event with the clock reading in the zone asked for.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TimedEvent {
+    at: Moment,
+    #[serde(flatten)]
+    event: Event,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SearchReply {
+    events: Vec<TimedEvent>,
+    /// More were found than are returned; only the earliest are here.
+    truncated: bool,
+}
+
+/// The longest period the transiting sky is searched over, in days.
+const MAX_TRANSIT_SEARCH_DAYS: i64 = 3660;
+
+fn check_period(start: DateTime<Utc>, end: DateTime<Utc>, transits: bool, limit_days: i64) -> Result<(), String> {
+    if end < start {
+        return Err("periodens slutning ligger før dens begyndelse".to_string());
+    }
+    if transits && (end - start).num_days() > limit_days {
+        return Err(format!(
+            "perioden er for lang til transitter: højst {} år",
+            (limit_days as f64 / 365.25).round()
+        ));
+    }
+    Ok(())
+}
+
+/// Exact events of a period for a natal chart: aspects in the four decided
+/// combinations, sign changes, stations and the progressed events, in time
+/// order with clock readings in `zone`.
+#[tauri::command]
+async fn event_search(birth: BirthInput, mut options: SearchOptions, zone: String) -> Result<SearchReply, String> {
+    let transits = !options.transit_bodies.is_empty()
+        && (options.transit_to_natal
+            || options.transit_to_transit
+            || options.transit_sign_changes
+            || options.transit_stations);
+    check_period(options.start, options.end, transits, MAX_TRANSIT_SEARCH_DAYS)?;
+    let born = resolve_input(&birth)?;
+    let natal = compute_chart(born.utc, birth.latitude, birth.longitude).map_err(|e| e.to_string())?;
+    options.birth_time_known = !born.time_assumed;
+    let found = core_search(&natal, &options).map_err(|e| e.to_string())?;
+    let zone = named_zone(&zone);
+    let events = found
+        .events
+        .into_iter()
+        .map(|event| Ok(TimedEvent { at: Moment::in_zone(event.utc, &zone).map_err(|e| e.to_string())?, event }))
+        .collect::<Result<Vec<_>, String>>()?;
+    Ok(SearchReply { events, truncated: found.truncated })
+}
+
+/// One stay of an aspect within its orb; a missing end lies outside the
+/// time the aspect is followed for.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TimedPeriod {
+    enter: Option<Moment>,
+    leave: Option<Moment>,
+}
+
+/// The course of an aspect through its orb, with clock readings.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TimedCourse {
+    a: LayerPoint,
+    b: LayerPoint,
+    kind: AspectKind,
+    position_a: ZodiacPoint,
+    position_b: ZodiacPoint,
+    orb: Option<f64>,
+    applying: Option<bool>,
+    periods: Vec<TimedPeriod>,
+    exact: Vec<Moment>,
+    days_in_orb: f64,
+    uncertain: bool,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CourseReply {
+    courses: Vec<TimedCourse>,
+    truncated: bool,
+    /// The reference moment and the period, with their clock readings.
+    at: Moment,
+    start: Moment,
+    end: Moment,
+}
+
+/// The longest period aspect courses of the transiting sky are collected over, in days.
+const MAX_TRANSIT_COURSE_DAYS: i64 = 740;
+
+/// The aspects within orb at some time in a period (or at one moment), each
+/// with when it enters the orb, is exact and leaves the orb.
+#[tauri::command]
+async fn aspect_courses(birth: BirthInput, mut options: CourseOptions, zone: String) -> Result<CourseReply, String> {
+    for orb in [options.transit_orb, options.progressed_orb] {
+        if !orb.is_finite() || orb < 0.0 {
+            return Err("ugyldig orb".to_string());
+        }
+    }
+    let transits =
+        !options.transit_bodies.is_empty() && (options.transit_to_natal || options.transit_to_transit);
+    check_period(options.start, options.end, transits, MAX_TRANSIT_COURSE_DAYS)?;
+    let born = resolve_input(&birth)?;
+    let natal = compute_chart(born.utc, birth.latitude, birth.longitude).map_err(|e| e.to_string())?;
+    options.birth_time_known = !born.time_assumed;
+    let found = core_courses(&natal, &options).map_err(|e| e.to_string())?;
+    let zone = named_zone(&zone);
+    let moment = |utc: DateTime<Utc>| Moment::in_zone(utc, &zone).map_err(|e| e.to_string());
+    let timed = |course: AspectCourse| -> Result<TimedCourse, String> {
+        Ok(TimedCourse {
+            a: course.a,
+            b: course.b,
+            kind: course.kind,
+            position_a: course.position_a,
+            position_b: course.position_b,
+            orb: course.orb,
+            applying: course.applying,
+            periods: course
+                .periods
+                .iter()
+                .map(|period| {
+                    Ok(TimedPeriod {
+                        enter: period.enter.map(&moment).transpose()?,
+                        leave: period.leave.map(&moment).transpose()?,
+                    })
+                })
+                .collect::<Result<Vec<_>, String>>()?,
+            exact: course.exact.iter().map(|utc| moment(*utc)).collect::<Result<Vec<_>, String>>()?,
+            days_in_orb: course.days_in_orb,
+            uncertain: course.uncertain,
+        })
+    };
+    Ok(CourseReply {
+        courses: found.courses.into_iter().map(timed).collect::<Result<Vec<_>, String>>()?,
+        truncated: found.truncated,
+        at: moment(options.at)?,
+        start: moment(options.start)?,
+        end: moment(options.end)?,
+    })
+}
+
+/// A conjunction with or opposition to the Sun, with its clock reading.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TimedSynodicEvent {
+    kind: SynodicKind,
+    at: Moment,
+    position: ZodiacPoint,
+    /// Days from the reference moment; negative before it.
+    days: f64,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TimedSynodicCycle {
+    body: Body,
+    position: ZodiacPoint,
+    retrograde: bool,
+    last_conjunction: Option<TimedSynodicEvent>,
+    next_conjunction: Option<TimedSynodicEvent>,
+    last_opposition: Option<TimedSynodicEvent>,
+    next_opposition: Option<TimedSynodicEvent>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SynodicReply {
+    /// The reference moment (now when none was asked for).
+    at: Moment,
+    cycles: Vec<TimedSynodicCycle>,
+}
+
+/// The synodic cycle of each planet around a moment (now when absent):
+/// latest and next conjunction with the Sun, and opposition where there is one.
+#[tauri::command]
+fn synodic_cycles(at: Option<DateTime<Utc>>, zone: String) -> Result<SynodicReply, String> {
+    let zone = named_zone(&zone);
+    let at = at.unwrap_or_else(Utc::now);
+    let timed = |event: Option<SynodicEvent>| -> Result<Option<TimedSynodicEvent>, String> {
+        event
+            .map(|event| {
+                Ok(TimedSynodicEvent {
+                    kind: event.kind,
+                    at: Moment::in_zone(event.utc, &zone).map_err(|e| e.to_string())?,
+                    position: event.position,
+                    days: event.days,
+                })
+            })
+            .transpose()
+    };
+    let cycles = core_synodic_cycles(at)
+        .map_err(|e| e.to_string())?
+        .into_iter()
+        .map(|cycle| {
+            Ok(TimedSynodicCycle {
+                body: cycle.body,
+                position: cycle.position,
+                retrograde: cycle.retrograde,
+                last_conjunction: timed(cycle.last_conjunction)?,
+                next_conjunction: timed(cycle.next_conjunction)?,
+                last_opposition: timed(cycle.last_opposition)?,
+                next_opposition: timed(cycle.next_opposition)?,
+            })
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    Ok(SynodicReply { at: Moment::in_zone(at, &zone).map_err(|e| e.to_string())?, cycles })
+}
+
 /// Stores the place and manual sect chosen for one Solar Return of a chart.
 #[tauri::command]
 fn solar_return_set(
@@ -960,6 +1180,9 @@ pub fn run() {
             planetary_condition_at,
             solar_return,
             solar_return_set,
+            event_search,
+            aspect_courses,
+            synodic_cycles,
             wheel_rings,
             events_list,
             event_save,

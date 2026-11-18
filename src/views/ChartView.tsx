@@ -34,13 +34,15 @@ type Props = {
   /** Open the Live Chart at a UTC instant, or now when null. */
   onLive: (at: string | null) => void;
   onSolarReturn: () => void;
+  /** Open a report or search of this chart. */
+  onReport: (kind: "yearLord" | "timing" | "search" | "synodic") => void;
   onDeleted: () => void;
   /** Called after the record itself was changed (e.g. start-screen selection). */
   onChanged: () => void;
 };
 
 /** A natal chart: wheel, Planetary Condition, profections, positions, aspect overview and the seven lots. */
-export function ChartView({ record, onEdit, onLive, onSolarReturn, onDeleted, onChanged }: Props) {
+export function ChartView({ record, onEdit, onLive, onSolarReturn, onReport, onDeleted, onChanged }: Props) {
   const { settings, update } = useSettings();
   const [computed, setComputed] = useState<ComputedChart | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +118,10 @@ export function ChartView({ record, onEdit, onLive, onSolarReturn, onDeleted, on
             Live Chart
           </button>
           <button onClick={onSolarReturn}>Solar Return</button>
+          <button onClick={() => onReport("yearLord")}>Årshersker</button>
+          <button onClick={() => onReport("timing")}>Aspekttid</button>
+          <button onClick={() => onReport("search")}>Søgning</button>
+          <button onClick={() => onReport("synodic")}>Synodisk</button>
           <button onClick={onEdit}>Rediger</button>
           <ResetLayoutButton view="natal" />
           {confirmingDelete ? (

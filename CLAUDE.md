@@ -19,6 +19,7 @@ The requirements are in `docs/` (private, git-ignored, only on the development P
 - `docs/chart_analysis_kravspecifikation.txt` — Chart Analysis, 15 November 2026 (Danish; the `.docx` beside it has the three reference pictures): a compact table of placements and lords plus condition lists per planet grouped by sect, on the same rules as Planetary Condition. Also: lot symbols in the wheel the size of planet glyphs, and "Tæt på en vinkel" renamed "Angular". Its section 8 lists the open design choices. Summarised at the end of `docs/plan.md`.
 - `docs/horoskophjul_asc_orientering_beslutning.txt` — orientation of the wheel, 15 November 2026 (Danish; the `.docx` beside it has the two reference pictures). Its words turn the wheel by the exact ASC degree; its picture 2 puts the start of the first whole-sign house on the horizontal line. Both are offered as a setting (answer of 15 November 2026). Summarised at the end of `docs/plan.md`.
 - `docs/aendringsspecifikation_v0.7.1.txt` — change specification of 16 November 2026 after a review of the screens (Danish; the `.docx` beside it): layout only, no astrological rule. Collapsible information boxes remembered per view type, the wheel always visible and still, "Nulstil layout", the Live Chart controls beside the wheel, "Gem som livsbegivenhed", settings in several columns. Its section 3 lists what is deferred (saved view setups, filters in Planetary Condition, synchronised highlighting) and leaves the arrangement of the aspect overview open; its section 4 what is rejected (hiding the wheel) or dropped (new keyboard shortcuts). Summarised at the end of `docs/plan.md`.
+- `docs/beslutningstillaeg_10_spoergsmaal.txt` — answers of 18 November 2026 to 10 questions (Danish; the `.docx` beside it), the newest document: Solar Return (active year, place per year, limited version without a birth time, own sect), a reconstruction of the supplement that was never received, synodic cycles, search for exact events, the progressed events, year-lord report and aspect timing report. Its last section lists what is left open. Summarised at the end of `docs/plan.md`.
 - `docs/plan.md` — the approved build plan with phases and the open questions tied to each.
 
 Rules that follow from the specification:
@@ -44,8 +45,8 @@ Rules that follow from the specification:
 | — | Orientation of the wheel after the decision of 15 November 2026 | Done (v0.7.1). Setting "Hjulets orientering" (`wheelAnchor` in `src/wheelLayout.ts`): the exact ASC degree on the horizontal line at the left (default, as before and as the decision's words say), or the start of the first whole-sign house there (as its reference picture 2). Only the drawing turns. The decision also names Placidus, which the program does not have |
 | — | Layout after the change specification of 16 November 2026 | Done (v0.8.0). `PanelBoard` puts the wheel at the top left, sized by the window alone, and places the boxes (`Box`) beside and under it, again whenever one opens or closes; open/closed is remembered per view type in `settings.layout`; "Nulstil layout" restores it. Live Chart: time navigation, age, Time Lords and rectification beside the wheel; "Gem som livsbegivenhed" opens the life event form with the shown moment. Transitter: the heading stands on the date line. Indstillinger: boxes in columns. Proposed defaults awaiting feedback: the aspect overview as one line per point with its aspects side by side (the specification leaves the arrangement open); the wheel may shrink to a radius of 230 px (`MIN_RADIUS_TO_FIT`) where that makes it fit the window; the "Transithoroskop" title was dropped to save height; a closed wide box takes one column |
 | — | Import from Solar Fire | Done (v0.9.0). "Importér fra Solar Fire …" in the archive reads `.SFcht` files (layout worked out from real files, documented in `solarfire.rs`; only "version 3" is accepted) and saves the chosen charts with their life events in a folder named after the file. Stated choices: each chart gets the zone of the nearest listed place within 100 km (the one of the same name first), and keeps the file's offset as a manual offset only where the two disagree; rating X at 12:00:00 is an unknown birth time; seconds are dropped; Solar Fire's source, rating and chart notes are not imported (no field for them). Check a real file with `cargo run -p astro-core --example solarfire_dump -- resources/places.tsv <file>`; never commit real chart files |
-| 8 | Solar Return | **Next.** Unblocked: exact return of the Sun to its natal longitude; default place is the birthplace, changeable |
-| 9 | Synodic cycles, event search, reports | Reports need a description first |
+| 8 | Solar Return | Done (v0.10.0). "Solar Return" at a natal chart: own wheel, positions, aspects, lots, Chart Analysis and Planetary Condition from the return chart alone; opens on the return in force (the latest that has occurred), steps between years; place and manual sect stored per chart and year (`solar_returns` table); lots in the wheel remembered apart from natal; the year's Time Lord marked at the planet. Without a birth time: positions and aspects only, 0° Aries at the left of the wheel. Stated choices: returns are numbered by age (0 is the birth); Planetary Condition and Chart Analysis are left out of the limited version (the decision lists only positions and aspects); the Time Lord is the ruler of the natal annual profection sign for that age |
+| 9 | Synodic cycles, event search, reports | Done (v0.10.0). "Synodiske cyklusser" (top bar and at a chart), "Søgning", "Aspekttid" and "Årshersker" at a natal chart. One engine (`events.rs`) finds exact events and follows aspects through their orb. Proposed defaults awaiting feedback: synodic overview covers Mercury to Pluto; fixed periods of the timing report start at the reference moment, which is now unless a date is entered (the decision says "the selected chart's moment"); an aspect's course is followed until the points are 25° from exact, transits at most 15 years each way; orbs are those of Live Chart (transits 7°, progressions 1°); decan changes use the Chaldean decans; the objects start from what is switched on for aspects in Live Chart; transit search at most 10 years, timing report with transits at most 2 years; at most 3000 results; times in the computer's time zone; the year-lord report in the suggested four groups, in the order Profektioner, Natal, Solar Return, Transitter. Not done: graphic timeline, an orb filter in the reports, opening the timing report from Live Chart's shown moment |
 
 ## Layout
 
@@ -55,6 +56,9 @@ crates/astro-core/   Pure Rust: all astronomy and astrological rules. No Tauri, 
   src/chart.rs       compute_chart: positions, angles, houses, sect
   src/aspects.rs     find_aspects: orb, applying/separating, out-of-sign
   src/lots.rs        the seven Hermetic lots, lot overview facts, lot aspects (lot_report)
+  src/solar_return.rs the exact return of the Sun: return_moment by age, active_return
+  src/events.rs      exact events over a period (search) and the course of an aspect through its orb (courses): transit, progressed and natal points
+  src/synodic.rs     synodic cycles: latest and next conjunction with and opposition to the Sun
   src/solarfire.rs   reading Solar Fire chart files (.SFcht) and turning them into charts and life events for import
   src/rings.rs       decan and bounds rings of the wheel (wheel_rings): Chaldean decans, modern decans, Egyptian bounds
   src/profections.rs annual and monthly profections, year start rules, age_at / month_at
@@ -70,14 +74,17 @@ src/                 React + TypeScript interface. Draws only; no astrological l
   conditionText.ts   Planetary Condition: matrix rows, rule and source texts, the reason of each condition
   chartAnalysis.ts   Chart Analysis: grouping by sect, column order, line texts; reads the condition report, decides nothing
   useConditionReport.ts  The one Planetary Condition report both overviews of a chart share
+  eventText.ts       Danish wording of exact events and aspect courses; the objects a search starts from
   liveFilter.ts      Which transit and progression aspects a Live Chart shows: body choices per layer, Time Lord filters
   rectification.ts   Clock arithmetic for adjusting the birth time in Live Chart
   wheelLayout.ts     Wheel geometry: spreading upright labels apart, aspect line width
   panelLayout.ts     Where the information boxes go around the wheel: columns beside and under it, the room the wheel may take
   components/        PanelBoard (the wheel with collapsible boxes around it: PanelBoard, Box, ResetLayoutButton),
                      ChartWheel (SVG in screen pixels, optional transit ring), LotSymbol, AspectTable, PositionsTable, LotsTable, LotAspectTable,
-                     ConditionPanel, ChartAnalysisPanel, ProfectionPanel, TimeNavigator, TransitAspectTable, LifeEventsPanel
-  views/             StartView, ArchiveView, ChartView, LiveChartView, TransitView, ChartForm, SettingsView, ChangelogView
+                     ConditionPanel, ChartAnalysisPanel, ProfectionPanel, TimeNavigator, TransitAspectTable, LifeEventsPanel,
+                     PointFilter (objects and aspect kinds of a search or report)
+  views/             StartView, ArchiveView, ChartView, LiveChartView, TransitView, ChartForm, SettingsView, ChangelogView,
+                     SolarReturnView, SynodicView, EventSearchView, AspectTimingView, YearLordView
   changelog.ts       What each version added and changed; shown when the version number is pressed
   dev/               Stand-in backend + fixture for working on screens in a plain browser
 resources/           ephe/*.se1 (1800–2399), places.tsv (GeoNames, built by scripts/build-places.mjs)
@@ -91,6 +98,7 @@ Conventions:
 - Database changes are appended to `MIGRATIONS` in `src-tauri/src/db.rs`. Never edit a migration that has shipped: the user's data file must survive every update.
 - Anything the user can adjust is stored through `src/settings.tsx`; `mergeOver` fills in defaults for keys added later.
 - An information box in a chart view is a `Box` inside a `PanelBoard`, with its id listed in `DEFAULT_SETTINGS.layout` for that view type. The wheel must not depend on the boxes: it is sized from the window only.
+- Swiss Ephemeris keeps its state per thread. `ephemeris.rs` points each calculating thread at the data files on first use, so `async` commands (the searches, which run off the main thread) work; a new FFI call must go through `lock_initialized`.
 - Verify astronomy against something independent of Swiss Ephemeris where possible (see `tests/reference.rs`, which uses JPL Horizons values).
 
 ## Commands

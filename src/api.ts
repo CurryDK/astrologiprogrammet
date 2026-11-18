@@ -7,6 +7,11 @@ import type {
   ComputedChart,
   ConditionOptions,
   ConditionReport,
+  CourseOptions,
+  CourseResult,
+  SearchOptions,
+  SearchResult,
+  SynodicReply,
   CastInput,
   ReturnChoice,
   SolarReturn,
@@ -57,9 +62,9 @@ export const api = {
   birthResolve: (birth: BirthInput) => call<ResolvedTime>("birth_resolve", { birth }),
   chartCompute: (birth: BirthInput, orbs: Orbs, lots: LotOptions) =>
     call<ComputedChart>("chart_compute", { birth, orbs, lots }),
-  /** The profection year for an age; without an age, the year that holds now. */
-  profectionYear: (birth: BirthInput, options: ProfectionOptions, age: number | null) =>
-    call<ProfectionReport>("profection_year", { birth, options, age }),
+  /** The profection year for an age; without an age, the year that holds `at` (now when absent). */
+  profectionYear: (birth: BirthInput, options: ProfectionOptions, age: number | null, at?: string) =>
+    call<ProfectionReport>("profection_year", { birth, options, age, at: at ?? null }),
 
   /** The sky at a moment (now when null), optionally moved one navigation step. */
   skyAt: (args: {
@@ -124,6 +129,15 @@ export const api = {
   /** Stores the place and manual sect chosen for one Solar Return of a chart. */
   solarReturnSet: (chartId: number, age: number, choice: ReturnChoice) =>
     call<void>("solar_return_set", { chartId, age, choice }),
+
+  /** Exact events of a period for a natal chart, with clock readings in `zone`. */
+  eventSearch: (birth: BirthInput, options: SearchOptions, zone: string) =>
+    call<SearchResult>("event_search", { birth, options, zone }),
+  /** The aspects within orb in a period, each from entering the orb over exact to leaving it. */
+  aspectCourses: (birth: BirthInput, options: CourseOptions, zone: string) =>
+    call<CourseResult>("aspect_courses", { birth, options, zone }),
+  /** Each planet's latest and next conjunction with and opposition to the Sun (now when null). */
+  synodicCycles: (at: string | null, zone: string) => call<SynodicReply>("synodic_cycles", { at, zone }),
 
   /** The decan and bounds rings of the wheel; the same for every chart. */
   wheelRings: () => call<WheelRings>("wheel_rings"),

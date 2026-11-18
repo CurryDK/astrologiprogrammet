@@ -537,6 +537,152 @@ check(
 );
 await invoke("chart_delete", { id: untimedChart.id });
 
+// Event search, aspect courses and synodic cycles. These run on a worker
+// thread, which must find the ephemeris data files too.
+const searchBase = {
+  start: "2026-01-01T00:00:00Z",
+  end: "2027-01-01T00:00:00Z",
+  transitBodies: [],
+  progressedPoints: [],
+  natalPoints: [],
+  aspectKinds: ["conjunction", "sextile", "square", "trine", "opposition"],
+  transitToNatal: false,
+  transitToTransit: false,
+  progressedToNatal: false,
+  progressedToProgressed: false,
+  transitSignChanges: false,
+  transitStations: false,
+  progressedSignChanges: false,
+  progressedStations: false,
+  progressedMoonHouses: false,
+  progressedAngleSigns: false,
+  lunationsMajor: false,
+  lunationsMinor: false,
+  progressedBounds: false,
+  progressedDecans: false,
+  angleMethod: "naibodRightAscension",
+  birthTimeKnown: true,
+};
+const ingress = await invoke("event_search", {
+  birth,
+  options: { ...searchBase, transitBodies: ["sun"], transitSignChanges: true },
+  zone: "UTC",
+});
+const aries = ingress.events.find((e) => e.type === "signChange" && e.sign === "aries");
+check(
+  "event_search: the Sun enters 12 signs in a year, Aries at the published equinox of 20 March 2026 14:46 UTC",
+  ingress.events.length === 12 &&
+    aries !== undefined &&
+    Math.abs(Date.parse(aries.utc) - Date.parse("2026-03-20T14:46:00Z")) < 2 * 60 * 1000,
+  `${ingress.events.length} events; Aries at ${aries?.at.local}`,
+);
+const returnSearch = await invoke("event_search", {
+  birth,
+  options: {
+    ...searchBase,
+    transitBodies: ["sun"],
+    natalPoints: ["sun"],
+    transitToNatal: true,
+    aspectKinds: ["conjunction"],
+  },
+  zone: "UTC",
+});
+check(
+  "event_search: the transiting Sun meets the natal Sun at the Solar Return",
+  returnSearch.events.length === 1 &&
+    Math.abs(Date.parse(returnSearch.events[0].utc) - Date.parse(activeReturn.moment.utc)) < 2000 &&
+    returnSearch.events[0].a.layer === "transit" &&
+    returnSearch.events[0].b.layer === "natal",
+  returnSearch.events[0]?.at.local,
+);
+const progressedSearch = await invoke("event_search", {
+  birth,
+  options: {
+    ...searchBase,
+    start: "1990-01-01T00:00:00Z",
+    end: "2020-01-01T00:00:00Z",
+    progressedPoints: ["moon", "ascendant"],
+    natalPoints: ["sun"],
+    progressedToNatal: true,
+    progressedSignChanges: true,
+    progressedMoonHouses: true,
+    progressedAngleSigns: true,
+    lunationsMajor: true,
+  },
+  zone: "UTC",
+});
+const typesFound = new Set(progressedSearch.events.map((e) => e.type));
+const ordered = progressedSearch.events.every(
+  (e, i, all) => i === 0 || Date.parse(all[i - 1].utc) <= Date.parse(e.utc),
+);
+check(
+  "event_search: progressed aspects, sign and house changes and lunation phases, in time order, none to a transit",
+  ["aspect", "signChange", "moonHouse", "lunation"].every((type) => typesFound.has(type)) &&
+    ordered &&
+    progressedSearch.events.every((e) => e.type !== "aspect" || (e.a.layer === "progressed" && e.b.layer === "natal")),
+  `${progressedSearch.events.length} events: ${[...typesFound].join(", ")}`,
+);
+const tooLong = await invoke("event_search", {
+  birth,
+  options: { ...searchBase, end: "2046-01-01T00:00:00Z", transitBodies: ["sun"], transitSignChanges: true },
+  zone: "UTC",
+}).then(
+  () => null,
+  (e) => String(e),
+);
+check("event_search refuses a transit period that is too long", tooLong !== null, tooLong ?? "");
+
+const courseAt = new Date(Date.parse(activeReturn.moment.utc) - 3 * 86_400_000).toISOString();
+const courseReply = await invoke("aspect_courses", {
+  birth,
+  options: {
+    at: courseAt,
+    start: courseAt,
+    end: courseAt,
+    transitBodies: ["sun"],
+    progressedPoints: [],
+    natalPoints: ["sun"],
+    aspectKinds: ["conjunction"],
+    transitToNatal: true,
+    transitToTransit: false,
+    progressedToNatal: false,
+    progressedToProgressed: false,
+    transitOrb: 7,
+    progressedOrb: 1,
+    angleMethod: "naibodRightAscension",
+    birthTimeKnown: true,
+  },
+  zone: "UTC",
+});
+const course = courseReply.courses[0];
+check(
+  "aspect_courses: three days before the Solar Return the Sun is applying, enters the orb before and leaves it after exact",
+  courseReply.courses.length === 1 &&
+    course.applying === true &&
+    Math.abs(course.orb - 3) < 0.3 &&
+    course.exact.length === 1 &&
+    Math.abs(Date.parse(course.exact[0].utc) - Date.parse(activeReturn.moment.utc)) < 2000 &&
+    course.periods.length === 1 &&
+    Date.parse(course.periods[0].enter.utc) < Date.parse(courseAt) &&
+    Date.parse(course.periods[0].leave.utc) > Date.parse(course.exact[0].utc) &&
+    Math.abs(course.daysInOrb - 14) < 1.5,
+  `orb ${course?.orb}, ${course?.periods[0]?.enter?.local} – ${course?.periods[0]?.leave?.local}, ${course?.daysInOrb} days`,
+);
+
+const synodic = await invoke("synodic_cycles", { at: "2025-02-10T00:00:00Z", zone: "UTC" });
+const marsCycle = synodic.cycles.find((c) => c.body === "mars");
+const venusCycle = synodic.cycles.find((c) => c.body === "venus");
+check(
+  "synodic_cycles: Mars opposite the Sun on 16 January 2025, Venus at inferior conjunction on 23 March 2025",
+  synodic.cycles.length === 8 &&
+    marsCycle.lastOpposition.at.local.startsWith("2025-01-16") &&
+    marsCycle.lastOpposition.days < 0 &&
+    venusCycle.nextConjunction.kind === "inferiorConjunction" &&
+    venusCycle.nextConjunction.at.local.startsWith("2025-03-23") &&
+    venusCycle.lastOpposition === null,
+  `Mars ${marsCycle?.lastOpposition?.at.local}, Venus ${venusCycle?.nextConjunction?.at.local}`,
+);
+
 // Life events: only what is known is stored.
 const blankEvent = { id: null, chartId: saved.id, title: "", year: 1975, month: null, day: null, time: null, zone, note: "" };
 const wedding = await invoke("event_save", {

@@ -12,6 +12,7 @@ import {
   POINTS,
   STEP_UNITS,
   type AngleMethod,
+  type AspectGroups,
   type AspectKind,
   type Body,
   type ConditionGroup,
@@ -110,6 +111,25 @@ export type Settings = {
     /** Which lots are drawn in the Solar Return wheel; remembered apart from the natal choice. */
     lotsInWheel: Record<Lot, boolean>;
   };
+  /** Search for exact events (decisions of 18 November 2026, points 7 and 8). */
+  search: {
+    groups: AspectGroups;
+    transitSignChanges: boolean;
+    transitStations: boolean;
+    /** The progressed events, each switched on its own. */
+    progressed: {
+      signChanges: boolean;
+      stations: boolean;
+      moonHouses: boolean;
+      angleSigns: boolean;
+      lunationsMajor: boolean;
+      lunationsMinor: boolean;
+      bounds: boolean;
+      decans: boolean;
+    };
+  };
+  /** Aspect timing report (decision of 18 November 2026, point 10). */
+  timing: { groups: AspectGroups };
   /** Where aspect lines between the layers of a Live Chart are drawn. */
   layerLines: LayerLines;
   /** Planetary Condition (specification §6). */
@@ -263,6 +283,27 @@ export const DEFAULT_SETTINGS: Settings = {
     // Decided: all seven are hidden in the wheel until switched on, and the
     // choice is remembered separately for natal and Solar Return.
     lotsInWheel: Object.fromEntries(LOTS.map((lot) => [lot, false])) as Record<Lot, boolean>,
+  },
+  // Proposed defaults: the two combinations with the natal chart, and every
+  // other kind of event except the changes of bound and decan and the
+  // lunation phases between the quarters, which are many.
+  search: {
+    groups: { transitToNatal: true, transitToTransit: false, progressedToNatal: true, progressedToProgressed: false },
+    transitSignChanges: true,
+    transitStations: true,
+    progressed: {
+      signChanges: true,
+      stations: true,
+      moonHouses: true,
+      angleSigns: true,
+      lunationsMajor: true,
+      lunationsMinor: false,
+      bounds: false,
+      decans: false,
+    },
+  },
+  timing: {
+    groups: { transitToNatal: true, transitToTransit: false, progressedToNatal: true, progressedToProgressed: false },
   },
   // Decision 9 says lines go "directly from planet to planet". Two readings
   // are offered: between the exact degrees on the inner circle, as natal and
