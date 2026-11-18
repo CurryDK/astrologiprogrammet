@@ -13,6 +13,21 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.11.0",
+    date: "2026-11-18",
+    added: [
+      "Planetcyklusser: menupunktet “Synodiske cyklusser” hedder nu “Planetcyklusser” og har to faner på samme side, “Synodiske cyklusser” og “Retrogradcyklusser”. Begge bruger det samme valgte referencetidspunkt.",
+      "Retrogradcyklusser for Merkur til Pluto: seneste og næste retrograde stationering, seneste og næste direkte stationering og planetens fase ved referencetidspunktet – direkte, forskygge, retrograd eller efterskygge.",
+      "For den valgte planet vises seneste afsluttede, aktuelle (hvis planeten er retrograd) og næste retrogradperiode med indtræden i retrogradtegnet, indtræden i forskyggen, retrograd stationering, tegnskift under retrogradperioden, direkte stationering, genindtræden i retrogradtegnet, udtræden af efterskyggen og endelig udtræden af retrogradtegnet – hver med dato, klokkeslæt, tegn og grad.",
+      "Grafisk tidslinje for hver retrogradperiode med datoerne skrevet direkte på tidslinjen. Skyggeperioderne og retrogradperioden har hver sin farve, referencetidspunktet er en lodret linje med dato, og musen over en begivenhed viser klokkeslæt, tegn og grad.",
+    ],
+    changed: [
+      "Den synodiske oversigt er uændret, men står nu under fanen “Synodiske cyklusser”. Knappen ved natalhoroskopet hedder “Planetcyklusser”.",
+      "Antal dage før eller efter referencetidspunktet vises i retrogradcyklusserne kun ved planetens seneste og næste begivenhed. Varigheder i dage vises ikke.",
+      "Hos de langsomme planeter kan indtræden i og udtræden af retrogradtegnet ligge flere år fra perioden; de står da med dato ved tidslinjens kant. En langsom planet kan være i efterskyggen af én periode og forskyggen af den næste samtidig og vises da som “Efterskygge og forskygge”.",
+    ],
+  },
+  {
     version: "0.10.1",
     date: "2026-11-18",
     added: [

@@ -12,10 +12,12 @@ import {
   formatOffset,
   localZone,
   type ChartRecord,
+  type RetrogradeReply,
   type SynodicEvent,
   type SynodicReply,
 } from "../astro";
 import { SYNODIC_NAMES, formatDaysFrom } from "../eventText";
+import { RetrogradePanel } from "../components/RetrogradePanel";
 import { useSettings } from "../settings";
 
 type Props = {
@@ -25,12 +27,16 @@ type Props = {
 };
 
 type Reference = "now" | "chosen" | "natal" | "solarReturn";
+type Tab = "synodic" | "retrograde";
 
 /**
+ * Planet cycles (decision "Planetcyklusser" of 18 November 2026), two tabs
+ * on one page sharing one reference moment: now, a chosen date and time, or
+ * the moment of the selected chart or its Solar Return.
+ *
  * Synodic cycles (specification §10, decision of 18 November 2026, point 6):
  * for each planet the latest and next conjunction with the Sun and, where
- * there is one, opposition, around a reference moment: now, a chosen date
- * and time, or the moment of the selected chart or its Solar Return.
+ * there is one, opposition. Retrograde cycles: see `RetrogradePanel`.
  */
 export function SynodicView({ record = null, onBack }: Props) {
   const { settings } = useSettings();
@@ -40,7 +46,9 @@ export function SynodicView({ record = null, onBack }: Props) {
   const [time, setTime] = useState("12:00");
   // Bumped by "Nu" so the overview is taken again at the present moment.
   const [refresh, setRefresh] = useState(0);
+  const [tab, setTab] = useState<Tab>("synodic");
   const [result, setResult] = useState<SynodicReply | null>(null);
+  const [retrograde, setRetrograde] = useState<RetrogradeReply | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -61,10 +69,15 @@ export function SynodicView({ record = null, onBack }: Props) {
       return null;
     };
     moment()
-      .then((at) => api.synodicCycles(at, zone))
-      .then((value) => {
+      .then(async (at) => {
+        // "Now" is taken once, so both tabs stand on the same moment.
+        const synodic = await api.synodicCycles(at, zone);
+        return [synodic, await api.retrogradeCycles(synodic.at.utc, zone)] as const;
+      })
+      .then(([synodic, cycles]) => {
         if (cancelled) return;
-        setResult(value);
+        setResult(synodic);
+        setRetrograde(cycles);
         setError(null);
       })
       .catch((reason) => {
@@ -108,7 +121,7 @@ export function SynodicView({ record = null, onBack }: Props) {
     <div className="report-view">
       <header className="chart-header">
         <div className="chart-title">
-          <h1>Synodiske cyklusser{record ? ` · ${record.name}` : ""}</h1>
+          <h1>Planetcyklusser{record ? ` · ${record.name}` : ""}</h1>
           {result && (
             <p className="muted">
               Referencetidspunkt: {formatMomentLong(result.at)} · UTC{formatOffset(result.at.offsetSeconds)}
@@ -121,6 +134,15 @@ export function SynodicView({ record = null, onBack }: Props) {
           </div>
         )}
       </header>
+
+      <div className="tabs" role="tablist">
+        <button role="tab" aria-selected={tab === "synodic"} onClick={() => setTab("synodic")}>
+          Synodiske cyklusser
+        </button>
+        <button role="tab" aria-selected={tab === "retrograde"} onClick={() => setTab("retrograde")}>
+          Retrogradcyklusser
+        </button>
+      </div>
 
       <section className="panel report-controls">
         {choice("now", "Lige nu")}
@@ -138,7 +160,9 @@ export function SynodicView({ record = null, onBack }: Props) {
 
       {error && <p className="error">Beregningen mislykkedes: {error}</p>}
 
-      {result && (
+      {tab === "retrograde" && retrograde && <RetrogradePanel reply={retrograde} />}
+
+      {tab === "synodic" && result && (
         <section className="panel">
           <table className="report-table synodic-table">
             <thead>

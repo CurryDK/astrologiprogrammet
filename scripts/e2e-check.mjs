@@ -683,6 +683,24 @@ check(
   `Mars ${marsCycle?.lastOpposition?.at.local}, Venus ${venusCycle?.nextConjunction?.at.local}`,
 );
 
+const retro = await invoke("retrograde_cycles", { at: "2025-03-20T12:00:00Z", zone: "UTC" });
+const mercuryRetro = retro.planets.find((p) => p.body === "mercury");
+const mercuryNow = mercuryRetro?.cycles.find((c) => c.status === "current");
+const retroDay = (kind) => mercuryNow?.events.find((e) => e.kind === kind)?.at.local.slice(0, 10);
+check(
+  "retrograde_cycles: Mercury retrograde 15 March to 7 April 2025, in Aries, back into Pisces and out again",
+  retro.planets.length === 8 &&
+    mercuryRetro.phase === "retrograde" &&
+    mercuryNow.sign === "aries" &&
+    retroDay("stationRetrograde") === "2025-03-15" &&
+    retroDay("stationDirect") === "2025-04-07" &&
+    mercuryNow.events.map((e) => e.kind).join() ===
+      "shadowEntry,signEntry,stationRetrograde,signChange,stationDirect,signReentry,shadowExit,signExit" &&
+    mercuryNow.events.filter((e) => e.nearest).map((e) => e.kind).join() === "stationRetrograde,signChange" &&
+    mercuryRetro.lastRetrogradeStation.at.utc === mercuryNow.events[2].at.utc,
+  `${mercuryRetro?.phase}, ${retroDay("stationRetrograde")} – ${retroDay("stationDirect")}`,
+);
+
 // Life events: only what is known is stored.
 const blankEvent = { id: null, chartId: saved.id, title: "", year: 1975, month: null, day: null, time: null, zone, note: "" };
 const wedding = await invoke("event_save", {

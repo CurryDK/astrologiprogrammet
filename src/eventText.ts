@@ -14,6 +14,10 @@ import {
   type PointId,
   type SearchEvent,
   type SynodicKind,
+  type CycleStatus,
+  type RetroCycle,
+  type RetroEvent,
+  type RetroPhase,
 } from "./astro";
 import type { Settings } from "./settings";
 
@@ -47,6 +51,44 @@ export const SYNODIC_NAMES: Record<SynodicKind, string> = {
   inferiorConjunction: "Nedre konjunktion",
   opposition: "Opposition",
 };
+
+/** Where a planet is in its retrograde cycle (decision "Planetcyklusser", point 20). */
+export const RETRO_PHASE_NAMES: Record<RetroPhase, string> = {
+  direct: "Direkte",
+  preShadow: "Forskygge",
+  retrograde: "Retrograd",
+  postShadow: "Efterskygge",
+  postAndPreShadow: "Efterskygge og forskygge",
+};
+
+export const CYCLE_STATUS_NAMES: Record<CycleStatus, string> = {
+  completed: "Seneste afsluttede retrogradperiode",
+  current: "Aktuel retrogradperiode",
+  next: "Næste retrogradperiode",
+};
+
+/** What happens at an event of a retrograde cycle, naming the sign where one is involved. */
+export function retroEventText(event: RetroEvent, cycle: RetroCycle): string {
+  const retrogradeSign = SIGN_NAMES[cycle.sign];
+  switch (event.kind) {
+    case "signEntry":
+      return `Indtræden i ${retrogradeSign}`;
+    case "shadowEntry":
+      return "Indtræden i forskyggen";
+    case "stationRetrograde":
+      return "Retrograd stationering";
+    case "signChange":
+      return `Tegnskift til ${SIGN_NAMES[event.position.sign]}`;
+    case "stationDirect":
+      return "Direkte stationering";
+    case "signReentry":
+      return `Genindtræden i ${retrogradeSign}`;
+    case "shadowExit":
+      return "Udtræden af efterskyggen";
+    case "signExit":
+      return `Endelig udtræden af ${retrogradeSign}`;
+  }
+}
 
 /** One line saying what happens at an exact event. */
 export function eventText(event: SearchEvent): string {

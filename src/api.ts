@@ -12,6 +12,7 @@ import type {
   SearchOptions,
   SearchResult,
   SynodicReply,
+  RetrogradeReply,
   CastInput,
   ReturnChoice,
   SolarReturn,
@@ -138,6 +139,10 @@ export const api = {
     call<CourseResult>("aspect_courses", { birth, options, zone }),
   /** Each planet's latest and next conjunction with and opposition to the Sun (now when null). */
   synodicCycles: (at: string | null, zone: string) => call<SynodicReply>("synodic_cycles", { at, zone }),
+
+  /** Retrograde cycles of Mercury to Pluto around a moment (now when null). */
+  retrogradeCycles: (at: string | null, zone: string) =>
+    call<RetrogradeReply>("retrograde_cycles", { at, zone }),
 
   /** The decan and bounds rings of the wheel; the same for every chart. */
   wheelRings: () => call<WheelRings>("wheel_rings"),

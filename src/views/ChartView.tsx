@@ -121,7 +121,7 @@ export function ChartView({ record, onEdit, onLive, onSolarReturn, onReport, onD
           <button onClick={() => onReport("yearLord")}>Årshersker</button>
           <button onClick={() => onReport("timing")}>Aspekttid</button>
           <button onClick={() => onReport("search")}>Søgning</button>
-          <button onClick={() => onReport("synodic")}>Synodisk</button>
+          <button onClick={() => onReport("synodic")}>Planetcyklusser</button>
           <button onClick={onEdit}>Rediger</button>
           <ResetLayoutButton view="natal" />
           {confirmingDelete ? (

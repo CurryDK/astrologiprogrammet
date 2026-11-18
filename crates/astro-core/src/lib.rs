@@ -13,6 +13,7 @@ pub mod lots;
 pub mod places;
 pub mod profections;
 pub mod progressions;
+pub mod retrograde;
 pub mod rings;
 pub mod solar_return;
 pub mod solarfire;

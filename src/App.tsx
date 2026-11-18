@@ -78,7 +78,7 @@ function App() {
         {tab("start", "Start")}
         {tab("archive", "Arkiv")}
         {tab("transit", "Transitter")}
-        {tab("synodic", "Synodiske cyklusser")}
+        {tab("synodic", "Planetcyklusser")}
         {tab("settings", "Indstillinger")}
         <button
           className={`version${view.name === "changelog" ? " selected" : ""}`}

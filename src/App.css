@@ -1627,6 +1627,193 @@ span.ca-words {
   font-weight: 600;
 }
 
+/* Planet cycles: the two tabs, and the retrograde cycles with their timeline. */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tabs button {
+  padding: 7px 14px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: none;
+  color: #55535a;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tabs button[aria-selected="true"] {
+  margin-bottom: -1px;
+  border-color: var(--line);
+  background: var(--card);
+  color: inherit;
+}
+
+.retro-table tbody tr {
+  cursor: pointer;
+}
+
+.retro-table tbody tr.chosen td {
+  background: #eef3fb;
+}
+
+.retro-table button.link {
+  color: inherit;
+  font-weight: 600;
+}
+
+.retro-phase {
+  display: inline-block;
+  padding: 0 7px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #ececf0;
+  color: #55535a;
+}
+
+.retro-phase-retrograde {
+  background: #b3382c;
+  color: #fff;
+}
+
+.retro-phase-preShadow,
+.retro-phase-postShadow,
+.retro-phase-postAndPreShadow {
+  background: #f6dfae;
+  color: #6a4a00;
+}
+
+.retro-planet h2 {
+  font-size: 16px;
+}
+
+.retro-cycle {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #ececf0;
+}
+
+.retro-cycle h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+
+.retro-timeline {
+  margin: 6px 0 10px;
+}
+
+.retro-timeline svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 1300px;
+}
+
+.retro-axis {
+  stroke: #b9b7c0;
+  stroke-width: 1.5;
+}
+
+.retro-bar-preShadow,
+.retro-bar-postShadow {
+  fill: #f1cf85;
+  background: #f1cf85;
+}
+
+.retro-bar-retrograde {
+  fill: #b3382c;
+  background: #b3382c;
+}
+
+.retro-leader {
+  stroke: #9a98a3;
+  stroke-width: 0.8;
+}
+
+.retro-dot {
+  fill: #fff;
+  stroke: #2b2a30;
+  stroke-width: 1.5;
+}
+
+.retro-dot.station {
+  fill: #2b2a30;
+}
+
+.retro-mark text {
+  fill: #2b2a30;
+}
+
+.retro-mark text.retro-date {
+  font-weight: 700;
+}
+
+.retro-reference line {
+  stroke: #2f5fb3;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 3;
+}
+
+.retro-reference text,
+text.retro-reference {
+  fill: #2f5fb3;
+  font-weight: 700;
+}
+
+.retro-outside {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+  color: #55535a;
+}
+
+.retro-outside > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.retro-outside > span:last-child {
+  text-align: right;
+}
+
+.retro-events {
+  max-width: 760px;
+}
+
+.retro-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.retro-key {
+  display: inline-block;
+  width: 26px;
+  height: 10px;
+  margin-left: 12px;
+  border-radius: 2px;
+}
+
+.retro-key:first-child {
+  margin-left: 0;
+}
+
+.retro-key-reference {
+  width: 0;
+  height: 14px;
+  border-left: 2px dashed #2f5fb3;
+  border-radius: 0;
+}
+
 button.link {
   padding: 0;
   border: 0;

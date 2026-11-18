@@ -468,6 +468,54 @@ export type SynodicCycle = {
 
 export type SynodicReply = { at: Moment; cycles: SynodicCycle[] };
 
+/** What happens in a retrograde cycle (decision "Planetcyklusser" of 18 November 2026). */
+export type RetroEventKind =
+  | "signEntry"
+  | "shadowEntry"
+  | "stationRetrograde"
+  | "signChange"
+  | "stationDirect"
+  | "signReentry"
+  | "shadowExit"
+  | "signExit";
+
+export type RetroEvent = {
+  kind: RetroEventKind;
+  at: Moment;
+  /** Where the planet stands just after the event: at a change of sign, in the new sign. */
+  position: ZodiacPoint;
+  /** Days from the reference moment; negative before it. */
+  days: number;
+  /** The planet's latest event before the reference moment or its next after it: shown with its days. */
+  nearest: boolean;
+};
+
+export type CycleStatus = "completed" | "current" | "next";
+
+export type RetroCycle = {
+  status: CycleStatus;
+  /** The sign the planet stations retrograde in. */
+  sign: Sign;
+  /** In the order they happen. */
+  events: RetroEvent[];
+};
+
+export type RetroPhase = "direct" | "preShadow" | "retrograde" | "postShadow" | "postAndPreShadow";
+
+export type PlanetRetrograde = {
+  body: Body;
+  position: ZodiacPoint;
+  phase: RetroPhase;
+  lastRetrogradeStation: RetroEvent | null;
+  nextRetrogradeStation: RetroEvent | null;
+  lastDirectStation: RetroEvent | null;
+  nextDirectStation: RetroEvent | null;
+  /** Latest completed, current (when retrograde) and next. */
+  cycles: RetroCycle[];
+};
+
+export type RetrogradeReply = { at: Moment; planets: PlanetRetrograde[] };
+
 /** A moment and place a chart is cast for without a birth form: a Solar Return. */
 export type CastInput = {
   utc: string;

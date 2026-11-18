@@ -655,6 +655,67 @@ export async function mockInvoke(command: string, args: Record<string, any>): Pr
         }),
       };
     }
+    case "retrograde_cycles": {
+      // Not real cycles: every planet gets the same made-up course, and
+      // every third planet is retrograde at the reference moment.
+      const at = args.at ? Date.parse(args.at) : Date.now();
+      const day = 86_400_000;
+      const bodies = ["mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"];
+      const planets = bodies.map((body, index) => {
+        const retrograde = index % 3 === 0;
+        const base = 33 * index + 8;
+        const length = 22 + 20 * index;
+        const far = index > 4;
+        // A period that starts `start` days from the reference moment.
+        const course = (status: string, start: number, leaves: boolean) => {
+          const signStart = Math.floor(base / 30) * 30;
+          const event = (kind: string, days: number, longitude: number) => ({
+            kind,
+            at: moment(at + days * day),
+            position: zodiacPoint((longitude + 360) % 360),
+            days,
+            nearest: false,
+          });
+          return {
+            status,
+            sign: SIGNS[Math.floor(base / 30)],
+            events: [
+              event("signEntry", start - (far ? 900 : length * 0.9), signStart),
+              event("shadowEntry", start - length * 0.6, base - 6),
+              event("stationRetrograde", start, base),
+              ...(leaves ? [event("signChange", start + length * 0.5, signStart - 0.01)] : []),
+              event("stationDirect", start + length, base - 6),
+              ...(leaves ? [event("signReentry", start + length * 1.3, signStart)] : []),
+              event("shadowExit", start + length * 1.6, base),
+              event("signExit", start + (far ? 2500 : length * 2.2), signStart + 30),
+            ].sort((a, b) => a.days - b.days),
+          };
+        };
+        const cycles = [
+          course("completed", -length * 4, index === 1),
+          ...(retrograde ? [course("current", -length * 0.4, index === 0)] : []),
+          course("next", length * 3, false),
+        ];
+        const all = cycles.flatMap((c) => c.events);
+        const latest = Math.max(...all.filter((e) => e.days <= 0).map((e) => e.days));
+        const next = Math.min(...all.filter((e) => e.days > 0).map((e) => e.days));
+        for (const e of all) e.nearest = e.days === latest || e.days === next;
+        const find = (status: string, kind: string) =>
+          cycles.find((c) => c.status === status)?.events.find((e) => e.kind === kind) ?? null;
+        const completedExit = find("completed", "shadowExit");
+        return {
+          body,
+          position: zodiacPoint(base - 2),
+          phase: retrograde ? "retrograde" : completedExit && completedExit.days > 0 ? "postShadow" : "direct",
+          lastRetrogradeStation: find(retrograde ? "current" : "completed", "stationRetrograde"),
+          nextRetrogradeStation: find("next", "stationRetrograde"),
+          lastDirectStation: find("completed", "stationDirect"),
+          nextDirectStation: find(retrograde ? "current" : "next", "stationDirect"),
+          cycles,
+        };
+      });
+      return { at: moment(at), planets };
+    }
     case "wheel_rings":
       return devRings;
     case "events_list":

@@ -9,6 +9,7 @@ use astro_core::ephemeris;
 use astro_core::events::{
     AspectCourse, CourseOptions, Event, LayerPoint, SearchOptions, courses as core_courses, search as core_search,
 };
+use astro_core::retrograde::{PlanetRetrograde, retrograde_cycles as core_retrograde_cycles};
 use astro_core::synodic::{SynodicEvent, SynodicKind, synodic_cycles as core_synodic_cycles};
 use astro_core::zodiac::ZodiacPoint;
 use astro_core::lots::{LotReport, lot_report};
@@ -781,6 +782,27 @@ fn synodic_cycles(at: Option<DateTime<Utc>>, zone: String) -> Result<SynodicRepl
     Ok(SynodicReply { at: Moment::in_zone(at, &zone).map_err(|e| e.to_string())?, cycles })
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RetrogradeReply {
+    /// The reference moment (now when none was asked for).
+    at: Moment,
+    planets: Vec<PlanetRetrograde>,
+}
+
+/// The retrograde cycles of Mercury to Pluto around a moment (now when
+/// absent): stations, shadow and sign changes of the latest completed,
+/// the current and the next retrograde period.
+#[tauri::command]
+async fn retrograde_cycles(at: Option<DateTime<Utc>>, zone: String) -> Result<RetrogradeReply, String> {
+    let zone = named_zone(&zone);
+    let at = at.unwrap_or_else(Utc::now);
+    Ok(RetrogradeReply {
+        at: Moment::in_zone(at, &zone).map_err(|e| e.to_string())?,
+        planets: core_retrograde_cycles(at, &zone).map_err(|e| e.to_string())?,
+    })
+}
+
 /// Stores the place and manual sect chosen for one Solar Return of a chart.
 #[tauri::command]
 fn solar_return_set(
@@ -1183,6 +1205,7 @@ pub fn run() {
             event_search,
             aspect_courses,
             synodic_cycles,
+            retrograde_cycles,
             wheel_rings,
             events_list,
             event_save,
