@@ -33,13 +33,14 @@ type Props = {
   onEdit: () => void;
   /** Open the Live Chart at a UTC instant, or now when null. */
   onLive: (at: string | null) => void;
+  onSolarReturn: () => void;
   onDeleted: () => void;
   /** Called after the record itself was changed (e.g. start-screen selection). */
   onChanged: () => void;
 };
 
 /** A natal chart: wheel, Planetary Condition, profections, positions, aspect overview and the seven lots. */
-export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Props) {
+export function ChartView({ record, onEdit, onLive, onSolarReturn, onDeleted, onChanged }: Props) {
   const { settings, update } = useSettings();
   const [computed, setComputed] = useState<ComputedChart | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +115,7 @@ export function ChartView({ record, onEdit, onLive, onDeleted, onChanged }: Prop
           <button className="primary" onClick={() => onLive(null)}>
             Live Chart
           </button>
+          <button onClick={onSolarReturn}>Solar Return</button>
           <button onClick={onEdit}>Rediger</button>
           <ResetLayoutButton view="natal" />
           {confirmingDelete ? (

@@ -15,9 +15,7 @@ use std::fmt;
 use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::ephemeris::{self, EphemerisError};
-use crate::ffi;
-use crate::normalize_degrees;
+use crate::ephemeris::EphemerisError;
 use crate::time::{TimeError, ZoneChoice, resolve_recurring, utc_offset_at};
 use crate::zodiac::{Body, Sign};
 
@@ -188,26 +186,6 @@ fn birthday_in(date: NaiveDate, year: i32, leap_day: LeapDayBirthday) -> Option<
     })
 }
 
-/// Length of the tropical year in days; only a first guess for the search.
-const TROPICAL_YEAR_DAYS: f64 = 365.242_19;
-
-/// The moment nearest `guess` at which the Sun has the given longitude.
-fn sun_return(longitude: f64, guess: DateTime<Utc>) -> Result<DateTime<Utc>, EphemerisError> {
-    let mut t = guess;
-    for _ in 0..30 {
-        let sun = ephemeris::body_position(ephemeris::julian_day(t)?, ffi::SE_SUN)?;
-        // Signed distance still to travel, in (-180, 180].
-        let ahead = 180.0 - normalize_degrees(180.0 - (longitude - sun.longitude));
-        let step_ns = ahead / sun.speed * 86_400e9;
-        t += Duration::nanoseconds(step_ns.round() as i64);
-        // Below the resolution of a Julian day held in a double.
-        if step_ns.abs() < 50_000.0 {
-            break;
-        }
-    }
-    Ok(t)
-}
-
 /// The instant the profection year for `age` begins.
 pub fn year_start(
     birth: &Birth,
@@ -229,15 +207,7 @@ pub fn year_start(
         }
         YearStart::SolarReturn => {
             let born = resolve_recurring(birth.date, birth.time, &birth.zone)?.utc;
-            if age == 0 {
-                return Ok(born);
-            }
-            let natal_sun = ephemeris::body_position(ephemeris::julian_day(born)?, ffi::SE_SUN)?;
-            let guess_ns = age as f64 * TROPICAL_YEAR_DAYS * 86_400e9;
-            Ok(sun_return(
-                natal_sun.longitude,
-                born + Duration::nanoseconds(guess_ns as i64),
-            )?)
+            Ok(crate::solar_return::return_moment(born, age)?)
         }
     }
 }
@@ -319,6 +289,7 @@ pub fn profection_year(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{ephemeris, ffi};
     use chrono::TimeZone;
 
     const BIRTH_TIME: ProfectionOptions = ProfectionOptions {

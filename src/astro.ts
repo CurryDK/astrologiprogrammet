@@ -341,6 +341,57 @@ export type ConditionReport = {
 /** The adjustable distances from the Sun, in degrees. */
 export type ConditionOptions = { cazimi: number; combust: number; beams: number };
 
+/** A moment and place a chart is cast for without a birth form: a Solar Return. */
+export type CastInput = {
+  utc: string;
+  latitude: number;
+  longitude: number;
+  zone: string | null;
+  offsetSeconds: number | null;
+};
+
+/** What Planetary Condition is calculated for: a cast chart with its own manual sect. */
+export type CastSource = CastInput & { sectOverride: Sect | null };
+
+/** A place chosen for a Solar Return instead of the birthplace. */
+export type ReturnPlace = {
+  name: string;
+  countryCode: string | null;
+  latitude: number;
+  longitude: number;
+  zone: string;
+};
+
+/** The user's choices for one Solar Return of a chart; null place is the birthplace. */
+export type ReturnChoice = { place: ReturnPlace | null; sectOverride: Sect | null };
+
+/** One Solar Return of a saved chart. */
+export type SolarReturn = {
+  /** The number of the return: the age it begins. */
+  age: number;
+  /** The return in force now: the latest that has occurred. */
+  activeAge: number;
+  /** The exact moment of the return, with the clock reading at the place. */
+  moment: Moment;
+  place: {
+    name: string;
+    countryCode: string | null;
+    latitude: number;
+    longitude: number;
+    zone: string | null;
+    offsetSeconds: number | null;
+    /** False for the birthplace, true for a place chosen for this year. */
+    changed: boolean;
+  };
+  sectOverride: Sect | null;
+  /** The chart at the place; without a birth time its angles and houses mean nothing and `lots` is null. */
+  computed: ComputedChart;
+  /** True when the birth time is unknown and 12:00 was used: positions and aspects only. */
+  timeAssumed: boolean;
+  /** Lord of the Year of the natal annual profection for this age; null without a birth time. */
+  timeLord: Body | null;
+};
+
 /** The moment a profection year begins (the specification only says "birthday"). */
 export type YearStart = "birthClockTime" | "midnight" | "solarReturn";
 

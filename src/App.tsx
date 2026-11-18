@@ -10,12 +10,15 @@ import { ChartView } from "./views/ChartView";
 import { LiveChartView } from "./views/LiveChartView";
 import { TransitView } from "./views/TransitView";
 import { SettingsView } from "./views/SettingsView";
+import { SolarReturnView } from "./views/SolarReturnView";
 import { StartView } from "./views/StartView";
 import "./App.css";
 
 type View =
   | { name: "start" | "archive" | "transit" | "settings" | "changelog" }
   | { name: "chart"; id: number }
+  /** Solar Return of a natal chart. */
+  | { name: "solarReturn"; id: number }
   /** Live Chart of a natal chart; `at` is the UTC instant to open at (null: now). */
   | { name: "live"; id: number; at: string | null }
   /** `id` null means a new chart. */
@@ -46,13 +49,13 @@ function App() {
   }, [reload]);
 
   const openChart = (id: number) => setView({ name: "chart", id });
-  const current = view.name === "chart" || view.name === "form" || view.name === "live"
+  const current = view.name === "chart" || view.name === "form" || view.name === "live" || view.name === "solarReturn"
     ? charts.find((chart) => chart.id === view.id) ?? null
     : null;
 
   const tab = (name: "start" | "archive" | "transit" | "settings", label: string) => (
     <button
-      className={view.name === name || (name === "archive" && (view.name === "chart" || view.name === "form" || view.name === "live")) ? "selected" : ""}
+      className={view.name === name || (name === "archive" && (view.name === "chart" || view.name === "form" || view.name === "live" || view.name === "solarReturn")) ? "selected" : ""}
       onClick={() => setView({ name })}
     >
       {label}
@@ -105,6 +108,7 @@ function App() {
             record={current}
             onEdit={() => setView({ name: "form", id: view.id })}
             onLive={(at) => setView({ name: "live", id: view.id, at })}
+            onSolarReturn={() => setView({ name: "solarReturn", id: view.id })}
             onChanged={reload}
             onDeleted={async () => {
               await reload();
@@ -141,6 +145,14 @@ function App() {
               // Stay on the same moment, with the saved chart.
               setView({ name: "live", id: saved.id!, at });
             }}
+          />
+        )}
+
+        {view.name === "solarReturn" && current && (
+          <SolarReturnView
+            key={view.id}
+            record={current}
+            onBack={() => setView({ name: "chart", id: view.id })}
           />
         )}
 

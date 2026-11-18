@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
-import { birthInputOf, type ChartRecord, type ConditionReport } from "./astro";
+import { birthInputOf, type CastSource, type ChartRecord, type ConditionReport } from "./astro";
 import { useSettings } from "./settings";
 
 // Chart Analysis and Planetary Condition show the same report, so the two
@@ -23,7 +23,7 @@ function reportFor(key: string, load: () => Promise<ConditionReport>): Promise<C
  * the chart's manual sect. Both overviews read it, which is what keeps
  * them one set of rules.
  */
-export function useConditionReport(record: ChartRecord): {
+export function useConditionReport(source: ChartRecord | CastSource): {
   report: ConditionReport | null;
   error: string | null;
 } {
@@ -31,12 +31,30 @@ export function useConditionReport(record: ChartRecord): {
   const { cazimi, combust, beams } = settings.condition;
   const [report, setReport] = useState<ConditionReport | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const birth = birthInputOf(record);
-  const key = JSON.stringify([birth, record.sectOverride, cazimi, combust, beams]);
+  // A natal chart is calculated from its birth data; a cast chart (a Solar
+  // Return) from its own moment and place.
+  const cast = "utc" in source ? source : null;
+  const birth = cast ? null : birthInputOf(source as ChartRecord);
+  const key = JSON.stringify([cast ?? birth, source.sectOverride, cazimi, combust, beams]);
 
   useEffect(() => {
     let cancelled = false;
-    reportFor(key, () => api.planetaryCondition(birth, record.sectOverride, { cazimi, combust, beams }))
+    const limits = { cazimi, combust, beams };
+    reportFor(key, () =>
+      cast
+        ? api.planetaryConditionAt(
+            {
+              utc: cast.utc,
+              latitude: cast.latitude,
+              longitude: cast.longitude,
+              zone: cast.zone,
+              offsetSeconds: cast.offsetSeconds,
+            },
+            cast.sectOverride,
+            limits,
+          )
+        : api.planetaryCondition(birth!, source.sectOverride, limits),
+    )
       .then((result) => {
         if (cancelled) return;
         setReport(result);

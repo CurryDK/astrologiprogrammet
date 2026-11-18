@@ -105,6 +105,11 @@ export type Settings = {
     /** The aspect groups shown, each switched on its own. */
     groups: { toNatal: boolean; toProgressed: boolean };
   };
+  /** Solar Return (decision supplement of 18 November 2026). */
+  solarReturn: {
+    /** Which lots are drawn in the Solar Return wheel; remembered apart from the natal choice. */
+    lotsInWheel: Record<Lot, boolean>;
+  };
   /** Where aspect lines between the layers of a Live Chart are drawn. */
   layerLines: LayerLines;
   /** Planetary Condition (specification §6). */
@@ -128,7 +133,7 @@ export type Settings = {
 };
 
 /** The view types that each remember their own open and closed boxes. */
-export type LayoutView = "natal" | "transit" | "live";
+export type LayoutView = "natal" | "transit" | "live" | "solarReturn";
 
 export type ModernDecanRulers = "modern" | "traditional";
 const MODERN_DECAN_RULERS: ModernDecanRulers[] = ["modern", "traditional"];
@@ -254,6 +259,11 @@ export const DEFAULT_SETTINGS: Settings = {
     inAspects: everyPoint((point) => point !== "southNode"),
     groups: { toNatal: true, toProgressed: false },
   },
+  solarReturn: {
+    // Decided: all seven are hidden in the wheel until switched on, and the
+    // choice is remembered separately for natal and Solar Return.
+    lotsInWheel: Object.fromEntries(LOTS.map((lot) => [lot, false])) as Record<Lot, boolean>,
+  },
   // Decision 9 says lines go "directly from planet to planet". Two readings
   // are offered: between the exact degrees on the inner circle, as natal and
   // transit lines have been drawn so far (default), or from each layer's
@@ -313,6 +323,16 @@ export const DEFAULT_SETTINGS: Settings = {
       analysis: true,
       condition: true,
       events: true,
+    },
+    solarReturn: {
+      place: true,
+      positions: true,
+      aspects: true,
+      lots: true,
+      lotAspects: true,
+      display: false,
+      analysis: true,
+      condition: true,
     },
   },
 };

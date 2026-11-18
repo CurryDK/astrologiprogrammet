@@ -51,7 +51,111 @@ const MIGRATIONS: &[&str] = &[
         note       TEXT NOT NULL DEFAULT '',
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
      );",
+    // What the user chose for one Solar Return of a chart (decision supplement
+    // of 18 November 2026): another place than the birthplace, a manual sect.
+    // `age` is the number of the return. A row exists only where something
+    // was chosen; a NULL latitude means the birthplace.
+    "CREATE TABLE solar_returns (
+        chart_id      INTEGER NOT NULL REFERENCES charts(id) ON DELETE CASCADE,
+        age           INTEGER NOT NULL,
+        place_name    TEXT,
+        country_code  TEXT,
+        latitude      REAL,
+        longitude     REAL,
+        zone          TEXT,
+        sect_override TEXT,
+        PRIMARY KEY (chart_id, age)
+     );",
 ];
+
+/// A place chosen for a Solar Return instead of the birthplace.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReturnPlace {
+    pub name: String,
+    pub country_code: Option<String>,
+    pub latitude: f64,
+    pub longitude: f64,
+    /// IANA time zone of the place.
+    pub zone: String,
+}
+
+/// The user's choices for one Solar Return of a chart.
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReturnChoice {
+    /// `None` is the birthplace.
+    pub place: Option<ReturnPlace>,
+    /// Manual day/night sect of this Solar Return; `None` derives it from the Sun.
+    pub sect_override: Option<Sect>,
+}
+
+/// The choices stored for a Solar Return; the defaults when nothing is stored.
+pub fn get_return_choice(connection: &Connection, chart_id: i64, age: u32) -> rusqlite::Result<ReturnChoice> {
+    let stored = connection
+        .query_row(
+            "SELECT place_name, country_code, latitude, longitude, zone, sect_override
+             FROM solar_returns WHERE chart_id = ?1 AND age = ?2",
+            params![chart_id, age],
+            |row| {
+                let name: Option<String> = row.get(0)?;
+                let latitude: Option<f64> = row.get(2)?;
+                let longitude: Option<f64> = row.get(3)?;
+                let zone: Option<String> = row.get(4)?;
+                let place = match (name, latitude, longitude, zone) {
+                    (Some(name), Some(latitude), Some(longitude), Some(zone)) => Some(ReturnPlace {
+                        name,
+                        country_code: row.get(1)?,
+                        latitude,
+                        longitude,
+                        zone,
+                    }),
+                    _ => None,
+                };
+                Ok(ReturnChoice { place, sect_override: sect_from_text(row.get(5)?) })
+            },
+        )
+        .optional()?;
+    Ok(stored.unwrap_or_default())
+}
+
+/// Stores the choices for one Solar Return. Other years and the chart itself
+/// are untouched; choices that are all defaults leave no row.
+pub fn set_return_choice(
+    connection: &Connection,
+    chart_id: i64,
+    age: u32,
+    choice: &ReturnChoice,
+) -> rusqlite::Result<()> {
+    if *choice == ReturnChoice::default() {
+        connection.execute(
+            "DELETE FROM solar_returns WHERE chart_id = ?1 AND age = ?2",
+            params![chart_id, age],
+        )?;
+        return Ok(());
+    }
+    let place = choice.place.as_ref();
+    connection.execute(
+        "INSERT INTO solar_returns
+             (chart_id, age, place_name, country_code, latitude, longitude, zone, sect_override)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+         ON CONFLICT(chart_id, age) DO UPDATE SET
+             place_name = excluded.place_name, country_code = excluded.country_code,
+             latitude = excluded.latitude, longitude = excluded.longitude,
+             zone = excluded.zone, sect_override = excluded.sect_override",
+        params![
+            chart_id,
+            age,
+            place.map(|p| p.name.as_str()),
+            place.and_then(|p| p.country_code.as_deref()),
+            place.map(|p| p.latitude),
+            place.map(|p| p.longitude),
+            place.map(|p| p.zone.as_str()),
+            sect_to_text(choice.sect_override),
+        ],
+    )?;
+    Ok(())
+}
 
 /// Something that happened in the life of a chart's person.
 ///
@@ -510,6 +614,44 @@ mod tests {
         let id = save_event(&db, &event(chart, "Bryllup", 1975, Some(6), Some(14))).unwrap();
         delete_chart(&db, chart).unwrap();
         assert!(get_event(&db, id).unwrap().is_none());
+    }
+
+    #[test]
+    fn a_solar_return_choice_belongs_to_one_chart_and_one_year() {
+        let db = memory();
+        let chart = save_chart(&db, &sample("Anna")).unwrap();
+        let other = save_chart(&db, &sample("Bo")).unwrap();
+        assert_eq!(get_return_choice(&db, chart, 40).unwrap(), ReturnChoice::default());
+
+        let paris = ReturnPlace {
+            name: "Paris".to_string(),
+            country_code: Some("FR".to_string()),
+            latitude: 48.8566,
+            longitude: 2.3522,
+            zone: "Europe/Paris".to_string(),
+        };
+        let choice = ReturnChoice { place: Some(paris), sect_override: None };
+        set_return_choice(&db, chart, 40, &choice).unwrap();
+        assert_eq!(get_return_choice(&db, chart, 40).unwrap(), choice);
+        // Neither another year, another chart nor the birthplace changes.
+        assert_eq!(get_return_choice(&db, chart, 41).unwrap(), ReturnChoice::default());
+        assert_eq!(get_return_choice(&db, other, 40).unwrap(), ReturnChoice::default());
+        assert_eq!(get_chart(&db, chart).unwrap().unwrap().place_name, "Copenhagen");
+
+        // A manual sect is kept beside the place, and replaced in place.
+        let night = ReturnChoice { sect_override: Some(Sect::Night), ..choice.clone() };
+        set_return_choice(&db, chart, 40, &night).unwrap();
+        assert_eq!(get_return_choice(&db, chart, 40).unwrap(), night);
+
+        // Back to the birthplace and the automatic sect leaves no row.
+        set_return_choice(&db, chart, 40, &ReturnChoice::default()).unwrap();
+        let rows: i64 = db.query_row("SELECT COUNT(*) FROM solar_returns", [], |r| r.get(0)).unwrap();
+        assert_eq!(rows, 0);
+
+        set_return_choice(&db, chart, 40, &night).unwrap();
+        delete_chart(&db, chart).unwrap();
+        let rows: i64 = db.query_row("SELECT COUNT(*) FROM solar_returns", [], |r| r.get(0)).unwrap();
+        assert_eq!(rows, 0);
     }
 
     #[test]

@@ -11,6 +11,7 @@ import {
   formatMoment,
   formatOrb,
   type Body,
+  type CastSource,
   type ChartRecord,
   type Condition,
   type ConditionGroup,
@@ -60,7 +61,12 @@ function stationText(label: string, station: StationMoment | null): string {
   return `${label}: ${formatMoment(station.at, true)} (${turn})`;
 }
 
-type Props = { record: ChartRecord };
+type Props = {
+  /** A natal chart, or a chart cast for a moment and place (a Solar Return). */
+  record: ChartRecord | CastSource;
+  /** The year's Time Lord, marked at that planet's name (Solar Return). */
+  timeLord?: Body | null;
+};
 
 /**
  * Planetary Condition of a natal chart (specification §6): a matrix with
@@ -68,7 +74,7 @@ type Props = { record: ChartRecord };
  * and details per planet that fold out. Every condition is a separate
  * fact; there is no score. Draws only; the backend decides.
  */
-export function ConditionPanel({ record }: Props) {
+export function ConditionPanel({ record, timeLord = null }: Props) {
   const { settings, update } = useSettings();
   const { colors, groups } = settings.condition;
   const { report, error } = useConditionReport(record);
@@ -142,7 +148,11 @@ export function ConditionPanel({ record }: Props) {
             <tr>
               <th></th>
               {report.planets.map((planet) => (
-                <th key={planet.body} className="glyph" title={POINT_NAMES[planet.body]}>
+                <th
+                  key={planet.body}
+                  className={`glyph${planet.body === timeLord ? " time-lord-column" : ""}`}
+                  title={`${POINT_NAMES[planet.body]}${planet.body === timeLord ? " · årets Time Lord" : ""}`}
+                >
                   <span style={{ color: settings.colors.bodies[planet.body] }}>
                     {POINT_GLYPHS[planet.body]}
                   </span>
@@ -233,6 +243,7 @@ export function ConditionPanel({ record }: Props) {
           >
             <summary>
               {glyph(planet.body)} {POINT_NAMES[planet.body]}
+              {planet.body === timeLord && <span className="time-lord-mark">Årets Time Lord</span>}
               <span className="muted">
                 {" "}
                 · <span className="glyph-inline">{SIGN_GLYPHS[planet.sign]}</span> {SIGN_NAMES[planet.sign]} ·{" "}

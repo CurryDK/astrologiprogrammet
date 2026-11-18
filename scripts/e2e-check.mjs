@@ -432,6 +432,111 @@ const cleared = await invoke("chart_save", { chart: { ...saved, sectOverride: nu
 check("sect override can be cleared", cleared.sectOverride === null);
 check("charts_list grows by one", (await invoke("charts_list")).length === before + 1);
 
+// Solar Return: the exact return of the Sun, the active year, place and sect per year.
+const returnArgs = { chartId: saved.id, orbs, lotOrb: 3, lotExactOrb: 1 };
+const sunOf = (result) => result.computed.chart.positions.find((p) => p.body === "sun").longitude;
+const return30 = await invoke("solar_return", { ...returnArgs, age: 30 });
+check(
+  "solar_return: the Sun is back at its natal longitude",
+  Math.abs(mod360(sunOf(return30) - longitude("sun") + 180) - 180) < 1e-6,
+  `natal ${longitude("sun")}, return ${sunOf(return30)}`,
+);
+check(
+  "solar_return: return 30 falls within a day and a half of the 30th birthday",
+  Math.abs(Date.parse(return30.moment.utc) - Date.parse("1977-06-01T10:00:00Z")) < 36 * 3600 * 1000,
+  return30.moment.local,
+);
+check(
+  "solar_return: birthplace, own lots and the natal profection's Lord of the Year",
+  return30.place.changed === false &&
+    return30.place.name === "Copenhagen" &&
+    return30.computed.lots?.positions.length === 7 &&
+    return30.timeAssumed === false &&
+    return30.timeLord === computed.chart.houses[30 % 12].ruler,
+  `time lord ${return30.timeLord}`,
+);
+const activeReturn = await invoke("solar_return", { ...returnArgs, age: null });
+const nextReturn = await invoke("solar_return", { ...returnArgs, age: activeReturn.age + 1 });
+check(
+  "solar_return: without an age the latest return that has occurred is shown",
+  activeReturn.age === activeReturn.activeAge &&
+    Date.parse(activeReturn.moment.utc) <= Date.now() &&
+    Date.parse(nextReturn.moment.utc) > Date.now(),
+  `age ${activeReturn.age}: ${activeReturn.moment.local}, next ${nextReturn.moment.local}`,
+);
+const paris = { name: "Paris", countryCode: "FR", latitude: 48.8566, longitude: 2.3522, zone: "Europe/Paris" };
+await invoke("solar_return_set", { chartId: saved.id, age: 30, choice: { place: paris, sectOverride: null } });
+const inParis = await invoke("solar_return", { ...returnArgs, age: 30 });
+const return31 = await invoke("solar_return", { ...returnArgs, age: 31 });
+check(
+  "solar_return: a changed place moves the angles, not the moment, and only for that year",
+  inParis.place.changed === true &&
+    inParis.place.name === "Paris" &&
+    inParis.moment.utc === return30.moment.utc &&
+    inParis.computed.chart.angles.ascendant.longitude !== return30.computed.chart.angles.ascendant.longitude &&
+    return31.place.changed === false &&
+    (await invoke("charts_list")).find((c) => c.id === saved.id)?.placeName === "Copenhagen",
+  `ASC ${return30.computed.chart.angles.ascendant.longitude} -> ${inParis.computed.chart.angles.ascendant.longitude}`,
+);
+const otherReturnSect = inParis.computed.chart.sect === "day" ? "night" : "day";
+await invoke("solar_return_set", {
+  chartId: saved.id,
+  age: 30,
+  choice: { place: paris, sectOverride: otherReturnSect },
+});
+const returnSect = await invoke("solar_return", { ...returnArgs, age: 30 });
+check(
+  "solar_return: a manual sect is the return's own and leaves the natal sect alone",
+  returnSect.sectOverride === otherReturnSect &&
+    returnSect.computed.lots.sect === otherReturnSect &&
+    returnSect.computed.lots.overridden === true &&
+    returnSect.place.changed === true &&
+    (await invoke("charts_list")).find((c) => c.id === saved.id)?.sectOverride === null,
+);
+const returnCondition = await invoke("planetary_condition_at", {
+  cast: {
+    utc: inParis.moment.utc,
+    latitude: inParis.place.latitude,
+    longitude: inParis.place.longitude,
+    zone: inParis.place.zone,
+    offsetSeconds: inParis.place.offsetSeconds,
+  },
+  sectOverride: null,
+  options: { cazimi: 1, combust: 8, beams: 15 },
+});
+const returnSunHouse = inParis.computed.chart.positions.find((p) => p.body === "sun").house;
+check(
+  "planetary_condition_at uses the return chart's own sect and houses",
+  returnCondition.planets.length === 7 &&
+    returnCondition.sect === inParis.computed.chart.sect &&
+    returnCondition.planets.find((p) => p.body === "sun").house === returnSunHouse,
+  `sect ${returnCondition.sect}, Sun in house ${returnSunHouse}`,
+);
+await invoke("solar_return_set", { chartId: saved.id, age: 30, choice: { place: null, sectOverride: null } });
+const returnReset = await invoke("solar_return", { ...returnArgs, age: 30 });
+check(
+  "solar_return: the place can be reset to the birthplace",
+  returnReset.place.changed === false &&
+    returnReset.sectOverride === null &&
+    returnReset.computed.chart.angles.ascendant.longitude === return30.computed.chart.angles.ascendant.longitude,
+);
+const badPlace = await invoke("solar_return_set", {
+  chartId: saved.id,
+  age: 30,
+  choice: { place: { ...paris, zone: "Mars/Olympus" }, sectOverride: null },
+}).then(
+  () => null,
+  (e) => String(e),
+);
+check("solar_return_set refuses an unknown time zone", badPlace !== null, badPlace ?? "");
+const untimedChart = await invoke("chart_save", { chart: { ...saved, id: null, name: "e2e-uden-tid", birthTime: null } });
+const limitedReturn = await invoke("solar_return", { ...returnArgs, chartId: untimedChart.id, age: 30 });
+check(
+  "solar_return: without a birth time there are no lots and no Lord of the Year",
+  limitedReturn.timeAssumed === true && limitedReturn.computed.lots === null && limitedReturn.timeLord === null,
+);
+await invoke("chart_delete", { id: untimedChart.id });
+
 // Life events: only what is known is stored.
 const blankEvent = { id: null, chartId: saved.id, title: "", year: 1975, month: null, day: null, time: null, zone, note: "" };
 const wedding = await invoke("event_save", {

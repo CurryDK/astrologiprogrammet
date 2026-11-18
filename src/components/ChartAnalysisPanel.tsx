@@ -11,6 +11,7 @@ import {
   SIGN_NAMES,
   elementOf,
   type Body,
+  type CastSource,
   type ChartRecord,
   type PlanetCondition,
   type Rating,
@@ -42,7 +43,12 @@ function Bar({ rating, colors }: { rating: Rating | null; colors: Settings["cond
   );
 }
 
-type Props = { record: ChartRecord };
+type Props = {
+  /** A natal chart, or a chart cast for a moment and place (a Solar Return). */
+  record: ChartRecord | CastSource;
+  /** The year's Time Lord, marked in that planet's heading (Solar Return). */
+  timeLord?: Body | null;
+};
 
 /**
  * Chart Analysis (specification of 15 November 2026): a compact table of
@@ -50,7 +56,7 @@ type Props = { record: ChartRecord };
  * list of conditions per planet, grouped by sect. It reads the same report
  * as Planetary Condition and adds no rule, no score and no verdict.
  */
-export function ChartAnalysisPanel({ record }: Props) {
+export function ChartAnalysisPanel({ record, timeLord = null }: Props) {
   const { settings, update } = useSettings();
   const { colors, groups, analysisNeutral } = settings.condition;
   const { report, error } = useConditionReport(record);
@@ -226,6 +232,7 @@ export function ChartAnalysisPanel({ record }: Props) {
                 <div key={planet.body} className="ca-planet">
                   <h4>
                     {glyph(planet.body)} <span>{sectRoleOf(planet)}</span>
+                    {planet.body === timeLord && <span className="time-lord-mark">Årets Time Lord</span>}
                   </h4>
                   {lines.length === 0 ? (
                     <p className="muted ca-note">Ingen betingelser i de viste kategorier.</p>

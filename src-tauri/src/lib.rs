@@ -18,6 +18,8 @@ use astro_core::progressions::{
     AngleMethod, ProgressedTarget, ProgressionOptions, Progressions, progressed_passes, progressions,
 };
 use astro_core::rings::{WheelRings, wheel_rings as core_wheel_rings};
+use astro_core::solar_return::{MAX_RETURN, active_return, return_moment};
+use astro_core::profections::{annual_house, sign_of_house};
 use astro_core::solarfire::{self, ImportedChart};
 use astro_core::time::{ResolvedTime, StepUnit, ZoneChoice, resolve, step};
 use astro_core::transits::{PassTarget, TransitAspect, exact_passes, transit_aspects};
@@ -27,7 +29,7 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use tauri::{Manager, State};
 
-use db::{ChartRecord, Folder, LifeEvent};
+use db::{ChartRecord, Folder, LifeEvent, ReturnChoice};
 
 struct Database(Mutex<Connection>);
 
@@ -384,6 +386,201 @@ fn live_chart(
     })
 }
 
+fn check_condition_options(options: &ConditionOptions) -> Result<(), String> {
+    let limits = [options.cazimi, options.combust, options.beams];
+    if limits.iter().any(|limit| !limit.is_finite() || *limit < 0.0)
+        || options.cazimi > options.combust
+        || options.combust > options.beams
+    {
+        return Err("ugyldige grænser for afstand til Solen".to_string());
+    }
+    Ok(())
+}
+
+/// A moment and place a chart is cast for without a birth form: a Solar Return.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CastInput {
+    utc: DateTime<Utc>,
+    latitude: f64,
+    longitude: f64,
+    zone: Option<String>,
+    /// Manual UTC offset in seconds; overrides `zone` when set.
+    offset_seconds: Option<i32>,
+}
+
+/// Planetary Condition of a chart cast for a moment and place, from that
+/// chart's own positions and houses alone (specification §10: Solar Return).
+#[tauri::command]
+fn planetary_condition_at(
+    cast: CastInput,
+    sect_override: Option<Sect>,
+    options: ConditionOptions,
+) -> Result<ConditionReply, String> {
+    check_condition_options(&options)?;
+    if !(-90.0..=90.0).contains(&cast.latitude) || !(-180.0..=180.0).contains(&cast.longitude) {
+        return Err("ugyldige koordinater".to_string());
+    }
+    let zone = match (cast.offset_seconds, cast.zone) {
+        (Some(seconds), _) => ZoneChoice::FixedOffset(seconds),
+        (None, Some(name)) => ZoneChoice::Named(name),
+        (None, None) => return Err("tidszone mangler".to_string()),
+    };
+    let chart = compute_chart(cast.utc, cast.latitude, cast.longitude).map_err(|e| e.to_string())?;
+    Ok(ConditionReply {
+        report: condition_report(&chart, sect_override, &options),
+        stations: planet_stations(cast.utc, &zone),
+    })
+}
+
+/// Where a Solar Return is cast for.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ReturnPlaceShown {
+    name: String,
+    country_code: Option<String>,
+    latitude: f64,
+    longitude: f64,
+    zone: Option<String>,
+    offset_seconds: Option<i32>,
+    /// False for the birthplace, true for a place chosen for this year.
+    changed: bool,
+}
+
+/// One Solar Return of a saved chart.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SolarReturnReply {
+    /// The number of the return: the age it begins. 0 is the birth itself.
+    age: u32,
+    /// The return in force now: the latest that has occurred.
+    active_age: u32,
+    /// The exact moment of the return, with the clock reading at the place.
+    moment: Moment,
+    place: ReturnPlaceShown,
+    /// Manual day/night sect of this return; `None` when the Sun decides.
+    sect_override: Option<Sect>,
+    /// The chart of the return at the place. Without a birth time its
+    /// angles and houses mean nothing and `lots` is absent.
+    computed: ComputedChart,
+    /// True when the birth time is unknown and 12:00 was used; the return
+    /// is then limited to positions and aspects.
+    time_assumed: bool,
+    /// Lord of the Year of the natal annual profection for this age; absent
+    /// without a birth time, which the rising sign depends on.
+    time_lord: Option<Body>,
+}
+
+/// A Solar Return of a saved chart: the one for `age`, or without an age the
+/// one in force now. The place and the manual sect are those stored for that
+/// chart and year; the birthplace and the automatic sect otherwise.
+#[tauri::command]
+fn solar_return(
+    db: State<'_, Database>,
+    chart_id: i64,
+    age: Option<u32>,
+    orbs: Orbs,
+    lot_orb: f64,
+    lot_exact_orb: f64,
+) -> Result<SolarReturnReply, String> {
+    let record = db
+        .with(|c| db::get_chart(c, chart_id))?
+        .ok_or("horoskopet findes ikke")?;
+    let birth = BirthInput {
+        date: record.birth_date.clone(),
+        time: record.birth_time.clone(),
+        latitude: record.latitude,
+        longitude: record.longitude,
+        zone: record.zone.clone(),
+        offset_seconds: record.offset_seconds,
+    };
+    let born = resolve_input(&birth)?;
+    let active_age = active_return(born.utc, Utc::now()).map_err(|e| e.to_string())?;
+    let age = age.unwrap_or(active_age);
+    if age > MAX_RETURN {
+        return Err(format!("Solar Return nr. {age} er uden for programmets område"));
+    }
+    let utc = return_moment(born.utc, age).map_err(|e| e.to_string())?;
+
+    let choice = db.with(|c| db::get_return_choice(c, chart_id, age))?;
+    let (place, zone) = match &choice.place {
+        Some(place) => (
+            ReturnPlaceShown {
+                name: place.name.clone(),
+                country_code: place.country_code.clone(),
+                latitude: place.latitude,
+                longitude: place.longitude,
+                zone: Some(place.zone.clone()),
+                offset_seconds: None,
+                changed: true,
+            },
+            named_zone(&place.zone),
+        ),
+        None => (
+            ReturnPlaceShown {
+                name: record.place_name.clone(),
+                country_code: record.country_code.clone(),
+                latitude: record.latitude,
+                longitude: record.longitude,
+                zone: record.zone.clone(),
+                offset_seconds: record.offset_seconds,
+                changed: false,
+            },
+            parse_birth(&birth)?.zone,
+        ),
+    };
+    let moment = Moment::in_zone(utc, &zone).map_err(|e| e.to_string())?;
+
+    // Without a birth time the return moment may be half a day off, so
+    // angles, houses, lots and sect are left out (decision of 18 November 2026).
+    let lot_options = LotOptions {
+        sect_override: choice.sect_override,
+        orb: lot_orb,
+        exact_orb: lot_exact_orb,
+    };
+    let lots = if born.time_assumed { None } else { Some(&lot_options) };
+    let computed = compute(utc, place.latitude, place.longitude, &orbs, None, lots)?;
+
+    let time_lord = if born.time_assumed {
+        None
+    } else {
+        let natal =
+            compute_chart(born.utc, birth.latitude, birth.longitude).map_err(|e| e.to_string())?;
+        Some(sign_of_house(natal.houses[0].sign, annual_house(age)).ruler())
+    };
+
+    Ok(SolarReturnReply {
+        age,
+        active_age,
+        moment,
+        place,
+        sect_override: choice.sect_override,
+        computed,
+        time_assumed: born.time_assumed,
+        time_lord,
+    })
+}
+
+/// Stores the place and manual sect chosen for one Solar Return of a chart.
+#[tauri::command]
+fn solar_return_set(
+    db: State<'_, Database>,
+    chart_id: i64,
+    age: u32,
+    choice: ReturnChoice,
+) -> Result<(), String> {
+    if let Some(place) = &choice.place {
+        if place.name.trim().is_empty() {
+            return Err("stednavn mangler".to_string());
+        }
+        if !(-90.0..=90.0).contains(&place.latitude) || !(-180.0..=180.0).contains(&place.longitude) {
+            return Err("ugyldige koordinater".to_string());
+        }
+        Moment::in_zone(Utc::now(), &named_zone(&place.zone)).map_err(|e| e.to_string())?;
+    }
+    db.with(|c| db::set_return_choice(c, chart_id, age, &choice))
+}
+
 /// Planetary Condition of a natal chart. `sect_override` is the manual
 /// day/night choice; `options` holds the adjustable distances from the Sun.
 #[tauri::command]
@@ -392,13 +589,7 @@ fn planetary_condition(
     sect_override: Option<Sect>,
     options: ConditionOptions,
 ) -> Result<ConditionReply, String> {
-    let limits = [options.cazimi, options.combust, options.beams];
-    if limits.iter().any(|limit| !limit.is_finite() || *limit < 0.0)
-        || options.cazimi > options.combust
-        || options.combust > options.beams
-    {
-        return Err("ugyldige grænser for afstand til Solen".to_string());
-    }
+    check_condition_options(&options)?;
     let born = resolve_input(&birth)?;
     let chart = compute_chart(born.utc, birth.latitude, birth.longitude).map_err(|e| e.to_string())?;
     let zone = parse_birth(&birth)?.zone;
@@ -766,6 +957,9 @@ pub fn run() {
             transit_passes,
             progression_passes,
             planetary_condition,
+            planetary_condition_at,
+            solar_return,
+            solar_return_set,
             wheel_rings,
             events_list,
             event_save,

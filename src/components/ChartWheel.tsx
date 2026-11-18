@@ -96,6 +96,11 @@ type Props = {
    */
   room?: { width: number; height: number };
   /**
+   * A chart whose angles and houses are not known (a Solar Return without a
+   * birth time): they are left out, and 0° Aries stands at the left.
+   */
+  withoutAngles?: boolean;
+  /**
    * Live Chart: secondary progressions, drawn in a band outside the zodiac
    * ring, inside the transits. Everything is already filtered by the caller.
    */
@@ -192,6 +197,7 @@ export function ChartWheel({
   lots = [],
   maxRadius,
   room: givenRoom,
+  withoutAngles = false,
   progression,
   transit,
 }: Props) {
@@ -201,7 +207,9 @@ export function ChartWheel({
   // clicked, which stays until it is clicked again or the wheel is clicked.
   const [hovered, setHovered] = useState<string | null>(null);
   const [pinned, setPinned] = useState<string | null>(null);
-  const anchor = wheelAnchor(chart.angles.ascendant.longitude, settings.wheel.orientation);
+  const anchor = withoutAngles
+    ? 0
+    : wheelAnchor(chart.angles.ascendant.longitude, settings.wheel.orientation);
 
   // Natal innermost, progressions in the middle, transits outermost
   // (decision 9 of 15 November 2026 on progressions).
@@ -435,12 +443,14 @@ export function ChartWheel({
       : []),
   ];
 
-  const angles = [
-    { label: "ASC", angle: chart.angles.ascendant },
-    { label: "DSC", angle: chart.angles.descendant },
-    { label: "MC", angle: chart.angles.midheaven },
-    { label: "IC", angle: chart.angles.imumCoeli },
-  ];
+  const angles = withoutAngles
+    ? []
+    : [
+        { label: "ASC", angle: chart.angles.ascendant },
+        { label: "DSC", angle: chart.angles.descendant },
+        { label: "MC", angle: chart.angles.midheaven },
+        { label: "IC", angle: chart.angles.imumCoeli },
+      ];
 
   const ticks = [];
   for (let degree = 0; degree < 360; degree++) {
@@ -637,7 +647,7 @@ export function ChartWheel({
           })}
 
         {/* Whole-sign house numbers, close to the centre */}
-        {chart.houses.map((house) => {
+        {(withoutAngles ? [] : chart.houses).map((house) => {
           const position = at(SIGNS.indexOf(house.sign) * 30 + 15, houseNumberRadius);
           return (
             <text

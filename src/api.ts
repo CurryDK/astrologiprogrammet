@@ -7,6 +7,9 @@ import type {
   ComputedChart,
   ConditionOptions,
   ConditionReport,
+  CastInput,
+  ReturnChoice,
+  SolarReturn,
   Sect,
   Folder,
   ImportSummary,
@@ -105,6 +108,22 @@ export const api = {
   /** Planetary Condition of a natal chart; `sectOverride` is the manual day/night choice. */
   planetaryCondition: (birth: BirthInput, sectOverride: Sect | null, options: ConditionOptions) =>
     call<ConditionReport>("planetary_condition", { birth, sectOverride, options }),
+
+  /** Planetary Condition of a chart cast for a moment and place (a Solar Return). */
+  planetaryConditionAt: (cast: CastInput, sectOverride: Sect | null, options: ConditionOptions) =>
+    call<ConditionReport>("planetary_condition_at", { cast, sectOverride, options }),
+
+  /** A Solar Return of a saved chart: the one for `age`, or the one in force now when null. */
+  solarReturn: (args: {
+    chartId: number;
+    age: number | null;
+    orbs: Orbs;
+    lotOrb: number;
+    lotExactOrb: number;
+  }) => call<SolarReturn>("solar_return", args),
+  /** Stores the place and manual sect chosen for one Solar Return of a chart. */
+  solarReturnSet: (chartId: number, age: number, choice: ReturnChoice) =>
+    call<void>("solar_return_set", { chartId, age, choice }),
 
   /** The decan and bounds rings of the wheel; the same for every chart. */
   wheelRings: () => call<WheelRings>("wheel_rings"),

@@ -64,6 +64,8 @@ const charts: ChartRecord[] = [
   },
 ];
 const settings = new Map<string, string>();
+/** The place and manual sect chosen per chart and Solar Return year. */
+const returnChoices = new Map<string, { place: any; sectOverride: "day" | "night" | null }>();
 
 const places: Place[] = [
   {
@@ -506,6 +508,54 @@ export async function mockInvoke(command: string, args: Record<string, any>): Pr
         sect: args.sectOverride ?? devCondition.sect,
         overridden: args.sectOverride != null,
       };
+    case "planetary_condition_at":
+      return {
+        ...devCondition,
+        sect: args.sectOverride ?? devCondition.sect,
+        overridden: args.sectOverride != null,
+      };
+    case "solar_return": {
+      // Not a real return: the fixture's chart, a tropical year per age after the birth.
+      const record = charts.find((c) => c.id === args.chartId);
+      if (!record) throw new Error("horoskopet findes ikke");
+      const yearMs = 365.2422 * 86_400_000;
+      const born = Date.parse(computed.chart.utc);
+      const activeAge = Math.max(0, Math.floor((Date.now() - born) / yearMs));
+      const age = (args.age as number | null) ?? activeAge;
+      const choice = returnChoices.get(`${args.chartId}:${age}`) ?? { place: null, sectOverride: null };
+      const timeAssumed = record.birthTime === null;
+      const ms = born + age * yearMs;
+      return {
+        age,
+        activeAge,
+        moment: moment(ms),
+        place: choice.place
+          ? { ...choice.place, offsetSeconds: null, changed: true }
+          : {
+              name: record.placeName,
+              countryCode: record.countryCode,
+              latitude: record.latitude,
+              longitude: record.longitude,
+              zone: record.zone,
+              offsetSeconds: record.offsetSeconds,
+              changed: false,
+            },
+        sectOverride: choice.sectOverride,
+        computed: {
+          ...computed,
+          chart: { ...computed.chart, utc: new Date(ms).toISOString() },
+          time: null,
+          lots: timeAssumed
+            ? null
+            : lotsFor({ sectOverride: choice.sectOverride, orb: args.lotOrb, exactOrb: args.lotExactOrb }),
+        },
+        timeAssumed,
+        timeLord: timeAssumed ? null : fixtureHouses[age % 12].ruler,
+      };
+    }
+    case "solar_return_set":
+      returnChoices.set(`${args.chartId}:${args.age}`, args.choice);
+      return null;
     case "wheel_rings":
       return devRings;
     case "events_list":
