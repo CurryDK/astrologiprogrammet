@@ -16,6 +16,7 @@ const condition = (fields: Partial<Condition>): Condition => ({
   applying: null,
   sectRole: null,
   favored: null,
+  sameSect: null,
   triplicityRole: null,
   angle: null,
   dignities: [],
@@ -133,10 +134,28 @@ describe("Planetary Condition texts", () => {
 
   it("labels co-presence with a benefic or malefic by sect", () => {
     expect(
-      conditionDetail(condition({ others: ["jupiter"], favored: true, rating: "verySupportive" })),
+      conditionDetail(
+        condition({ others: ["jupiter"], favored: true, sameSect: true, rating: "verySupportive" }),
+      ),
     ).toBe("Jupiter (favored benefic)");
+    // The words follow the two planets' sects to each other, not the chart's.
     expect(
-      conditionDetail(condition({ others: ["mars"], favored: false, rating: "veryChallenging" })),
+      conditionDetail(
+        condition({ others: ["saturn"], favored: true, sameSect: false, rating: "challenging" }),
+      ),
+    ).toBe("Saturn (contrary malefic)");
+    expect(
+      conditionDetail(
+        condition({ others: ["mars"], favored: false, sameSect: true, rating: "veryChallenging" }),
+      ),
+    ).toBe("Mars (favored malefic)");
+    expect(
+      conditionDetail(condition({ others: ["venus"], favored: true, rating: "verySupportive" })),
+    ).toBe("Venus (benefic)");
+    expect(
+      conditionDetail(
+        condition({ others: ["mars"], favored: false, sameSect: false, rating: "veryChallenging" }),
+      ),
     ).toBe("Mars (contrary malefic)");
     expect(conditionDetail(condition({ others: ["moon"] }))).toBe("Månen");
   });

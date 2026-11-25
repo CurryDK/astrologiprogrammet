@@ -278,6 +278,8 @@ export type Condition = {
   sectRole: "leader" | "benefic" | "malefic" | null;
   /** Co-presence: whether the benefic or malefic belongs to the sect in favour. */
   favored: boolean | null;
+  /** Co-presence: whether the benefic or malefic is of the same sect as the planet it is listed under. */
+  sameSect: boolean | null;
   triplicityRole: "day" | "night" | "participating" | null;
   angle: AngleName | null;
   dignities: Dignity[];

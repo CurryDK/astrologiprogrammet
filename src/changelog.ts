@@ -13,6 +13,19 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.11.1",
+    date: "2026-11-25",
+    added: [
+      "Live Chart: konjunktioner mellem en natal planet og en transiterende planet, og mellem en natal planet og en sekundært progredieret planet, tegnes nu som aspektlinjer. Linjen er blå og bliver tykkere, jo tættere aspektet er på eksakt. Farven kan ændres under Indstillinger som de øvrige aspektfarver. Konjunktioner mellem to natale planeter tegnes fortsat ikke som linje.",
+    ],
+    changed: [
+      "Mouseover på en planet uden aspekter nedtoner nu alle aspektlinjer. Den normale visning vender tilbage, når musen flyttes væk.",
+      "Co-presence: favored og contrary i parentesen henviser nu til de to planeters indbyrdes sect – favored ved samme sect, contrary ved modsat sect – både i dag- og nathoroskoper. Overskrifter, farver og beregningsregler er uændrede.",
+      "“Eksakt”: alle beregnede passager vises nu med dato og klokkeslæt. Listen skifter linje, når der ikke er plads på én linje, i stedet for at blive skåret af.",
+      "Konjunktionens farve er nu blå som standard, også i aspektoversigterne.",
+    ],
+  },
+  {
     version: "0.11.0",
     date: "2026-11-18",
     added: [

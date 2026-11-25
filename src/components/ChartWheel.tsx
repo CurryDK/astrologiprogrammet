@@ -388,6 +388,20 @@ export function ChartWheel({
     return at(display, labelRadius(display, heights[index]) - reach - 3);
   };
 
+  /**
+   * Where a conjunction line from an outer layer meets a natal point: on the
+   * outer edge of its label, so the short line does not run through the
+   * planet's symbol. With the lines drawn on the inner circle it ends there
+   * like the others.
+   */
+  const natalConjunctionEnd = (point: PointId) => {
+    const index = isBody(point) ? shown.findIndex((p) => p.body === point) : -1;
+    if (index < 0 || settings.layerLineEnds === "center") return natalLineEnd(point);
+    const display = displayAngles[index];
+    const reach = boxReach(screenAngle(display), LABEL.width, heights[index]);
+    return at(display, labelRadius(display, heights[index]) + reach + 1);
+  };
+
   const layerOf = (name: LayerName) => layers.find((layer) => layer.name === name);
   /** Exact longitude of a point in a layer, if that layer shows it. */
   const layerLongitude = (name: LayerName, point: PointId): number | undefined =>
@@ -480,7 +494,10 @@ export function ChartWheel({
 
   const centered = { textAnchor: "middle", dominantBaseline: "central" } as const;
 
-  // Every aspect line that is drawn, with the two points it joins.
+  // Every aspect line that is drawn, with the two points it joins. A
+  // conjunction gets a line only between a natal point and a transiting or
+  // progressed one (corrections of 24 November 2026, point 01); never between
+  // two natal points, nor between two points of the same outer layer.
   const pointKey = (layer: LayerName, point: PointId) => `${layer}:${point}`;
   const natalLines = aspects
     .filter((aspect) => aspect.kind !== "conjunction")
@@ -488,13 +505,24 @@ export function ChartWheel({
   const drawnLayerLines = layerLines.flatMap((item) => {
     const from = layerLongitude(item.from[0], item.from[1]);
     const to = layerLongitude(item.to[0], item.to[1]);
-    if (item.aspect.kind === "conjunction" || from === undefined || to === undefined) return [];
+    if (from === undefined || to === undefined) return [];
+    if (item.aspect.kind === "conjunction" && item.to[0] !== "natal") return [];
     return [{ ...item, fromLongitude: from, toLongitude: to, ends: [pointKey(item.from[0], item.from[1]), pointKey(item.to[0], item.to[1])] }];
   });
   const joined = new Set([...natalLines, ...drawnLayerLines].flatMap((line) => line.ends));
-  // A planet without lines, or one no longer shown, highlights nothing.
-  const chosen = pinned ?? hovered;
-  const focus = chosen !== null && joined.has(chosen) ? chosen : null;
+  /** Natal planets with a line at the inner edge of their label, where the dot goes. */
+  const dotted = new Set(
+    [
+      ...natalLines,
+      ...drawnLayerLines.filter(
+        (line) => line.aspect.kind !== "conjunction" || settings.layerLineEnds === "center",
+      ),
+    ].flatMap((line) => line.ends),
+  );
+  // A clicked planet without lines, or one no longer shown, highlights
+  // nothing. Pointing at a planet without lines fades every line until the
+  // pointer leaves it (corrections of 24 November 2026, point 02).
+  const focus = pinned !== null && joined.has(pinned) ? pinned : hovered;
   /** Lines of the planet in focus at full strength, the others faded. */
   const lineOpacity = (ends: string[], normal: number) =>
     focus === null ? normal : ends.includes(focus) ? 1 : 0.1;
@@ -622,7 +650,11 @@ export function ChartWheel({
         {/* Aspect lines of the outer layers: transits solid to natal points and dashed among themselves, progressions dotted */}
         {drawnLayerLines.map((item) => {
           const end = ([layer, point]: readonly [LayerName, PointId], longitude: number) =>
-            layer === "natal" ? natalLineEnd(point) : layerLineEnd(layer, point, longitude);
+            layer !== "natal"
+              ? layerLineEnd(layer, point, longitude)
+              : item.aspect.kind === "conjunction"
+                ? natalConjunctionEnd(point)
+                : natalLineEnd(point);
           const a = end(item.from, item.fromLongitude);
           const b = end(item.to, item.toLongitude);
           return (
@@ -644,7 +676,7 @@ export function ChartWheel({
 
         {/* A dot in the planet's colour where its lines meet it */}
         {shown
-          .filter((position) => joined.has(pointKey("natal", position.body)))
+          .filter((position) => dotted.has(pointKey("natal", position.body)))
           .map((position) => {
             const end = natalLineEnd(position.body);
             return (

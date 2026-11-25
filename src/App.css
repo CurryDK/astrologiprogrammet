@@ -501,12 +501,22 @@ button.step-arrow {
   padding-top: 0;
 }
 
+/* The passes wrap onto more lines where one is too short: all of them stay
+   visible without scrolling sideways. */
 .transit-table tr.passes td {
   padding: 4px 6px 8px;
+  white-space: normal;
+}
+
+.transit-table tr.passes .pass-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
 }
 
 .transit-table tr.passes button {
-  margin: 2px 0 2px 6px;
+  white-space: nowrap;
 }
 
 .event-form {

@@ -129,7 +129,7 @@ export function TransitAspectTable({ rows, labels, settings, at, findPasses, onG
                   ) : open.moments.length === 1 ? (
                     <span className="muted">Eksakt {formatMoment(open.moments[0], true)}.</span>
                   ) : (
-                    <>
+                    <div className="pass-list">
                       <span className="muted">{open.moments.length} passager – vælg:</span>
                       {open.moments.map((moment, index) => (
                         <button
@@ -140,7 +140,7 @@ export function TransitAspectTable({ rows, labels, settings, at, findPasses, onG
                           {index + 1}. {formatMoment(moment, true)}
                         </button>
                       ))}
-                    </>
+                    </div>
                   )}
                 </td>
               </tr>

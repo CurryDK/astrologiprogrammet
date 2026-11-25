@@ -198,10 +198,12 @@ export const DEFAULT_SETTINGS: Settings = {
       northNode: "#555555",
       southNode: "#555555",
     },
-    // Decision supplement of 14 November 2026, point 1. The conjunction
-    // colour is used in the overview only; conjunctions get no line.
+    // Decision supplement of 14 November 2026, point 1. Conjunctions are
+    // blue (corrections of 24 November 2026, point 01): drawn as a line in
+    // Live Chart between a natal planet and a transiting or progressed one;
+    // two natal planets still get no line.
     aspects: {
-      conjunction: "#444444",
+      conjunction: "#1565e0",
       sextile: "#ff1493",
       square: "#e60000",
       trine: "#00a000",
@@ -405,11 +407,13 @@ export function mergeOver<T>(defaults: T, stored: unknown): T {
 }
 
 /**
- * Aspect colours that were the defaults up to version 0.2.1. Settings are
+ * Aspect colours that were the defaults in earlier versions. Settings are
  * saved as a whole, so a user who changed anything has these stored even
  * though they never chose them.
  */
 const ASPECT_COLORS_BEFORE_0_2_2: Partial<Record<AspectKind, string>> = {
+  // Grey up to version 0.11.0, when the conjunction had no line.
+  conjunction: "#444444",
   sextile: "#f06aa8",
   square: "#d32f2f",
   trine: "#2e9e4f",

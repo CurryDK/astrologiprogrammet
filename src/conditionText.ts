@@ -221,7 +221,7 @@ export const CONDITION_ROWS: ConditionRow[] = [
     "copresence",
     "copresence",
     "Co-presence",
-    "To planeter i samme tegn, uden orbkrav. Favored benefic: meget understøttende. Contrary benefic: understøttende. Favored malefic: udfordrende. Contrary malefic: meget udfordrende. Solen, Månen og Merkur vises uden farve.",
+    "To planeter i samme tegn, uden orbkrav. Farven følger horoskopets sect: benefic i horoskopets sect meget understøttende, benefic uden for horoskopets sect understøttende, malefic i horoskopets sect udfordrende, malefic uden for horoskopets sect meget udfordrende. Solen, Månen og Merkur vises uden farve. I parentesen betyder favored, at de to planeter har samme sect, og contrary, at de har modsat sect.",
     BASIS,
   ),
 
@@ -437,7 +437,11 @@ export function conditionDetail(c: Condition): string {
     case "copresence": {
       if (c.favored === null) return who;
       const nature = c.others[0] === "venus" || c.others[0] === "jupiter" ? "benefic" : "malefic";
-      return `${who} (${c.favored ? "favored" : "contrary"} ${nature})`;
+      // Favored and contrary here say how the two planets stand to each other,
+      // not to the chart's sect (corrections of 24 November 2026, point 03).
+      // Mercury exactly on the Sun has no sect of its own to compare with.
+      if (c.sameSect === null) return `${who} (${nature})`;
+      return `${who} (${c.sameSect ? "favored" : "contrary"} ${nature})`;
     }
     case "lordWitness":
       return `${who}, ${aspect}`;

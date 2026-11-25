@@ -25,6 +25,7 @@ const condition = (fields: Partial<Condition>): Condition => ({
   applying: null,
   sectRole: null,
   favored: null,
+  sameSect: null,
   triplicityRole: null,
   angle: null,
   dignities: [],

@@ -279,6 +279,10 @@ pub struct Condition {
     pub sect_role: Option<SectRole>,
     /// Co-presence: whether the benefic or malefic belongs to the sect in favour.
     pub favored: Option<bool>,
+    /// Co-presence with a benefic or malefic: whether it is of the same sect
+    /// as the planet it is listed under. Only how the pair is named (corrections
+    /// of 24 November 2026, point 03); the rating follows `favored`.
+    pub same_sect: Option<bool>,
     pub triplicity_role: Option<TriplicityRole>,
     pub angle: Option<AngleName>,
     /// Reception: the dignities the other planet has where this one stands.
@@ -305,6 +309,7 @@ impl Condition {
             applying: None,
             sect_role: None,
             favored: None,
+            same_sect: None,
             triplicity_role: None,
             angle: None,
             dignities: Vec::new(),
@@ -905,6 +910,9 @@ pub fn condition_report(
                 let mut condition = Condition::new(K::Copresence, G::Copresence, rating).with(other.body);
                 if rating.is_some() {
                     condition.favored = favored;
+                    condition.same_sect = planet_sect
+                        .zip(sect_of(other.body))
+                        .map(|(own, theirs)| own == theirs);
                 }
                 conditions.push(condition);
             }
@@ -1673,6 +1681,42 @@ mod tests {
         assert_eq!(rating(night, Body::Saturn), Some(Rating::VeryChallenging));
         // Other planets: a fact without a rating. No orb is needed.
         assert_eq!(rating(day, Body::Mercury), None);
+    }
+
+    #[test]
+    fn copresence_names_the_pair_by_their_sects_to_each_other() {
+        // `planet` and `other` together in Gemini; the Sun stays at 196°.
+        let same = |ascendant: f64, planet_body: Body, other: Body| {
+            let chart = chart_at(ascendant, &[(planet_body, GEMINI + 2.0), (other, GEMINI + 25.0)]);
+            let r = report(&chart);
+            let found = find(&r, planet_body, G::Copresence, K::Copresence);
+            let c = found.iter().find(|c| c.others == vec![other]).unwrap();
+            (c.same_sect, c.rating)
+        };
+        for ascendant in [ARIES, 176.0] {
+            // Day and night charts alike: the chart's sect plays no part.
+            assert_eq!(same(ascendant, Body::Saturn, Body::Venus).0, Some(false));
+            assert_eq!(same(ascendant, Body::Venus, Body::Saturn).0, Some(false));
+            assert_eq!(same(ascendant, Body::Venus, Body::Mars).0, Some(true));
+            assert_eq!(same(ascendant, Body::Saturn, Body::Jupiter).0, Some(true));
+            assert_eq!(same(ascendant, Body::Moon, Body::Jupiter).0, Some(false));
+            // The other planet is neither benefic nor malefic: nothing to name.
+            assert_eq!(same(ascendant, Body::Venus, Body::Moon), (None, None));
+        }
+        // The rating still follows the chart's sect.
+        assert_eq!(same(ARIES, Body::Venus, Body::Saturn).1, Some(Rating::Challenging));
+        assert_eq!(same(176.0, Body::Venus, Body::Saturn).1, Some(Rating::VeryChallenging));
+        // Mercury as evening star (after the Sun at 196°) is nocturnal, like Mars.
+        let mercury = |longitude: f64| {
+            let chart = chart_at(ARIES, &[(Body::Mercury, longitude), (Body::Mars, 215.0)]);
+            let r = report(&chart);
+            find(&r, Body::Mercury, G::Copresence, K::Copresence)
+                .iter()
+                .find(|c| c.others == vec![Body::Mars])
+                .unwrap()
+                .same_sect
+        };
+        assert_eq!(mercury(212.0), Some(true));
     }
 
     #[test]

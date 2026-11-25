@@ -49,9 +49,12 @@ describe("profection settings", () => {
 describe("settingsFromStored", () => {
   it("moves aspect colours still at their old default to the new default", () => {
     const stored = {
-      colors: { aspects: { sextile: "#f06aa8", square: "#D32F2F", trine: "#123456" } },
+      colors: {
+        aspects: { conjunction: "#444444", sextile: "#f06aa8", square: "#D32F2F", trine: "#123456" },
+      },
     };
     const settings = settingsFromStored(stored);
+    expect(settings.colors.aspects.conjunction).toBe("#1565e0");
     expect(settings.colors.aspects.sextile).toBe("#ff1493");
     expect(settings.colors.aspects.square).toBe("#e60000");
     // A colour the user picked is kept.
@@ -61,7 +64,7 @@ describe("settingsFromStored", () => {
 
   it("uses the decided default colours when nothing is stored", () => {
     expect(settingsFromStored(null).colors.aspects).toEqual({
-      conjunction: "#444444",
+      conjunction: "#1565e0",
       sextile: "#ff1493",
       square: "#e60000",
       trine: "#00a000",

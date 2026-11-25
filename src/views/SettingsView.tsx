@@ -78,8 +78,10 @@ export function SettingsView() {
           </tbody>
         </table>
         <p className="muted">
-          Konjunktioner vises i aspektoversigten, men tegnes ikke som linje i hjulet. Linjerne i
-          hjulet er tykkest ved eksakt aspekt og tyndest ved den valgte orb.
+          Konjunktioner mellem to natale planeter vises i aspektoversigten, men tegnes ikke som
+          linje i hjulet. I Live Chart tegnes konjunktioner mellem en natal planet og en
+          transiterende eller progredieret planet som linje. Linjerne i hjulet er tykkest ved
+          eksakt aspekt og tyndest ved den valgte orb.
         </p>
       </section>
 
