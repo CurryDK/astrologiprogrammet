@@ -150,7 +150,6 @@ export function LifeEventsPanel({ record, onJump, jumpLabel, prefill }: Props) {
     );
     return () => window.clearTimeout(timer);
     // Only a new request fills the form in again.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefillKey]);
 
   if (chartId === null) return null;

@@ -87,7 +87,6 @@ export function SynodicView({ record = null, onBack }: Props) {
       cancelled = true;
     };
     // The orbs do not change a Solar Return's moment.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reference, date, time, zone, record, refresh]);
 
   const cell = (event: SynodicEvent | null, relevant: boolean) => {

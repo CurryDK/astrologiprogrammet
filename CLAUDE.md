@@ -58,6 +58,7 @@ Rules that follow from the specification:
 ```
 crates/astro-core/   Pure Rust: all astronomy and astrological rules. No Tauri, no UI.
   src/ephemeris.rs   Safe wrapper over vendored Swiss Ephemeris 2.10.03 (vendor/swisseph, built by build.rs)
+  src/ffi.rs         Hand-written declarations of the Swiss Ephemeris functions in use
   src/chart.rs       compute_chart: positions, angles, houses, sect
   src/aspects.rs     find_aspects: orb, applying/separating, out-of-sign
   src/lots.rs        the seven Hermetic lots, lot overview facts, lot aspects (lot_report)
@@ -77,6 +78,8 @@ crates/astro-core/   Pure Rust: all astronomy and astrological rules. No Tauri, 
 src-tauri/           App shell: commands (src/lib.rs), SQLite storage (src/db.rs), updater
 src/                 React + TypeScript interface. Draws only; no astrological logic here.
   api.ts             Every backend call. astro.ts: types and Danish names. settings.tsx: remembered settings.
+  UpdateBanner.tsx   Checks for a new version once at startup and offers to install it
+  aspectFilter.ts    Which natal aspects the wheel and the table show: bodies switched on, angles per view
   conditionText.ts   Planetary Condition: matrix rows, rule and source texts, the reason of each condition
   chartAnalysis.ts   Chart Analysis: grouping by sect, column order, line texts; reads the condition report, decides nothing
   useConditionReport.ts  The one Planetary Condition report both overviews of a chart share
@@ -91,7 +94,7 @@ src/                 React + TypeScript interface. Draws only; no astrological l
                      ConditionPanel, ChartAnalysisPanel, ProfectionPanel, TimeNavigator, TransitAspectTable, LifeEventsPanel,
                      PointFilter (objects and aspect kinds of a search or report),
                      RetrogradePanel (the Retrogradcyklusser tab: overview, timeline, events)
-  views/             StartView, ArchiveView, ChartView, LiveChartView, TransitView, ChartForm, SettingsView, ChangelogView,
+  views/             StartView, ArchiveView, SolarFireImport (the import dialog of the archive), ChartView, LiveChartView, TransitView, ChartForm, SettingsView, ChangelogView,
                      SolarReturnView, SynodicView (Planetcyklusser: both tabs), EventSearchView, AspectTimingView, YearLordView
   changelog.ts       What each version added and changed; shown when the version number is pressed
   dev/               Stand-in backend + fixture for working on screens in a plain browser

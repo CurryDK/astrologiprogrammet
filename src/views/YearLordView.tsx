@@ -179,7 +179,6 @@ export function YearLordView({ record, onBack, onLive }: Props) {
       cancelled = true;
     };
     // `settings` as a whole changes with every box that opens; the parts used are listed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [record, age, cazimi, combust, beams, yearStart, leapDay, settings.orbs, settings.lots.orb, settings.lots.exactOrb, zone]);
 
   const glyph = (body: Body) => (

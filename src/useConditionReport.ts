@@ -67,7 +67,6 @@ export function useConditionReport(source: ChartRecord | CastSource): {
       cancelled = true;
     };
     // `key` holds everything the calculation depends on.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
   return { report, error };

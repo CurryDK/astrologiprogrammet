@@ -6,7 +6,6 @@ import {
   BODIES,
   POINT_NAMES,
   SIGN_NAMES,
-  isBody,
   type AspectKind,
   type Body,
   type Layer,
@@ -158,9 +157,4 @@ export function defaultPointChoice(settings: Settings): PointChoice {
     ],
     kinds: ["conjunction", "sextile", "square", "trine", "opposition"],
   };
-}
-
-/** Whether a point is a body or an angle name the layer can hold. */
-export function allowedIn(layer: Layer, point: PointId): boolean {
-  return layer !== "transit" || isBody(point);
 }
